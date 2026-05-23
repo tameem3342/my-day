@@ -1,0 +1,2806 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr" data-theme="dark">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<meta http-equiv="X-Content-Type-Options" content="nosniff"/>
+<title>يومي — لوحة متابعة</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=Instrument+Sans:ital,wght@0,400;0,500;0,600;1,400&family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+/* ═══════════════════════════════════════════
+   يومي — Minimal B&W Design System
+═══════════════════════════════════════════ */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=DM+Mono:wght@400;500&display=swap');
+
+:root{
+  --bg:#ffffff;
+  --bg2:#fafafa;
+  --surface:#ffffff;
+  --surface2:#f5f5f5;
+  --surface3:#eeeeee;
+  --border:#e5e5e5;
+  --border2:#d4d4d4;
+  --text:#0a0a0a;
+  --text2:#525252;
+  --text3:#a3a3a3;
+  --ink:#0a0a0a;
+  --accent:#0a0a0a;
+  --accent-fg:#ffffff;
+  --danger:#dc2626;
+  --success:#16a34a;
+  --amber:#d97706;
+  --teal:#0d9488;
+  --violet:#7c3aed;
+  --blue:#2563eb;
+  --rose:#e11d48;
+  --green:#16a34a;
+  --orange:#ea580c;
+  /* keep compat vars */
+  --cyan:#0a0a0a;
+  --glow-cyan:transparent;
+  --glow-amb:transparent;
+  --glow-vio:transparent;
+}
+[data-theme="dark"]{
+  --bg:#0a0a0a;
+  --bg2:#111111;
+  --surface:#161616;
+  --surface2:#1e1e1e;
+  --surface3:#262626;
+  --border:#2a2a2a;
+  --border2:#383838;
+  --text:#fafafa;
+  --text2:#a3a3a3;
+  --text3:#525252;
+  --ink:#fafafa;
+  --accent:#fafafa;
+  --accent-fg:#0a0a0a;
+  --danger:#f87171;
+  --success:#4ade80;
+  --amber:#fbbf24;
+  --teal:#2dd4bf;
+  --violet:#a78bfa;
+  --blue:#60a5fa;
+  --rose:#fb7185;
+  --green:#4ade80;
+  --orange:#fb923c;
+  --cyan:#fafafa;
+}
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:'Inter',system-ui,sans-serif;
+  min-height:100vh;
+  transition:background .3s,color .3s;
+  overflow-x:hidden;
+  -webkit-font-smoothing:antialiased;
+}
+[lang="ar"] *{font-family:'Cairo','Inter',sans-serif;}
+[lang="ar"] .font-display{font-family:'Cairo',sans-serif!important;font-weight:800;}
+[lang="en"] .font-display{font-family:'Inter',sans-serif!important;font-weight:800;}
+
+::-webkit-scrollbar{width:3px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:99px}
+
+/* ── Layout ── */
+.bg-mesh{display:none;}
+@media(min-width:1024px){.mgrid{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;align-items:start;}}
+.scol>*+*{margin-top:1.25rem;}
+
+/* ── Cards ── */
+.card{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:1.25rem;
+  position:relative;
+  transition:border-color .2s;
+}
+.card:hover{border-color:var(--border2);}
+/* Remove all colored top borders — minimal */
+.card-cyan,.card-amber,.card-violet,.card-rose,.card-blue,.card-teal,.card-green{
+  border-top:1px solid var(--border);
+  box-shadow:none;
+}
+/* Subtle left accent line instead */
+.card-cyan  {border-left:3px solid var(--text);}
+.card-amber {border-left:3px solid var(--amber);}
+.card-violet{border-left:3px solid var(--violet);}
+.card-rose  {border-left:3px solid var(--rose);}
+.card-blue  {border-left:3px solid var(--blue);}
+.card-teal  {border-left:3px solid var(--teal);}
+.card-green {border-left:3px solid var(--green);}
+
+/* ── Typography ── */
+.font-display{font-weight:800;letter-spacing:-.02em;}
+.grad{
+  background:none;
+  -webkit-text-fill-color:var(--text);
+  color:var(--text);
+}
+.slabel{
+  font-size:.62rem;font-weight:600;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--text3);
+}
+
+/* ── Inputs ── */
+.inp{
+  background:var(--surface2);
+  border:1px solid var(--border);
+  border-radius:8px;
+  padding:.52rem .85rem;
+  color:var(--text);
+  font-family:inherit;
+  font-size:.875rem;
+  width:100%;
+  outline:none;
+  transition:border-color .15s,background .2s;
+}
+.inp:focus{border-color:var(--text);background:var(--surface);}
+.inp::placeholder{color:var(--text3);}
+textarea.inp{resize:vertical;min-height:95px;line-height:1.75;}
+.cat-select{
+  background:var(--surface2);border:1px solid var(--border);border-radius:8px;
+  padding:.52rem .7rem;color:var(--text);font-family:inherit;font-size:.8rem;
+  outline:none;cursor:pointer;transition:border-color .15s;
+}
+.cat-select:focus{border-color:var(--text);}
+.target-inp{
+  background:transparent;border:none;border-bottom:1.5px solid var(--border2);
+  color:var(--text);font-weight:700;font-size:.95rem;width:55px;
+  text-align:center;outline:none;font-family:inherit;transition:border-color .15s;
+}
+.target-inp:focus{border-bottom-color:var(--text);}
+.step-target-inp{
+  background:transparent;border:none;border-bottom:1.5px solid var(--border2);
+  color:var(--text);font-weight:700;font-size:.95rem;width:60px;
+  text-align:center;outline:none;font-family:inherit;
+}
+.step-target-inp:focus{border-bottom-color:var(--text);}
+
+/* ── Buttons ── */
+.btn{
+  padding:.48rem 1rem;border-radius:8px;font-size:.84rem;font-weight:600;
+  cursor:pointer;border:none;transition:all .15s;font-family:inherit;
+  display:inline-flex;align-items:center;gap:.4rem;
+}
+/* Primary = filled black/white */
+.btn-cyan{background:var(--accent);color:var(--accent-fg);}
+.btn-cyan:hover{opacity:.85;}
+.btn-violet{background:var(--accent);color:var(--accent-fg);}
+.btn-violet:hover{opacity:.85;}
+/* Ghost = outlined */
+.btn-ghost{
+  background:transparent;color:var(--text2);
+  border:1px solid var(--border);
+}
+.btn-ghost:hover{color:var(--text);border-color:var(--text);}
+/* Danger */
+.btn-danger{
+  background:transparent;color:var(--danger);
+  border:1px solid var(--border);
+}
+.btn-danger:hover{border-color:var(--danger);background:rgba(220,38,38,.04);}
+.btn-icon{
+  width:34px;height:34px;padding:0;border-radius:7px;
+  background:var(--surface2);border:1px solid var(--border);color:var(--text2);
+  cursor:pointer;transition:all .15s;display:inline-flex;
+  align-items:center;justify-content:center;font-family:inherit;
+}
+.btn-icon:hover{background:var(--surface3);color:var(--text);border-color:var(--border2);}
+
+/* ── Checkbox ── */
+.cb-wrap{position:relative;flex-shrink:0;}
+.cb-wrap input{position:absolute;opacity:0;width:0;height:0;}
+.cb-box{
+  width:18px;height:18px;border:1.5px solid var(--border2);
+  border-radius:4px;display:flex;align-items:center;justify-content:center;
+  transition:all .15s;cursor:pointer;background:transparent;
+}
+.cb-wrap input:checked+.cb-box{background:var(--accent);border-color:var(--accent);}
+.cb-wrap input:checked+.cb-box svg{display:block;}
+.cb-box svg{display:none;width:10px;height:10px;}
+
+/* ── Tasks ── */
+.task-row{
+  display:flex;align-items:center;gap:.7rem;
+  padding:.52rem .6rem;border-radius:8px;
+  transition:background .12s;cursor:pointer;
+  border-bottom:1px solid transparent;
+}
+.task-row:hover{background:var(--surface2);}
+.task-row.done .task-lbl{text-decoration:line-through;color:var(--text3);}
+.cat-badge{font-size:.58rem;font-weight:600;padding:.1rem .4rem;border-radius:4px;flex-shrink:0;letter-spacing:.04em;}
+.cat-work    {background:var(--surface2);color:var(--text2);border:1px solid var(--border);}
+.cat-sport   {background:var(--surface2);color:var(--text2);border:1px solid var(--border);}
+.cat-personal{background:var(--surface2);color:var(--text2);border:1px solid var(--border);}
+.cat-health  {background:var(--surface2);color:var(--text2);border:1px solid var(--border);}
+.cat-prayer  {background:var(--surface2);color:var(--text2);border:1px solid var(--border);}
+
+/* ── Progress bar ── */
+.pbar{height:3px;background:var(--surface3);border-radius:99px;overflow:hidden;}
+.pbar-fill{height:100%;border-radius:99px;background:var(--accent);transition:width .5s cubic-bezier(.4,0,.2,1);}
+
+/* ── Delete button ── */
+.delbtn{
+  opacity:0;width:24px;height:24px;border-radius:5px;
+  background:transparent;border:none;cursor:pointer;
+  color:var(--text3);display:inline-flex;align-items:center;
+  justify-content:center;transition:opacity .12s,color .12s;flex-shrink:0;
+}
+.task-row:hover .delbtn,.food-card:hover .delbtn,.log-day-card:hover .delbtn,
+.saved-meal-row:hover .delbtn,.notif-row:hover .delbtn{opacity:1;}
+.delbtn:hover{color:var(--danger);}
+
+/* ── SVG rings ── */
+.rsvg{transform:rotate(-90deg);}
+.rbg{fill:none;stroke:var(--surface3);stroke-width:8;}
+.rfg{fill:none;stroke:var(--text);stroke-width:8;stroke-linecap:round;transition:stroke-dashoffset .6s cubic-bezier(.4,0,.2,1);}
+.steps-ring-wrap{position:relative;width:88px;height:88px;flex-shrink:0;}
+.steps-ring-bg{fill:none;stroke:var(--surface3);stroke-width:8;}
+.steps-ring-fg{fill:none;stroke:var(--text);stroke-width:8;stroke-linecap:round;transition:stroke-dashoffset .6s cubic-bezier(.4,0,.2,1);}
+
+/* ── Meal rows (legacy) ── */
+.meal-row{display:flex;align-items:center;justify-content:space-between;padding:.4rem .6rem;border-radius:7px;animation:fadeUp .2s ease;}
+.meal-row:nth-child(odd){background:var(--surface2);}
+
+/* ── Tab bar ── */
+.tab-btn{
+  padding:.38rem .85rem;border-radius:6px;font-size:.8rem;font-weight:500;
+  cursor:pointer;border:1px solid transparent;
+  background:transparent;color:var(--text3);transition:all .15s;font-family:inherit;
+}
+.tab-btn:hover{color:var(--text2);}
+.tab-btn.active{
+  background:var(--accent);color:var(--accent-fg);
+  border-color:var(--accent);
+}
+
+/* ── Category filter pills ── */
+.fcat-pill{
+  padding:.22rem .65rem;border-radius:99px;font-size:.72rem;font-weight:500;
+  border:1px solid var(--border);color:var(--text3);cursor:pointer;
+  transition:all .12s;font-family:inherit;background:transparent;
+}
+.fcat-pill.active-all,.fcat-pill.active-work,.fcat-pill.active-sport,
+.fcat-pill.active-personal,.fcat-pill.active-health{
+  background:var(--accent);color:var(--accent-fg);border-color:var(--accent);
+}
+
+/* ── Note pills ── */
+.npill{
+  padding:.22rem .65rem;border-radius:99px;font-size:.75rem;font-weight:500;
+  border:1px solid var(--border);color:var(--text3);cursor:pointer;
+  transition:all .12s;font-family:inherit;background:transparent;
+}
+.npill.p-workout,.npill.p-general,.npill.p-food{
+  background:var(--accent);color:var(--accent-fg);border-color:var(--accent);
+}
+
+/* ── Stat badges ── */
+.stat-badge{display:inline-flex;align-items:center;gap:.3rem;padding:.18rem .55rem;border-radius:4px;font-size:.7rem;font-weight:600;}
+.sb-cyan  {background:var(--surface2);color:var(--text2);border:1px solid var(--border);}
+.sb-amber {background:var(--surface2);color:var(--text2);border:1px solid var(--border);}
+.stat-mini{display:flex;flex-direction:column;align-items:center;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:.75rem .5rem;text-align:center;flex:1;min-width:0;}
+
+/* ── Calendar bar ── */
+.cal-bar{display:flex;gap:.3rem;overflow-x:auto;padding-bottom:.25rem;scroll-behavior:smooth;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
+.cal-bar::-webkit-scrollbar{display:none;}
+.cal-day-btn{
+  flex-shrink:0;width:52px;min-height:60px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:.12rem;padding:.4rem .2rem;border-radius:10px;
+  border:1px solid var(--border);background:var(--surface2);
+  cursor:pointer;transition:all .15s;font-family:inherit;
+}
+.cal-day-btn:hover:not(.active){background:var(--surface3);border-color:var(--border2);}
+.cal-day-btn.active{background:var(--accent)!important;border-color:var(--accent)!important;box-shadow:none!important;}
+.cal-day-btn.active .cal-dname,.cal-day-btn.active .cal-dnum{color:var(--accent-fg)!important;}
+.cal-day-btn.has-data{border-color:var(--border2);}
+.cal-day-btn.has-data::after{content:'';display:block;width:3px;height:3px;border-radius:50%;background:var(--text);position:absolute;bottom:5px;}
+.cal-day-btn.has-data.active{background:var(--accent)!important;border-color:var(--accent)!important;}
+.cal-dname{font-size:.52rem;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;}
+.cal-dnum{font-size:1rem;font-weight:700;color:var(--text);}
+.cal-dot{width:3px;height:3px;border-radius:50%;background:var(--text2);margin-top:1px;}
+.viewing-past{
+  background:var(--surface2);border:1px solid var(--border);
+  border-radius:8px;padding:.45rem .8rem;font-size:.78rem;
+  color:var(--text2);display:flex;align-items:center;gap:.45rem;margin-bottom:.8rem;
+}
+
+/* ── Lang toggle & theme ── */
+.lang-toggle{display:flex;align-items:center;background:var(--surface2);border:1px solid var(--border);border-radius:7px;overflow:hidden;}
+.lang-btn{padding:.28rem .55rem;font-size:.75rem;font-weight:600;cursor:pointer;border:none;background:transparent;color:var(--text2);transition:all .12s;font-family:inherit;}
+.lang-btn.active{background:var(--accent);color:var(--accent-fg);}
+.theme-toggle{width:40px;height:22px;border-radius:99px;background:var(--surface2);border:1px solid var(--border);cursor:pointer;position:relative;transition:background .2s;flex-shrink:0;}
+.theme-toggle::after{content:'';position:absolute;top:3px;left:3px;width:14px;height:14px;border-radius:50%;background:var(--accent);transition:transform .2s;}
+[data-theme="dark"] .theme-toggle::after{transform:translateX(18px);}
+[dir="rtl"] .theme-toggle::after{left:auto;right:3px;}
+[dir="rtl"][data-theme="dark"] .theme-toggle::after{transform:translateX(-18px);}
+
+/* ── Toast ── */
+#toast{
+  position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%) translateY(80px);
+  background:var(--accent);color:var(--accent-fg);
+  border-radius:8px;padding:.55rem 1.1rem;font-size:.82rem;font-weight:500;
+  box-shadow:0 4px 20px rgba(0,0,0,.15);z-index:999;
+  transition:transform .3s cubic-bezier(.4,0,.2,1),opacity .3s;
+  opacity:0;pointer-events:none;white-space:nowrap;font-family:inherit;
+}
+
+/* ── Confirm dialog ── */
+#confirmDialog{position:fixed;inset:0;z-index:200;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.4);backdrop-filter:blur(3px);}
+#confirmDialog.open{display:flex;}
+.confirm-box{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1.5rem;max-width:310px;width:90%;box-shadow:0 8px 32px rgba(0,0,0,.12);animation:fadeUp .18s ease;}
+
+/* ── Modals (habit + food) ── */
+#habitModal{position:fixed;inset:0;z-index:300;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.35);backdrop-filter:blur(3px);}
+#habitModal.open{display:flex;}
+.modal-box{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1.5rem;max-width:360px;width:92%;box-shadow:0 8px 32px rgba(0,0,0,.1);animation:fadeUp .18s ease;}
+
+/* ── Note toolbar ── */
+.note-toolbar{display:flex;gap:.3rem;flex-wrap:wrap;margin-bottom:.5rem;align-items:center;}
+.color-swatch{width:20px;height:20px;border-radius:4px;border:2px solid transparent;cursor:pointer;transition:transform .12s,border-color .12s;flex-shrink:0;}
+.color-swatch:hover{transform:scale(1.15);}
+.color-swatch.active-swatch{border-color:var(--text);}
+.note-format-btn{padding:.18rem .45rem;border-radius:5px;font-size:.7rem;font-weight:600;border:1px solid var(--border);background:transparent;color:var(--text2);cursor:pointer;font-family:inherit;transition:all .12s;}
+.note-format-btn:hover{background:var(--surface2);color:var(--text);}
+
+/* ── Food log ── */
+.fm-tab{background:transparent;color:var(--text2);}
+.fm-tab.active{background:var(--surface);color:var(--text);box-shadow:0 1px 4px rgba(0,0,0,.08);}
+.fm-lbl{font-size:.65rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--text3);display:block;margin-bottom:.3rem;}
+.food-card{display:flex;align-items:center;gap:.7rem;padding:.6rem .7rem;border-radius:9px;background:var(--surface2);border:1px solid var(--border);animation:fadeUp .18s ease;position:relative;}
+.food-card:hover{border-color:var(--border2);}
+.food-thumb{width:44px;height:44px;border-radius:7px;object-fit:cover;flex-shrink:0;}
+.food-thumb-placeholder{width:44px;height:44px;border-radius:7px;flex-shrink:0;background:var(--surface3);display:flex;align-items:center;justify-content:center;}
+.food-type-badge{font-size:.57rem;font-weight:600;padding:.1rem .38rem;border-radius:3px;flex-shrink:0;background:var(--surface3);color:var(--text2);border:1px solid var(--border);}
+.food-type-meal,.food-type-product{background:var(--surface3);color:var(--text2);border:1px solid var(--border);}
+.macro-chip{display:flex;flex-direction:column;align-items:center;padding:.4rem .25rem;border-radius:7px;background:var(--surface2);border:1px solid var(--border);}
+
+/* ── Saved meals ── */
+.saved-meal-row{display:flex;align-items:center;gap:.6rem;padding:.5rem .6rem;border-radius:8px;background:var(--surface2);border:1px solid var(--border);transition:border-color .15s;cursor:pointer;}
+.saved-meal-row:hover{border-color:var(--border2);}
+.saved-meal-row:hover .sm-add-btn{opacity:1;background:var(--accent);color:var(--accent-fg);}
+.sm-add-btn{opacity:0;width:26px;height:26px;border-radius:6px;border:1px solid var(--border);background:var(--surface);color:var(--text2);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0;font-family:inherit;}
+.sm-del-btn{opacity:0;width:22px;height:22px;border-radius:5px;background:transparent;border:none;cursor:pointer;color:var(--text3);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.saved-meal-row:hover .sm-del-btn{opacity:1;}
+.sm-del-btn:hover{color:var(--danger);}
+.fm-3tab{flex:1;padding:.38rem .2rem;border-radius:7px;font-size:.75rem;font-weight:500;border:none;cursor:pointer;font-family:inherit;transition:all .15s;background:transparent;color:var(--text2);}
+.fm-3tab.active{background:var(--accent);color:var(--accent-fg);}
+.sm-thumb{width:34px;height:34px;border-radius:6px;object-fit:cover;flex-shrink:0;}
+.sm-thumb-ph{width:34px;height:34px;border-radius:6px;background:var(--surface3);flex-shrink:0;display:flex;align-items:center;justify-content:center;}
+
+/* ── Week charts ── */
+.wbar-wrap{display:flex;flex-direction:column;align-items:center;gap:.25rem;flex:1;}
+.wbar-bg{width:100%;height:80px;background:var(--surface3);border-radius:4px;position:relative;overflow:hidden;}
+.wbar-fill{position:absolute;bottom:0;left:0;right:0;border-radius:4px;transition:height .5s cubic-bezier(.4,0,.2,1);}
+.wbar-lbl{font-size:.58rem;color:var(--text3);font-weight:600;}
+.wbar-val{font-size:.62rem;color:var(--text2);font-weight:700;}
+
+/* ── Log ── */
+.log-month-label{font-size:.62rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);margin-bottom:.5rem;padding:.15rem 0;}
+.log-day-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;transition:border-color .15s;}
+.log-day-card:hover{border-color:var(--border2);}
+.log-day-hdr{display:flex;align-items:center;gap:.7rem;padding:.75rem 1rem;cursor:pointer;user-select:none;transition:background .12s;}
+.log-day-hdr:hover{background:var(--surface2);}
+.log-day-num{width:38px;height:38px;border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0;background:var(--surface2);border:1px solid var(--border);}
+.log-day-num.is-today{background:var(--accent);border-color:var(--accent);}
+.log-day-num.is-today span{color:var(--accent-fg)!important;}
+.log-day-body{display:none;border-top:1px solid var(--border);padding:.8rem 1rem;}
+.log-day-body.open{display:block;}
+.log-stat-pill{display:inline-flex;align-items:center;gap:.25rem;padding:.18rem .5rem;border-radius:4px;font-size:.7rem;font-weight:600;background:var(--surface2);color:var(--text2);border:1px solid var(--border);}
+.log-prog-bar{height:3px;background:var(--surface3);border-radius:99px;overflow:hidden;margin-top:.3rem;}
+.log-prog-fill{height:100%;background:var(--accent);border-radius:99px;transition:width .5s;}
+
+/* ── Misc ── */
+.divider{height:1px;background:var(--border);margin:.75rem 0;}
+.notif-row{display:flex;align-items:center;gap:.7rem;padding:.5rem .6rem;border-radius:8px;background:var(--surface2);margin-bottom:.4rem;border:1px solid var(--border);}
+.log-card{border:1px solid var(--border);border-radius:10px;overflow:hidden;animation:fadeUp .25s ease;}
+.log-hdr{display:flex;align-items:center;justify-content:space-between;padding:.65rem 1rem;cursor:pointer;background:var(--surface2);user-select:none;transition:background .12s;}
+.log-hdr:hover{background:var(--surface3);}
+.log-body{padding:1rem;display:none;border-top:1px solid var(--border);}
+.log-body.open{display:block;}
+
+
+/* ── Section hide/show ── */
+/* section-hide-btn replaced by section-eye — always visible */
+
+/* Manage sections panel */
+#sectionMgr{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:10px;padding:1rem;margin-bottom:1.2rem;
+  animation:fadeUp .18s ease;
+}
+.sec-restore-row{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:.45rem .5rem;border-radius:7px;transition:background .12s;
+}
+.sec-restore-row:hover{background:var(--surface2);}
+
+
+/* ── Workout Planner ── */
+.wp-day-col{display:flex;flex-direction:column;gap:.3rem;}
+.wp-day-header{font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);padding:.3rem .1rem;text-align:center;}
+.wp-day-cell{
+  min-height:38px;border:1px solid var(--border);border-radius:7px;
+  background:var(--surface2);cursor:pointer;transition:border-color .15s,background .15s;
+  display:flex;flex-direction:column;gap:2px;padding:.3rem .4rem;position:relative;
+}
+.wp-day-cell:hover{border-color:var(--border2);background:var(--surface3);}
+.wp-day-cell.rest-day{background:var(--surface);border-style:dashed;}
+.wp-day-cell.has-workout{border-color:var(--text);background:var(--surface);}
+.wp-day-cell.today-col{border-color:var(--accent);border-width:1.5px;}
+.wp-ex-chip{font-size:.6rem;font-weight:600;padding:.05rem .3rem;border-radius:3px;background:var(--surface3);color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;}
+.wp-rest-label{font-size:.6rem;color:var(--text3);text-align:center;margin:auto;}
+
+/* Workout log modal */
+#workoutModal{position:fixed;inset:0;z-index:400;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.4);backdrop-filter:blur(3px);padding:1rem;}
+#workoutModal.open{display:flex;}
+.wm-box{background:var(--surface);border:1px solid var(--border);border-radius:14px;width:100%;max-width:460px;max-height:90vh;overflow-y:auto;box-shadow:0 8px 40px rgba(0,0,0,.15);animation:fadeUp .18s ease;}
+.ex-row{display:flex;align-items:center;gap:.5rem;padding:.45rem .5rem;background:var(--surface2);border:1px solid var(--border);border-radius:8px;animation:fadeUp .15s ease;}
+.ex-row:hover .delbtn{opacity:1;}
+
+/* Section hide toggle — always visible, small icon in card header */
+.section-eye{
+  width:22px;height:22px;border-radius:5px;background:transparent;border:none;
+  cursor:pointer;color:var(--text3);display:inline-flex;align-items:center;
+  justify-content:center;transition:color .12s;flex-shrink:0;padding:0;
+}
+.section-eye:hover{color:var(--text);}
+
+/* ── Animations ── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+@keyframes pop{0%{transform:scale(1)}50%{transform:scale(1.3)}100%{transform:scale(1)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+.pop{animation:pop .2s ease;}
+</style>
+</head>
+<body>
+<div class="bg-mesh"></div>
+
+<!-- CONFIRM DIALOG -->
+<div id="confirmDialog">
+  <div class="confirm-box">
+    <p style="font-size:.95rem;font-weight:600;margin-bottom:.5rem;" id="confirmMsg"></p>
+    <p style="font-size:.8rem;color:var(--text2);margin-bottom:1.25rem;" id="confirmSub"></p>
+    <div style="display:flex;gap:.6rem;justify-content:flex-end;">
+      <button class="btn btn-ghost" id="confirmCancel"></button>
+      <button class="btn btn-danger" id="confirmOk"></button>
+    </div>
+  </div>
+</div>
+
+<!-- HABIT MODAL -->
+<div id="habitModal">
+  <div class="modal-box">
+    <h3 class="font-display" style="font-size:1rem;font-weight:700;margin-bottom:1rem;" id="modalTitle">إضافة عادة مخصصة</h3>
+    <input class="inp" id="habitNameInp" type="text" maxlength="60" style="margin-bottom:.6rem;" placeholder="اسم العادة…"/>
+    <select class="cat-select inp" id="habitCatInp" style="margin-bottom:1rem;">
+      <option value="personal">شخصي</option>
+      <option value="work">شغل</option>
+      <option value="sport">رياضة</option>
+      <option value="health">صحة</option>
+      <option value="prayer">دين/صلاة</option>
+    </select>
+    <div style="display:flex;gap:.6rem;justify-content:flex-end;">
+      <button class="btn btn-ghost" id="habitCancelBtn">إلغاء</button>
+      <button class="btn btn-cyan" id="habitSaveBtn">إضافة</button>
+    </div>
+  </div>
+</div>
+
+<!-- HEADER -->
+<header style="background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:50;" id="mainHeader">
+  <div style="max-width:1000px;margin:0 auto;padding:.7rem 1rem;display:flex;align-items:center;justify-content:space-between;gap:.75rem;">
+    <div style="display:flex;align-items:center;gap:.6rem;flex-shrink:0;">
+      <svg width="24" height="24" viewBox="0 0 32 32" fill="none"><circle cx="16" cy="16" r="14" fill="transparent" stroke="var(--text)" stroke-width="1.5"/><path d="M16 9v7l4 3" stroke="var(--text)" stroke-width="2" stroke-linecap="round"/></svg>
+      <span class="font-display grad" style="font-size:1.25rem;font-weight:800;" id="logoText">يومي</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;justify-content:flex-end;">
+      <span id="headerDate" style="font-size:.75rem;color:var(--text2);"></span>
+      <div class="lang-toggle">
+        <button class="lang-btn active" id="btnEN" onclick="setLang('en')">EN</button>
+        <button class="lang-btn" id="btnAR" onclick="setLang('ar')">ع</button>
+      </div>
+      <div style="display:flex;align-items:center;gap:.4rem;">
+        <span style="font-size:.8rem;">🌙</span>
+        <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme"></button>
+        <span style="font-size:.8rem;">☀️</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main style="max-width:1000px;margin:0 auto;padding:1.5rem 1rem;position:relative;z-index:1;">
+  <div style="margin-bottom:1.5rem;">
+    <h1 class="font-display" id="greeting" style="-webkit-text-fill-color:var(--text);" style="font-size:2rem;font-weight:800;line-height:1.15;margin-bottom:.3rem;"></h1>
+    <p id="subGreeting" style="font-size:.875rem;color:var(--text2);"></p>
+  </div>
+
+  <!-- Tabs -->
+  <div style="display:flex;gap:.5rem;margin-bottom:1.25rem;flex-wrap:wrap;" id="tabBar">
+    <button class="tab-btn active" data-tab="today"  id="tabToday"></button>
+    <button class="tab-btn"        data-tab="notes"  id="tabNotes"></button>
+    <button class="tab-btn"        data-tab="week"   id="tabWeek"></button>
+    <button class="tab-btn"        data-tab="workout" id="tabWorkout">Workout</button>
+    <div style="display:flex;align-items:center;gap:.25rem;">
+      <button class="tab-btn" data-tab="log" id="tabLog"></button>
+      <button id="manageSectionsBtn" title="Show / Hide sections" style="height:32px;padding:0 .55rem;border-radius:7px;background:transparent;border:1px solid var(--border);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;color:var(--text3);transition:all .15s;font-family:inherit;" onmouseover="this.style.borderColor='var(--border2)';this.style.color='var(--text)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text3)'">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- ══ TAB: TODAY ══ -->
+  <div id="tab-today">
+    <!-- Calendar / day navigator -->
+    <div class="card" style="margin-bottom:1.2rem;padding:1rem;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.65rem;">
+        <span class="slabel" id="lblCalNav">التنقل بين الأيام</span>
+<button class="btn btn-ghost" style="font-size:.73rem;padding:.3rem .7rem;" id="jumpTodayBtn">Today</button>
+      </div>
+      <div class="cal-bar" id="calBar"></div>
+    </div>
+    <!-- Past-day banner -->
+    <div class="viewing-past" id="pastBanner" style="display:none;">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      <span id="pastBannerText"></span>
+    </div>
+
+    <div class="mgrid">
+      <!-- LEFT -->
+      <div class="scol">
+        <!-- HABITS / TASKS -->
+        <div class="card card-cyan" id="sectionHabits">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">
+            <div style="display:flex;align-items:center;gap:.4rem;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text2)" stroke-width="2" stroke-linecap="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+              <h2 class="font-display" style="font-size:1rem;font-weight:700;" id="titleHabits"></h2>
+              <button class="section-eye" data-section="habits" title="Hide section">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+              </button>
+            </div>
+            <div style="display:flex;gap:.4rem;">
+              <button class="btn btn-ghost" style="font-size:.73rem;padding:.3rem .65rem;" id="addHabitBtn">+ <span id="lblAddHabit">عادة</span></button>
+              <button class="btn btn-ghost" style="font-size:.75rem;padding:.35rem .75rem;" id="resetDayBtn"></button>
+            </div>
+          </div>
+          <!-- Category filter pills -->
+          <div style="display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:.85rem;" id="catFilterBar">
+            <button class="fcat-pill active-all" data-fcat="all"     id="fcatAll"></button>
+            <button class="fcat-pill"            data-fcat="work"    id="fcatWork"></button>
+            <button class="fcat-pill"            data-fcat="sport"   id="fcatSport"></button>
+            <button class="fcat-pill"            data-fcat="personal"id="fcatPersonal"></button>
+            <button class="fcat-pill"            data-fcat="health"  id="fcatHealth"></button>
+          </div>
+          <!-- Progress -->
+          <div style="margin-bottom:1rem;">
+            <div style="display:flex;justify-content:space-between;font-size:.75rem;color:var(--text2);margin-bottom:.5rem;">
+              <span id="lblProgress"></span><span id="progressLabel"></span>
+            </div>
+            <div class="pbar"><div class="pbar-fill" id="progressBar" style="width:0%"></div></div>
+          </div>
+          <!-- Task list -->
+          <div id="taskList" style="display:flex;flex-direction:column;gap:.2rem;margin-bottom:1rem;"></div>
+          <!-- Add task row -->
+          <div style="display:flex;gap:.5rem;flex-wrap:wrap;">
+            <input class="inp" style="flex:1;min-width:120px;" id="newTaskInput" type="text" maxlength="60"/>
+            <select class="cat-select" id="newTaskCat">
+              <option value="personal" id="optPersonal"></option>
+              <option value="work"     id="optWork"></option>
+              <option value="sport"    id="optSport"></option>
+              <option value="health"   id="optHealth"></option>
+              <option value="prayer"   id="optPrayer"></option>
+            </select>
+            <button class="btn btn-cyan flex-shrink-0" id="addTaskBtn"></button>
+          </div>
+        </div>
+
+        <!-- STEPS -->
+        <div class="card card-teal" id="sectionSteps">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">
+            <div style="display:flex;align-items:center;gap:.4rem;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text2)" stroke-width="2" stroke-linecap="round"><path d="M13 4H9l-5 9h4l-2 7 11-11h-4l3-5z"/></svg>
+              <h2 class="font-display" style="font-size:1rem;font-weight:700;" id="titleSteps">الخطوات اليومية</h2>
+              <button class="section-eye" data-section="steps" title="Hide section">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+              </button>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:1.25rem;margin-bottom:1rem;">
+            <div class="steps-ring-wrap">
+              <svg width="90" height="90" style="transform:rotate(-90deg)" viewBox="0 0 90 90">
+                <circle class="steps-ring-bg" cx="45" cy="45" r="36"/>
+                <circle class="steps-ring-fg" id="stepsRing" cx="45" cy="45" r="36" stroke-dasharray="226.2" stroke-dashoffset="226.2"/>
+              </svg>
+              <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;">
+                <span style="font-size:1.1rem;font-weight:800;color:var(--text);" id="stepsCount">0</span>
+                <span style="font-size:.58rem;color:var(--text3);" id="lblStepsUnit">خطوة</span>
+              </div>
+            </div>
+            <div style="flex:1;">
+              <div style="display:flex;align-items:center;gap:.3rem;font-size:.82rem;color:var(--text2);margin-bottom:.5rem;">
+                <span id="lblStepTarget">الهدف:</span>
+                <input class="step-target-inp" id="stepsTargetInput" type="number" min="1000" max="99999" value="10000"/>
+                <span id="lblStepsUnitGoal">خطوة</span>
+              </div>
+              <p style="font-size:.75rem;color:var(--text2);" id="stepsRemaining"></p>
+            </div>
+          </div>
+          <div style="display:flex;gap:.5rem;">
+            <input class="inp" id="stepsInput" type="number" min="0" max="99999" style="flex:1;" placeholder="0"/>
+            <button class="btn btn-cyan" id="logStepsBtn" style="flex-shrink:0;">
+              <span id="lblLogSteps">تسجيل</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- FOOD LOG -->
+        <div class="card card-amber" id="sectionCalories">
+          <!-- Header -->
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">
+            <div style="display:flex;align-items:center;gap:.4rem;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text2)" stroke-width="2" stroke-linecap="round"><path d="M8.5 14.5A2.5 2.5 0 0011 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 01-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 002.5 3z"/></svg>
+              <h2 class="font-display" style="font-size:1rem;font-weight:700;" id="titleCalories"></h2>
+              <button class="section-eye" data-section="calories" title="Hide section">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+              </button>
+            </div>
+            <button class="btn btn-cyan" id="openFoodModalBtn" style="font-size:.78rem;padding:.38rem .8rem;gap:.35rem;">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              <span id="lblAddFood">Add Food</span>
+            </button>
+          </div>
+
+          <!-- Summary ring + stats -->
+          <div style="display:flex;align-items:center;gap:1.25rem;margin-bottom:1.2rem;">
+            <div style="position:relative;flex-shrink:0;width:108px;height:108px;">
+              <svg width="108" height="108" class="rsvg" viewBox="0 0 108 108">
+                <circle class="rbg" cx="54" cy="54" r="44"/>
+                <circle class="rfg" id="calRing" cx="54" cy="54" r="44" stroke-dasharray="276.46" stroke-dashoffset="276.46"/>
+              </svg>
+              <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;">
+                <span style="font-size:1.2rem;font-weight:800;color:var(--text);" id="calTotal">0</span>
+                <span style="font-size:.65rem;color:var(--text3);">kcal</span>
+              </div>
+            </div>
+            <div style="flex:1;">
+              <p style="font-size:.75rem;color:var(--text2);" id="lblConsumed"></p>
+              <p style="font-size:1.4rem;font-weight:800;line-height:1.2;" id="calTotalBig">0 <span style="font-size:.85rem;color:var(--text2);font-weight:400;">kcal</span></p>
+              <div style="display:flex;align-items:center;gap:.3rem;font-size:.82rem;color:var(--text2);margin-top:.4rem;">
+                <span id="lblTarget"></span>
+                <input class="target-inp" id="calTargetInput" type="number" min="500" max="9999" value="2500"/>
+                <span>kcal</span>
+              </div>
+              <p style="font-size:.75rem;margin-top:.3rem;" id="calRemaining"></p>
+            </div>
+          </div>
+
+          <!-- Macro mini-bars -->
+          <div id="macroBar" style="display:grid;grid-template-columns:repeat(3,1fr);gap:.5rem;margin-bottom:1rem;"></div>
+
+          <!-- Food log list -->
+          <div class="slabel" style="margin-bottom:.6rem;" id="lblMealLog"></div>
+          <div id="mealList" style="display:flex;flex-direction:column;gap:.4rem;max-height:260px;overflow-y:auto;">
+            <p style="font-size:.82rem;color:var(--text3);text-align:center;padding:1.25rem 0;" id="emptyMeals"></p>
+          </div>
+          <button class="btn btn-danger" style="width:100%;justify-content:center;margin-top:.75rem;font-size:.78rem;" id="clearMealsBtn"></button>
+        </div>
+      </div>
+
+      <!-- RIGHT: Notes card (desktop) -->
+      <div class="scol">
+        <div class="card card-violet" id="sectionNotes">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">
+            <div style="display:flex;align-items:center;gap:.4rem;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text2)" stroke-width="2" stroke-linecap="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+              <h2 class="font-display" style="font-size:1rem;font-weight:700;" id="titleNotes"></h2>
+              <button class="section-eye" data-section="notes" title="Hide section">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+              </button>
+            </div>
+          </div>
+          <div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:.75rem;" id="pillsDesktop">
+            <button class="npill p-workout" data-cat="workout">🏋️ <span class="pill-lbl" data-key="workout"></span></button>
+            <button class="npill p-general" data-cat="general">📝 <span class="pill-lbl" data-key="general"></span></button>
+            <button class="npill p-food"    data-cat="food">🥗 <span class="pill-lbl" data-key="food"></span></button>
+          </div>
+          <!-- Color toolbar desktop -->
+          <div class="note-toolbar" id="noteToolbarD">
+            <span class="slabel" style="margin-left:.2rem;margin-right:.2rem;">🎨</span>
+            <div class="color-swatch active-swatch" data-color="" style="background:var(--text);border-color:var(--text3);" title="عادي"></div>
+            <div class="color-swatch" data-color="#22d3ee" style="background:#22d3ee;" title="سماوي"></div>
+            <div class="color-swatch" data-color="#fbbf24" style="background:#fbbf24;" title="ذهبي"></div>
+            <div class="color-swatch" data-color="#fb7185" style="background:#fb7185;" title="وردي"></div>
+            <div class="color-swatch" data-color="#a78bfa" style="background:#a78bfa;" title="بنفسجي"></div>
+            <div class="color-swatch" data-color="#4ade80" style="background:#4ade80;" title="أخضر"></div>
+            <div class="color-swatch" data-color="#fb923c" style="background:#fb923c;" title="برتقالي"></div>
+          </div>
+          <div id="dpanel-workout" class="dnote-panel">
+            <div id="note-preview-dw" style="min-height:95px;padding:.5rem .85rem;font-size:.875rem;line-height:1.75;background:var(--surface2);border:1.5px solid var(--border);border-radius:10px;outline:none;white-space:pre-wrap;word-break:break-word;" contenteditable="true" data-note="workout"></div>
+          </div>
+          <div id="dpanel-general" class="dnote-panel" style="display:none;">
+            <div id="note-preview-dg" style="min-height:95px;padding:.5rem .85rem;font-size:.875rem;line-height:1.75;background:var(--surface2);border:1.5px solid var(--border);border-radius:10px;outline:none;white-space:pre-wrap;word-break:break-word;" contenteditable="true" data-note="general"></div>
+          </div>
+          <div id="dpanel-food" class="dnote-panel" style="display:none;">
+            <div id="note-preview-df" style="min-height:95px;padding:.5rem .85rem;font-size:.875rem;line-height:1.75;background:var(--surface2);border:1.5px solid var(--border);border-radius:10px;outline:none;white-space:pre-wrap;word-break:break-word;" contenteditable="true" data-note="food"></div>
+          </div>
+          <button class="btn btn-cyan" style="width:100%;justify-content:center;margin-top:.9rem;" id="saveNotesDesktop"></button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ TAB: NOTES (full page) ══ -->
+  <div id="tab-notes" style="display:none;">
+    <div class="card card-violet">
+      <div style="display:flex;align-items:center;gap:.6rem;margin-bottom:1rem;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--violet)" stroke-width="2" stroke-linecap="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        <h2 class="font-display" style="font-size:1rem;font-weight:700;" id="titleNotesMob"></h2>
+      </div>
+      <div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:.75rem;" id="pillsMobile">
+        <button class="npill p-workout" data-cat="workout">🏋️ <span class="pill-lbl" data-key="workout"></span></button>
+        <button class="npill p-general" data-cat="general">📝 <span class="pill-lbl" data-key="general"></span></button>
+        <button class="npill p-food"    data-cat="food">🥗 <span class="pill-lbl" data-key="food"></span></button>
+      </div>
+      <div class="note-toolbar" id="noteToolbarM">
+        <span class="slabel" style="margin:0 .2rem;">🎨</span>
+        <div class="color-swatch active-swatch" data-color="" style="background:var(--text);border-color:var(--text3);" title="عادي"></div>
+        <div class="color-swatch" data-color="#22d3ee" style="background:#22d3ee;"></div>
+        <div class="color-swatch" data-color="#fbbf24" style="background:#fbbf24;"></div>
+        <div class="color-swatch" data-color="#fb7185" style="background:#fb7185;"></div>
+        <div class="color-swatch" data-color="#a78bfa" style="background:#a78bfa;"></div>
+        <div class="color-swatch" data-color="#4ade80" style="background:#4ade80;"></div>
+        <div class="color-swatch" data-color="#fb923c" style="background:#fb923c;"></div>
+      </div>
+      <div id="mpanel-workout" class="mnote-panel">
+        <div id="note-preview-mw" style="min-height:120px;padding:.5rem .85rem;font-size:.875rem;line-height:1.75;background:var(--surface2);border:1.5px solid var(--border);border-radius:10px;outline:none;white-space:pre-wrap;word-break:break-word;" contenteditable="true" data-note="workout"></div>
+      </div>
+      <div id="mpanel-general" class="mnote-panel" style="display:none;">
+        <div id="note-preview-mg" style="min-height:120px;padding:.5rem .85rem;font-size:.875rem;line-height:1.75;background:var(--surface2);border:1.5px solid var(--border);border-radius:10px;outline:none;white-space:pre-wrap;word-break:break-word;" contenteditable="true" data-note="general"></div>
+      </div>
+      <div id="mpanel-food" class="mnote-panel" style="display:none;">
+        <div id="note-preview-mf" style="min-height:120px;padding:.5rem .85rem;font-size:.875rem;line-height:1.75;background:var(--surface2);border:1.5px solid var(--border);border-radius:10px;outline:none;white-space:pre-wrap;word-break:break-word;" contenteditable="true" data-note="food"></div>
+      </div>
+      <button class="btn btn-cyan" style="width:100%;justify-content:center;margin-top:.9rem;" id="saveNotesMobile"></button>
+    </div>
+  </div>
+
+  <!-- ══ TAB: WEEK STATS ══ -->
+  <div id="tab-week" style="display:none;">
+    <div class="scol">
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:.75rem;margin-bottom:1.2rem;">
+        <div class="stat-mini card-cyan" style="border:1px solid var(--border2);">
+          <span style="font-size:1.4rem;font-weight:800;color:var(--text);" id="wAvgTasks">—</span>
+          <span style="font-size:.65rem;color:var(--text2);margin-top:.2rem;" id="wLblAvgTasks"></span>
+        </div>
+        <div class="stat-mini" style="border:1px solid var(--border2);">
+          <span style="font-size:1.4rem;font-weight:800;color:var(--text);" id="wAvgCal">—</span>
+          <span style="font-size:.65rem;color:var(--text2);margin-top:.2rem;" id="wLblAvgCal"></span>
+        </div>
+        <div class="stat-mini" style="border:1px solid var(--border2);">
+          <span style="font-size:1.4rem;font-weight:800;color:var(--text);" id="wBestDay">—</span>
+          <span style="font-size:.65rem;color:var(--text2);margin-top:.2rem;" id="wLblBestDay"></span>
+        </div>
+      </div>
+      <div class="card card-cyan">
+        <div style="display:flex;align-items:center;gap:.6rem;margin-bottom:1rem;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--cyan)" stroke-width="2" stroke-linecap="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          <h2 class="font-display" style="font-size:1rem;font-weight:700;" id="wTitleTasks"></h2>
+        </div>
+        <div style="display:flex;gap:.5rem;align-items:flex-end;height:110px;" id="wTaskChart"></div>
+        <div style="display:flex;gap:.5rem;margin-top:.4rem;" id="wTaskChartLabels"></div>
+      </div>
+      <div class="card card-amber">
+        <div style="display:flex;align-items:center;gap:.6rem;margin-bottom:1rem;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--amber)" stroke-width="2" stroke-linecap="round"><path d="M8.5 14.5A2.5 2.5 0 0011 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 01-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 002.5 3z"/></svg>
+          <h2 class="font-display" style="font-size:1rem;font-weight:700;" id="wTitleCal"></h2>
+        </div>
+        <div style="display:flex;gap:.5rem;align-items:flex-end;height:110px;" id="wCalChart"></div>
+        <div style="display:flex;gap:.5rem;margin-top:.4rem;" id="wCalChartLabels"></div>
+      </div>
+      <div class="card card-violet">
+        <div style="display:flex;align-items:center;gap:.6rem;margin-bottom:1rem;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--violet)" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+          <h2 class="font-display" style="font-size:1rem;font-weight:700;" id="wTitleCats"></h2>
+        </div>
+        <div id="wCatBreakdown" style="display:flex;flex-direction:column;gap:.5rem;"></div>
+      </div>
+    </div>
+  </div>
+
+
+
+  <!-- ══ TAB: WORKOUT PLANNER ══ -->
+  <div id="tab-workout" style="display:none;">
+
+    <!-- Weekly Schedule Grid -->
+    <div class="card" style="margin-bottom:1.2rem;" id="sectionWorkoutPlanner">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">
+        <div style="display:flex;align-items:center;gap:.5rem;">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--text2)" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          <h2 class="font-display" style="font-size:1rem;font-weight:700;">Weekly Schedule</h2>
+        </div>
+        <div style="display:flex;gap:.4rem;align-items:center;">
+          <button class="btn btn-ghost" style="font-size:.72rem;padding:.28rem .65rem;" id="wpClearWeekBtn">Clear Week</button>
+        </div>
+      </div>
+      <!-- 7-day grid -->
+      <div id="wpGrid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:.35rem;"></div>
+    </div>
+
+    <!-- Today's Workout Log -->
+    <div class="card" id="sectionWorkoutLog">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">
+        <div style="display:flex;align-items:center;gap:.5rem;">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--text2)" stroke-width="2" stroke-linecap="round"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg>
+          <h2 class="font-display" style="font-size:1rem;font-weight:700;" id="wpLogTitle">Today's Exercises</h2>
+        </div>
+        <button class="btn btn-ghost" style="font-size:.72rem;padding:.28rem .65rem;" id="wpAddExBtn">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Add Exercise
+        </button>
+      </div>
+      <!-- Exercise list -->
+      <div id="wpExList" style="display:flex;flex-direction:column;gap:.4rem;margin-bottom:.75rem;"></div>
+      <p id="wpExEmpty" style="font-size:.82rem;color:var(--text3);text-align:center;padding:1rem 0;">No exercises logged yet.</p>
+      <!-- Inline add row -->
+      <div id="wpAddRow" style="display:none;background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:.7rem;margin-top:.5rem;">
+        <div style="display:grid;grid-template-columns:1fr auto auto auto;gap:.4rem;align-items:center;">
+          <input class="inp" id="wpExName" type="text" maxlength="50" placeholder="Exercise name…" style="font-size:.82rem;"/>
+          <input class="inp" id="wpExSets" type="number" min="1" max="99" placeholder="Sets" style="width:58px;font-size:.82rem;text-align:center;"/>
+          <input class="inp" id="wpExReps" type="number" min="1" max="999" placeholder="Reps" style="width:58px;font-size:.82rem;text-align:center;"/>
+          <button class="btn btn-cyan" id="wpExSaveBtn" style="padding:.45rem .75rem;font-size:.8rem;">Add</button>
+        </div>
+        <div style="display:flex;gap:.4rem;margin-top:.4rem;flex-wrap:wrap;" id="wpQuickFills"></div>
+      </div>
+      <!-- Total sets summary -->
+      <div id="wpSummary" style="display:none;margin-top:.75rem;padding:.6rem .75rem;background:var(--surface2);border-radius:8px;border:1px solid var(--border);font-size:.78rem;color:var(--text2);"></div>
+    </div>
+  </div>
+
+  <!-- ══ TAB: LOG ══ -->
+  <div id="tab-log" style="display:none;">
+    <!-- Month/year header -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">
+      <div style="display:flex;align-items:center;gap:.6rem;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--rose)" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        <h2 class="font-display" style="font-size:1rem;font-weight:700;" id="titleLog"></h2>
+      </div>
+      <span style="font-size:.75rem;color:var(--text2);" id="logCount"></span>
+    </div>
+    <!-- Month groups rendered here -->
+    <div id="logList" style="display:flex;flex-direction:column;gap:1.25rem;">
+      <p style="font-size:.85rem;color:var(--text3);text-align:center;padding:3rem 0;" id="emptyLog"></p>
+    </div>
+  </div>
+
+<!-- WORKOUT DAY MODAL -->
+<div id="workoutModal">
+  <div class="wm-box">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:1rem 1.2rem .8rem;border-bottom:1px solid var(--border);">
+      <h3 class="font-display" style="font-size:.95rem;font-weight:700;" id="wmTitle">Edit Day</h3>
+      <button id="closeWorkoutModal" style="width:28px;height:28px;border-radius:6px;background:var(--surface2);border:1px solid var(--border);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text2);">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div style="padding:1rem 1.2rem;">
+      <!-- Rest day toggle -->
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;padding:.6rem .75rem;background:var(--surface2);border-radius:8px;border:1px solid var(--border);">
+        <div style="display:flex;align-items:center;gap:.5rem;">
+          <span style="font-size:.84rem;font-weight:500;">Rest Day</span>
+          <span style="font-size:.72rem;color:var(--text3);">😴</span>
+        </div>
+        <label class="cb-wrap">
+          <input type="checkbox" id="wmRestChk"/>
+          <div class="cb-box"><svg viewBox="0 0 13 13" fill="none" stroke="var(--accent-fg)" stroke-width="2.5" stroke-linecap="round"><polyline points="1.5 7 5 10.5 11.5 2.5"/></svg></div>
+        </label>
+      </div>
+      <!-- Muscle group focus -->
+      <div style="margin-bottom:.8rem;">
+        <label class="fm-lbl">Focus / Muscle Group</label>
+        <input class="inp" id="wmFocus" type="text" maxlength="60" placeholder="e.g. Chest & Triceps, Legs, Full Body…" style="font-size:.84rem;"/>
+      </div>
+      <!-- Notes -->
+      <div style="margin-bottom:1rem;">
+        <label class="fm-lbl">Notes</label>
+        <textarea class="inp" id="wmNotes" maxlength="300" rows="3" placeholder="Any notes for this day…" style="font-size:.84rem;resize:none;"></textarea>
+      </div>
+      <button class="btn btn-cyan" id="wmSaveBtn" style="width:100%;justify-content:center;">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ FOOD LOG MODAL ══ -->
+<div id="foodModal" style="position:fixed;inset:0;z-index:400;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.65);backdrop-filter:blur(6px);padding:1rem;">
+  <div style="background:var(--surface);border:1px solid var(--border2);border-radius:20px;width:100%;max-width:440px;max-height:90vh;overflow-y:auto;box-shadow:0 24px 64px rgba(0,0,0,.5);animation:fadeUp .22s ease;">
+    <!-- Modal header -->
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:1.1rem 1.3rem .8rem;border-bottom:1px solid var(--border);">
+      <h3 class="font-display" style="font-size:1rem;font-weight:700;" id="fmTitle">Add Food</h3>
+      <button id="closeFoodModal" style="width:30px;height:30px;border-radius:8px;background:var(--surface2);border:1px solid var(--border);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text2);">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+
+    <div style="padding:1.1rem 1.3rem;">
+      <!-- Type toggle tabs (3 tabs) -->
+      <div style="display:flex;gap:.3rem;background:var(--surface2);border-radius:10px;padding:.25rem;margin-bottom:1.1rem;">
+        <button class="fm-3tab active" id="fmTabMeal">🍽️ <span id="lblFmTabMeal">Ready Meal</span></button>
+        <button class="fm-3tab" id="fmTabProduct">⚖️ <span id="lblFmTabProduct">By Weight</span></button>
+        <button class="fm-3tab" id="fmTabSaved">⭐ <span id="lblFmTabSaved">Saved</span></button>
+      </div>
+
+      <!-- Image upload -->
+      <div style="margin-bottom:.85rem;">
+        <label id="fmImgLabel" style="font-size:.7rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);display:block;margin-bottom:.4rem;">Photo (optional)</label>
+        <div id="fmImgDrop" style="border:2px dashed var(--border2);border-radius:12px;padding:.75rem;display:flex;align-items:center;gap:.75rem;cursor:pointer;transition:border-color .2s;position:relative;overflow:hidden;">
+          <div id="fmImgPreviewWrap" style="width:52px;height:52px;border-radius:9px;background:var(--surface2);flex-shrink:0;overflow:hidden;display:flex;align-items:center;justify-content:center;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text3)" stroke-width="1.5" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          </div>
+          <div>
+            <p style="font-size:.82rem;font-weight:600;color:var(--text2);" id="fmImgHint">Click or drag an image</p>
+            <p style="font-size:.72rem;color:var(--text3);">JPG, PNG, WebP · max 2 MB</p>
+          </div>
+          <input type="file" id="fmImgInput" accept="image/*" style="position:absolute;inset:0;opacity:0;cursor:pointer;"/>
+        </div>
+      </div>
+
+      <!-- ── PANEL: Ready Meal ── -->
+      <div id="fmPanelMeal">
+        <div style="margin-bottom:.65rem;">
+          <label class="fm-lbl" id="fmLblName1">Meal Name</label>
+          <input class="inp" id="fmMealName" type="text" maxlength="60" placeholder="e.g. Grilled Chicken…"/>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.55rem;margin-bottom:.65rem;">
+          <div>
+            <label class="fm-lbl" id="fmLblKcal">Total Calories</label>
+            <input class="inp" id="fmMealKcal" type="number" min="1" max="9999" placeholder="kcal"/>
+          </div>
+          <div>
+            <label class="fm-lbl" id="fmLblProtein">Protein (g) <span style="color:var(--text3);font-weight:400;">opt.</span></label>
+            <input class="inp" id="fmMealProtein" type="number" min="0" max="999" placeholder="g"/>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.55rem;margin-bottom:.9rem;">
+          <div>
+            <label class="fm-lbl" id="fmLblCarbs">Carbs (g) <span style="color:var(--text3);font-weight:400;">opt.</span></label>
+            <input class="inp" id="fmMealCarbs" type="number" min="0" max="999" placeholder="g"/>
+          </div>
+          <div>
+            <label class="fm-lbl" id="fmLblFat">Fat (g) <span style="color:var(--text3);font-weight:400;">opt.</span></label>
+            <input class="inp" id="fmMealFat" type="number" min="0" max="999" placeholder="g"/>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── PANEL: By Weight (Product) ── -->
+      <div id="fmPanelProduct" style="display:none;">
+        <div style="margin-bottom:.65rem;">
+          <label class="fm-lbl" id="fmLblProdName">Product Name</label>
+          <input class="inp" id="fmProdName" type="text" maxlength="60" placeholder="e.g. Oats…"/>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.55rem;margin-bottom:.65rem;">
+          <div>
+            <label class="fm-lbl" id="fmLblBaseKcal">Calories</label>
+            <input class="inp" id="fmProdBaseKcal" type="number" min="1" max="9999" placeholder="kcal"/>
+          </div>
+          <div>
+            <label class="fm-lbl" id="fmLblBasePer">Per (g)</label>
+            <input class="inp" id="fmProdBaseG" type="number" min="1" max="9999" placeholder="100"/>
+          </div>
+        </div>
+        <div style="margin-bottom:.65rem;">
+          <label class="fm-lbl" id="fmLblAmount">Amount Consumed (g)</label>
+          <input class="inp" id="fmProdAmount" type="number" min="1" max="9999" placeholder="e.g. 150"/>
+        </div>
+        <!-- Live calc preview -->
+        <div id="fmCalcPreview" style="background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.2);border-radius:10px;padding:.6rem .85rem;margin-bottom:.9rem;display:none;">
+          <span style="font-size:.78rem;color:var(--text2);" id="fmCalcLabel">Calculated:</span>
+          <span style="font-size:1.1rem;font-weight:800;color:var(--amber);margin-left:.4rem;" id="fmCalcValue">—</span>
+          <span style="font-size:.75rem;color:var(--text2);"> kcal</span>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:.55rem;margin-bottom:.9rem;">
+          <div>
+            <label class="fm-lbl" id="fmLblProdProtein">Protein (g) <span style="color:var(--text3);font-weight:400;">opt.</span></label>
+            <input class="inp" id="fmProdProtein" type="number" min="0" max="999" placeholder="g"/>
+          </div>
+          <div>
+            <label class="fm-lbl" id="fmLblProdCarbs">Carbs (g) <span style="color:var(--text3);font-weight:400;">opt.</span></label>
+            <input class="inp" id="fmProdCarbs" type="number" min="0" max="999" placeholder="g"/>
+          </div>
+          <div>
+            <label class="fm-lbl" id="fmLblProdFat">Fat (g) <span style="color:var(--text3);font-weight:400;">opt.</span></label>
+            <input class="inp" id="fmProdFat" type="number" min="0" max="999" placeholder="g"/>
+          </div>
+        </div>
+      </div>
+
+
+      <!-- ── PANEL: Saved Meals ── -->
+      <div id="fmPanelSaved" style="display:none;">
+        <div style="margin-bottom:.65rem;">
+          <input class="inp" id="smSearch" type="text" placeholder="Search saved meals…" style="margin-bottom:.6rem;"/>
+        </div>
+        <div id="smList" style="display:flex;flex-direction:column;gap:.4rem;max-height:280px;overflow-y:auto;">
+          <p id="smEmpty" style="font-size:.82rem;color:var(--text3);text-align:center;padding:1.5rem 0;">No saved meals yet.<br><span style="font-size:.75rem;">Log a meal to save it here.</span></p>
+        </div>
+      </div>
+
+      <!-- Save toggle + Submit -->
+      <div id="fmSaveRow" style="display:flex;align-items:center;gap:.55rem;margin-bottom:.7rem;padding:.55rem .7rem;background:rgba(251,191,36,.06);border:1px solid rgba(251,191,36,.15);border-radius:10px;">
+        <label class="cb-wrap" style="flex-shrink:0;">
+          <input type="checkbox" id="fmSaveChk" checked/>
+          <div class="cb-box"><svg viewBox="0 0 13 13" fill="none" stroke="#080b10" stroke-width="2.5" stroke-linecap="round"><polyline points="1.5 7 5 10.5 11.5 2.5"/></svg></div>
+        </label>
+        <span style="font-size:.8rem;color:var(--text2);" id="fmSaveLabel">Save to my meals library</span>
+        <span style="font-size:.7rem;color:var(--text3);margin-right:auto;">⭐</span>
+      </div>
+      <button class="btn btn-cyan" id="fmSubmitBtn" style="width:100%;justify-content:center;font-size:.9rem;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        <span id="fmSubmitLbl">Log Food</span>
+      </button>
+    </div>
+  </div>
+</div>
+</main>
+
+<div id="toast"></div>
+
+<script>
+/* ================================================================
+   يومي v3 — Full Rebuild
+   ✔ Dynamic History (edit past days)
+   ✔ Advanced Timer HH:MM:SS
+   ✔ Persistent Calorie & Step Targets
+   ✔ Manual Step Tracker with goal
+   ✔ Custom Task Creation + DELETE any task
+   ✔ Colored Notes / Text Highlight
+   ✔ Browser Notification Activation
+   ✔ Bulletproof Data Persistence (date-keyed localStorage + Firebase)
+================================================================ */
+
+// ── i18n ─────────────────────────────────────────────────────────
+const T = {
+  en:{
+    logo:'My Day', greetMorn:'Good morning.', greetAfter:'Good afternoon.', greetEve:'Good evening.',
+    sub:'Your daily overview — make it count.',
+    tabToday:'Today', tabNotes:'Notes', tabWeek:'This Week', tabWorkout:'Workout', tabLog:'Past Days',
+    titleHabits:'Daily Habits', titleCalories:'Calorie Tracker', titleNotes:'Day Notes',
+    titleNotesMob:'Day Notes', titleLog:'Past Days Log', titleTimer:'Focus Timer',
+    titleSteps:'Daily Steps',
+    titleWeekTasks:'Task Completion — 7 Days', titleWeekCal:'Calories — 7 Days', titleWeekCats:'Category Breakdown',
+    titleNotifs:'Notifications', titleCustomNotif:'Custom Reminder',
+    resetDay:'Reset Day', addTask:'Add', lblProgress:'Progress', addTaskPh:'Add a habit…',
+    lblConsumed:'Consumed today', lblTarget:'Target:', mealNamePh:'Food name…', mealCalPh:'Calories…',
+    addMeal:'Log Meal', lblMealLog:'Meal Log', clearMeals:'Clear Meals', emptyMeals:'No meals yet.',
+    workout:'Workout', general:'General', food:'Nutrition',
+    workoutNote:'Workout Notes', generalNote:'General Notes', foodNote:'Nutrition Notes',
+    workoutPh:'What did you train today?', generalPh:'Thoughts, achievements…', foodPh:'How was your diet?',
+    saveNotes:'💾 Save Notes', logDays:'days', logEmpty:'No entries yet.',
+    tasksDone:'tasks', remaining:'remaining', over:'over target',
+    today:'Today', noNotes:'No notes.', delDay:'Delete entry',
+    catAll:'All', catWork:'Work 💼', catSport:'Sport 🏃', catPersonal:'Personal 🌱', catHealth:'Health 💊', catPrayer:'Prayer 🤲',
+    optWork:'Work', optSport:'Sport', optPersonal:'Personal', optHealth:'Health', optPrayer:'Prayer',
+    wAvgTasksLbl:'Avg completion %', wAvgCalLbl:'Avg kcal/day', wBestDayLbl:'Best day',
+    confirmReset:'Reset all tasks for today?', confirmResetSub:'All tasks will be unchecked.',
+    confirmYes:'Yes, Reset', confirmNo:'Cancel',
+    notifPermDesc:'Enable notifications to get daily reminders.',
+    enableNotif:'🔔 Enable Notifications', notifGranted:'✅ Notifications enabled',
+    notifDenied:'❌ Notifications blocked — allow in browser settings',
+    notifDefault:'Click to enable', addReminder:'Add',
+    customNotifMsgPh:'Reminder message…', noReminders:'No reminders set.',
+    noData:'No data yet — start tracking!',
+    lblCalNav:'Navigate Days', lblAddHabit:'Habit',
+    lblStepTarget:'Goal:', lblLogSteps:'Log',
+    stepsRemaining:'remaining', stepsOver:'over goal',
+    lblHours:'hours', lblMins:'minutes', lblSecs:'seconds',
+    lblPlay:'Start', lblPause:'Pause', lblReset:'Reset',
+    timerDone:'⏰ Time is up!', viewingPast:'Viewing:', jumpToday:'Today',
+    modalTitle:'Add Custom Habit', habitSave:'Add', habitCancel:'Cancel',
+    confirmDelTask:'Delete this task?', confirmDelTaskSub:'It will be removed from today\'s list.',
+    stepsUnit:'steps',
+  },
+  ar:{
+    logo:'يومي', greetMorn:'صباح الخير.', greetAfter:'مساء النور.', greetEve:'مساء الخير.',
+    sub:'نظرتك اليومية — اجعلها تستحق.',
+    tabToday:'اليوم', tabNotes:'الملاحظات', tabWeek:'هذا الأسبوع', tabWorkout:'تمرين', tabLog:'سجل الأيام',
+    titleHabits:'العادات اليومية', titleCalories:'تتبع السعرات', titleNotes:'ملاحظات اليوم',
+    titleNotesMob:'ملاحظات اليوم', titleLog:'سجل الأيام السابقة', titleTimer:'مؤقت التركيز',
+    titleSteps:'الخطوات اليومية',
+    titleWeekTasks:'إنجاز المهام — 7 أيام', titleWeekCal:'السعرات — 7 أيام', titleWeekCats:'تفصيل الفئات',
+    titleNotifs:'الإشعارات', titleCustomNotif:'تذكير مخصص',
+    resetDay:'إعادة تعيين', addTask:'إضافة', lblProgress:'التقدم', addTaskPh:'أضف عادة…',
+    lblConsumed:'المستهلك اليوم', lblTarget:'الهدف:', mealNamePh:'اسم الطعام…', mealCalPh:'السعرات…',
+    addMeal:'تسجيل وجبة', lblMealLog:'الوجبات', clearMeals:'مسح الوجبات', emptyMeals:'لا وجبات مسجلة.',
+    workout:'التمرين', general:'عام', food:'تغذية',
+    workoutNote:'ملاحظات التمرين', generalNote:'ملاحظات عامة', foodNote:'ملاحظات التغذية',
+    workoutPh:'ما الذي تمرنت عليه اليوم؟', generalPh:'أفكار، إنجازات، مزاجك…', foodPh:'كيف كان نظامك الغذائي؟',
+    saveNotes:'💾 حفظ الملاحظات', logDays:'أيام', logEmpty:'لا سجلات بعد.',
+    tasksDone:'مهام', remaining:'متبقي', over:'تجاوزت الهدف',
+    today:'اليوم', noNotes:'لا ملاحظات.', delDay:'حذف',
+    catAll:'الكل', catWork:'شغل 💼', catSport:'رياضة 🏃', catPersonal:'شخصي 🌱', catHealth:'صحة 💊', catPrayer:'صلاة 🤲',
+    optWork:'شغل', optSport:'رياضة', optPersonal:'شخصي', optHealth:'صحة', optPrayer:'صلاة',
+    wAvgTasksLbl:'متوسط الإنجاز %', wAvgCalLbl:'متوسط السعرات/يوم', wBestDayLbl:'أفضل يوم',
+    confirmReset:'إعادة تعيين مهام اليوم؟', confirmResetSub:'سيتم إلغاء تحديد جميع المهام.',
+    confirmYes:'نعم، إعادة', confirmNo:'إلغاء',
+    notifPermDesc:'فعّل الإشعارات للحصول على تذكيرات يومية.',
+    enableNotif:'🔔 تفعيل الإشعارات', notifGranted:'✅ الإشعارات مفعّلة',
+    notifDenied:'❌ الإشعارات محجوبة — اسمح بها من إعدادات المتصفح',
+    notifDefault:'اضغط للتفعيل', addReminder:'إضافة',
+    customNotifMsgPh:'نص التذكير…', noReminders:'لا تذكيرات محددة.',
+    noData:'لا بيانات بعد — ابدأ التتبع!',
+    lblCalNav:'التنقل بين الأيام', lblAddHabit:'عادة',
+    lblStepTarget:'الهدف:', lblLogSteps:'تسجيل',
+    stepsRemaining:'متبقي', stepsOver:'تجاوزت الهدف',
+    lblHours:'ساعة', lblMins:'دقيقة', lblSecs:'ثانية',
+    lblPlay:'ابدأ', lblPause:'إيقاف', lblReset:'إعادة',
+    timerDone:'⏰ انتهى الوقت!', viewingPast:'تصفح:', jumpToday:'اليوم',
+    modalTitle:'إضافة عادة مخصصة', habitSave:'إضافة', habitCancel:'إلغاء',
+    confirmDelTask:'حذف هذه المهمة؟', confirmDelTaskSub:'ستُزال من قائمة اليوم.',
+    stepsUnit:'خطوة',
+  }
+};
+
+// ── Security helpers ──────────────────────────────────────────────
+const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#x27;');
+const sanitizeText = (s,max=200) => { if(typeof s!=='string')return''; return s.trim().replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g,'').slice(0,max); };
+const sanitizeInt  = (v,min,max) => { const n=parseInt(v,10); return Number.isFinite(n)?Math.max(min,Math.min(max,n)):null; };
+const MAX_PAYLOAD  = 200*1024;
+const guardStr     = v => { const j=JSON.stringify(v); return j.length>MAX_PAYLOAD?null:j; };
+const RATE = { data:{max:120,w:60000}, auth:{max:10,w:15*60000} };
+const _rl  = {};
+const checkRL = (key,tier='data') => {
+  const c=RATE[tier]||RATE.data, now=Date.now();
+  _rl[key]=(_rl[key]||[]).filter(x=>now-x<c.w);
+  if(_rl[key].length>=c.max){return{ok:false,wait:Math.ceil((c.w-(now-_rl[key][0]))/1000)};}
+  _rl[key].push(now); return{ok:true};
+};
+
+// ── DOM helpers ───────────────────────────────────────────────────
+const $ = id => document.getElementById(id);
+const qs = s => document.querySelector(s);
+const qsa = s => document.querySelectorAll(s);
+
+// ── Firebase (optional — graceful fallback to localStorage only) ──
+let db = null;
+const _fbTimers = {};
+
+async function initFirebase() {
+  let cfg;
+  try { const r=await fetch('/__/firebase/init.json',{cache:'no-store'}); if(r.ok)cfg=await r.json(); } catch{}
+  if(!cfg && window.__FIREBASE_CONFIG__) cfg=window.__FIREBASE_CONFIG__;
+  if(!cfg){
+    cfg={apiKey:"AIzaSyDcX2z1qZOfuN18TmcGLCATaBCpp4TlT9w",authDomain:"myday-f96a7.firebaseapp.com",databaseURL:"https://myday-f96a7-default-rtdb.firebaseio.com",projectId:"myday-f96a7",storageBucket:"myday-f96a7.firebasestorage.app",messagingSenderId:"66491836770",appId:"1:66491836770:web:7bacd3a7044e027e03103b"};
+  }
+  try {
+    firebase.initializeApp(cfg);
+    return firebase.database();
+  } catch(e) { return null; }
+}
+
+const USER_KEY = (()=>{
+  const K='zn_uid_v3'; let uid=localStorage.getItem(K);
+  if(!uid){uid='u_'+Math.random().toString(36).slice(2)+Date.now().toString(36);localStorage.setItem(K,uid);}
+  return uid;
+})();
+
+// ── Bulletproof Storage Layer ─────────────────────────────────────
+// PRIMARY: localStorage with date-keyed entries (never overwritten across days)
+// SECONDARY: Firebase (mirrors localStorage async)
+// Key scheme: zn_day_YYYY-MM-DD for daily data, zn_cfg_* for globals
+
+const LS = {
+  get(k, def=null){
+    try{ const v=localStorage.getItem(k); return v!==null?JSON.parse(v):def; }catch{ return def; }
+  },
+  set(k, v){
+    try{
+      const s=JSON.stringify(v);
+      if(s.length>MAX_PAYLOAD){ console.warn('Payload too large for key',k); return false; }
+      localStorage.setItem(k,s); return true;
+    }catch(e){ console.warn('localStorage write failed',e); return false; }
+  },
+  del(k){ try{ localStorage.removeItem(k); }catch{} },
+  keys(prefix){ try{ return Object.keys(localStorage).filter(k=>k.startsWith(prefix)); }catch{ return []; } }
+};
+
+// Debounced Firebase sync
+const fbSync = (lsKey, value) => {
+  if(!db) return;
+  clearTimeout(_fbTimers[lsKey]);
+  _fbTimers[lsKey] = setTimeout(()=>{
+    const s=JSON.stringify(value);
+    if(s.length<=MAX_PAYLOAD) db.ref(`${USER_KEY}/${lsKey}`).set(s).catch(()=>{});
+  }, 600);
+};
+
+const saveDay = (dateKey) => {
+  const lk = `zn_day_${dateKey}`;
+  LS.set(lk, dayCache[dateKey]);
+  fbSync(lk, dayCache[dateKey]);
+};
+
+const saveCfg = (key, val) => {
+  const lk = `zn_cfg_${key}`;
+  LS.set(lk, val);
+  fbSync(lk, val);
+};
+
+const loadCfg = (key, def) => LS.get(`zn_cfg_${key}`, def);
+
+// ── Date helpers ──────────────────────────────────────────────────
+const todayKey = () => new Date().toISOString().slice(0,10);
+let viewingDate = todayKey();
+
+// ── Default data ──────────────────────────────────────────────────
+const DEFAULT_TASKS = [
+  {id:'t1',label:{en:'Brush Teeth',ar:'تنظيف الأسنان'},done:false,fixed:true,cat:'health'},
+  {id:'t2',label:{en:'Work Out',   ar:'ممارسة الرياضة'},done:false,fixed:true,cat:'sport'},
+  {id:'t3',label:{en:'Study',      ar:'الدراسة'},done:false,fixed:true,cat:'work'},
+];
+const DEFAULT_DAY = () => ({
+  tasks: JSON.parse(JSON.stringify(DEFAULT_TASKS)),
+  meals: [],
+  steps: 0,
+  notes: {workout:'',general:'',food:''},
+  _dateLabel: null,
+});
+
+// ── State ─────────────────────────────────────────────────────────
+let lang, theme, calTarget, stepsTarget, customNotifs, customTasks;
+let dayCache = {};
+const t = key => (T[lang]||T.ar)[key]||key;
+let activeNoteCat='workout', activeCatFilter='all', activeNoteColor='';
+
+// ── Load all data from localStorage ──────────────────────────────
+const loadLocalData = () => {
+  lang         = loadCfg('lang','en');
+  theme        = loadCfg('theme','dark');
+  calTarget    = loadCfg('calTarget', 2500);
+  stepsTarget  = loadCfg('stepsTarget', 10000);
+  customNotifs = loadCfg('customNotifs', []);
+  customTasks  = loadCfg('customTasks', []);
+
+  // Load all day entries
+  LS.keys('zn_day_').forEach(k=>{
+    const date = k.replace('zn_day_','');
+    if(/^\d{4}-\d{2}-\d{2}$/.test(date)){
+      const v = LS.get(k, null);
+      if(v) dayCache[date] = v;
+    }
+  });
+};
+
+// ── Merge Firebase data on top of localStorage (one-time on load) ─
+const mergeFirebaseData = (snap) => {
+  if(!snap || !snap.val()) return;
+  const raw = snap.val();
+  const parse = (k,d) => { try{ return raw[k]?JSON.parse(raw[k]):d; }catch{ return d; } };
+
+  // Merge globals only if newer (Firebase wins for cross-device sync)
+  ['lang','theme','calTarget','stepsTarget','customNotifs','customTasks'].forEach(k=>{
+    const fbKey = `zn_cfg_${k}`;
+    if(raw[fbKey]!==undefined){
+      try{
+        const fbVal = JSON.parse(raw[fbKey]);
+        LS.set(fbKey, fbVal);
+        if(k==='lang')         lang=fbVal;
+        if(k==='theme')        theme=fbVal;
+        if(k==='calTarget')    calTarget=fbVal;
+        if(k==='stepsTarget')  stepsTarget=fbVal;
+        if(k==='customNotifs') customNotifs=fbVal;
+        if(k==='customTasks')  customTasks=fbVal;
+      }catch{}
+    }
+  });
+
+  // Merge day entries (Firebase fills any gaps in localStorage)
+  Object.keys(raw).forEach(k=>{
+    if(k.startsWith('zn_day_')){
+      const date = k.replace('zn_day_','');
+      if(/^\d{4}-\d{2}-\d{2}$/.test(date)){
+        try{
+          const fbDay = JSON.parse(raw[k]);
+          if(!dayCache[date]){
+            dayCache[date] = fbDay;
+            LS.set(k, fbDay);
+          }
+        }catch{}
+      }
+    }
+  });
+};
+
+// ── ensureDay: init day if not in cache, merge customTasks ────────
+const ensureDay = d => {
+  if(!dayCache[d]) dayCache[d] = DEFAULT_DAY();
+  // Tag with date label
+  if(!dayCache[d]._dateLabel){
+    const dt = new Date(d+'T12:00:00');
+    dayCache[d]._dateLabel = {
+      en: dt.toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'}),
+      ar: dt.toLocaleDateString('ar-SA',{weekday:'long',year:'numeric',month:'long',day:'numeric'}),
+    };
+  }
+  // Inject custom tasks that are missing from this day
+  customTasks.forEach(ct=>{
+    if(!dayCache[d].tasks.find(x=>x.id===ct.id)){
+      dayCache[d].tasks.push({...ct, done:false});
+    }
+  });
+};
+
+const getDay = d => dayCache[d] || DEFAULT_DAY();
+
+// True only when the day has at least one meaningful entry (not just ensureDay skeleton)
+const dayHasRealData = d => {
+  const e = dayCache[d];
+  if(!e) return false;
+  if((e.meals  && e.meals.length  > 0)) return true;
+  if((e.steps  && e.steps         > 0)) return true;
+  if((e.tasks  && e.tasks.some(t => t.done))) return true;
+  if(e.notes && (e.notes.workout || e.notes.general || e.notes.food)) return true;
+  return false;
+};
+
+// ── Loading screen ────────────────────────────────────────────────
+// Bootstrap runs after all functions are defined — see bottom of script
+
+// ── Apply Language ────────────────────────────────────────────────
+const applyLang = () => {
+  const html=document.documentElement;
+  html.setAttribute('lang',lang); html.setAttribute('dir',lang==='ar'?'rtl':'ltr');
+  saveCfg('lang',lang);
+  $('btnEN').classList.toggle('active',lang==='en');
+  $('btnAR').classList.toggle('active',lang==='ar');
+  const h=new Date().getHours(), gKey=h<12?'greetMorn':h<17?'greetAfter':'greetEve';
+  $('greeting').textContent     = t(gKey);
+  $('subGreeting').textContent  = t('sub');
+  $('headerDate').textContent   = new Date().toLocaleDateString(lang==='ar'?'ar-SA':'en-US',{weekday:'short',month:'long',day:'numeric'});
+  $('logoText').textContent     = t('logo');
+  $('mainHeader').style.background = '';
+  // Tabs
+  $('tabToday').textContent   = t('tabToday');
+  $('tabNotes').textContent   = t('tabNotes');
+  $('tabWeek').textContent    = t('tabWeek');
+  $('tabLog').textContent      = t('tabLog');
+  if($('tabWorkout')) $('tabWorkout').textContent = t('tabWorkout');
+  // Habits
+  $('titleHabits').textContent    = t('titleHabits');
+  $('resetDayBtn').textContent    = t('resetDay');
+  $('lblProgress').textContent    = t('lblProgress');
+  $('newTaskInput').placeholder   = t('addTaskPh');
+  $('addTaskBtn').textContent     = t('addTask');
+  $('fcatAll').textContent        = t('catAll');
+  $('fcatWork').textContent       = t('catWork');
+  $('fcatSport').textContent      = t('catSport');
+  $('fcatPersonal').textContent   = t('catPersonal');
+  $('fcatHealth').textContent     = t('catHealth');
+  $('optWork').textContent        = t('optWork');
+  $('optSport').textContent       = t('optSport');
+  $('optPersonal').textContent    = t('optPersonal');
+  $('optHealth').textContent      = t('optHealth');
+  $('optPrayer').textContent      = t('optPrayer');
+  // Steps
+  $('titleSteps').textContent      = t('titleSteps');
+  $('lblStepTarget').textContent   = t('lblStepTarget');
+  $('lblLogSteps').textContent     = t('lblLogSteps');
+  $('lblStepsUnit').textContent    = t('stepsUnit');
+  $('lblStepsUnitGoal').textContent= t('stepsUnit');
+  // Calories
+  $('titleCalories').textContent  = t('titleCalories');
+  $('lblConsumed').textContent    = t('lblConsumed');
+  $('lblTarget').textContent      = t('lblTarget');
+  $('lblMealLog').textContent     = t('lblMealLog');
+  $('clearMealsBtn').textContent  = t('clearMeals');
+  if($('lblAddFood'))    $('lblAddFood').textContent    = lang==='ar'?'إضافة طعام':'Add Food';
+  if($('fmTitle'))       $('fmTitle').textContent       = lang==='ar'?'إضافة طعام':'Add Food';
+  if($('fmSubmitLbl'))   $('fmSubmitLbl').textContent   = lang==='ar'?'تسجيل':'Log Food';
+  if($('lblFmTabMeal'))    $('lblFmTabMeal').textContent    = lang==='ar'?'وجبة جاهزة':'Ready Meal';
+  if($('lblFmTabProduct')) $('lblFmTabProduct').textContent = lang==='ar'?'حسب الوزن':'By Weight';
+  if($('lblFmTabSaved'))   $('lblFmTabSaved').textContent   = lang==='ar'?'محفوظة':'Saved';
+  if($('fmSaveLabel'))     $('fmSaveLabel').textContent     = lang==='ar'?'حفظ في مكتبة الوجبات':'Save to my meals library';
+  if($('smSearch'))        $('smSearch').placeholder        = lang==='ar'?'ابحث في الوجبات المحفوظة…':'Search saved meals…';
+  if($('emptyMeals'))    $('emptyMeals').textContent    = t('emptyMeals');
+  // Notes
+  $('titleNotes').textContent     = t('titleNotes');
+  $('titleNotesMob').textContent  = t('titleNotesMob');
+  $('titleLog').textContent       = t('titleLog');
+  $('emptyLog').textContent       = t('logEmpty');
+  $('jumpTodayBtn').textContent   = t('jumpToday');
+  $('lblAddHabit').textContent    = t('lblAddHabit');
+  qsa('.pill-lbl').forEach(el=>el.textContent=t(el.dataset.key));
+  $('saveNotesDesktop').textContent = t('saveNotes');
+  $('saveNotesMobile').textContent  = t('saveNotes');
+  // Timer
+  // Week
+  $('wTitleTasks').textContent   = t('titleWeekTasks');
+  $('wTitleCal').textContent     = t('titleWeekCal');
+  $('wTitleCats').textContent    = t('titleWeekCats');
+  $('wLblAvgTasks').textContent  = t('wAvgTasksLbl');
+  $('wLblAvgCal').textContent    = t('wAvgCalLbl');
+  $('wLblBestDay').textContent   = t('wBestDayLbl');
+  // Notifs
+  $('lblCalNav').textContent        = t('lblCalNav');
+  // Modal
+  $('modalTitle').textContent      = t('modalTitle');
+  $('habitSaveBtn').textContent    = t('habitSave');
+  $('habitCancelBtn').textContent  = t('habitCancel');
+  renderCalBar();
+  renderAll();
+};
+window.setLang = nl => { lang=nl; applyLang(); };
+
+// ── Theme ─────────────────────────────────────────────────────────
+const applyTheme = () => {
+  document.documentElement.setAttribute('data-theme',theme);
+  saveCfg('theme',theme);
+  $('mainHeader').style.background = '';
+};
+$('themeToggle').addEventListener('click',()=>{ theme=theme==='dark'?'light':'dark'; applyTheme(); });
+
+// ── Tabs ──────────────────────────────────────────────────────────
+const TABS = ['today','notes','week','workout','log'];
+const switchTab = name => {
+  TABS.forEach(t2=>{
+    $(`tab-${t2}`).style.display = t2===name?'block':'none';
+    qs(`.tab-btn[data-tab="${t2}"]`).classList.toggle('active',t2===name);
+  });
+  if(name==='log')     renderLog();
+  if(name==='week')    renderWeekStats();
+  if(name==='workout') renderWorkoutTab();
+};
+qsa('.tab-btn').forEach(btn=>btn.addEventListener('click',()=>switchTab(btn.dataset.tab)));
+
+// ── Calendar Bar ──────────────────────────────────────────────────
+const renderCalBar = () => {
+  const bar=$('calBar'); bar.innerHTML='';
+  for(let i=29;i>=0;i--){
+    const d=new Date(); d.setDate(d.getDate()-i);
+    const key=d.toISOString().slice(0,10);
+    const isToday=key===todayKey(), isViewing=key===viewingDate;
+    const hasData=dayHasRealData(key);
+    const dayName=d.toLocaleDateString(lang==='ar'?'ar-SA':'en-US',{weekday:'short'});
+    const dayNum=d.getDate();
+    const btn=document.createElement('button');
+    btn.className=`cal-day-btn${isViewing?' active':''}${hasData&&!isViewing?' has-data':''}`; // isViewing always removes has-data
+    btn.dataset.date=key;
+    btn.innerHTML=`<span class="cal-dname">${isToday?(lang==='ar'?'اليوم':'TODAY'):dayName.toUpperCase()}</span><span class="cal-dnum">${dayNum}</span>${hasData&&!isViewing?'<span class="cal-dot"></span>':''}`;
+    btn.addEventListener('click',()=>{ viewingDate=key; renderCalBar(); renderAll(); updatePastBanner(); });
+    bar.appendChild(btn);
+  }
+  // Scroll so active button is visible — use scrollLeft for reliability
+  setTimeout(()=>{
+    const active=bar.querySelector('.active');
+    if(!active) return;
+    // Center the active button in the scroll container
+    bar.scrollLeft = active.offsetLeft - bar.offsetWidth/2 + active.offsetWidth/2;
+  },50);
+};
+
+const updatePastBanner = () => {
+  const isToday=viewingDate===todayKey();
+  $('pastBanner').style.display=isToday?'none':'flex';
+  if(!isToday){
+    const d=new Date(viewingDate+'T12:00:00');
+    const lbl=d.toLocaleDateString(lang==='ar'?'ar-SA':'en-US',{weekday:'long',month:'long',day:'numeric'});
+    $('pastBannerText').textContent=`${t('viewingPast')} ${lbl}`;
+  }
+};
+
+$('jumpTodayBtn').addEventListener('click',()=>{ viewingDate=todayKey(); renderCalBar(); renderAll(); updatePastBanner(); });
+
+// ── Render All ────────────────────────────────────────────────────
+const renderAll = () => {
+  ensureDay(viewingDate);
+  renderTasks();
+  renderMeals();
+  renderSteps();
+  loadNotes();
+  $('calTargetInput').value = calTarget;
+  $('stepsTargetInput').value = stepsTarget;
+};
+
+// ── Tasks ─────────────────────────────────────────────────────────
+const CAT_COLORS = {work:'cat-work',sport:'cat-sport',personal:'cat-personal',health:'cat-health',prayer:'cat-prayer'};
+const CAT_LABELS = cat=>({work:t('optWork'),sport:t('optSport'),personal:t('optPersonal'),health:t('optHealth'),prayer:t('optPrayer')})[cat]||cat;
+
+const renderTasks = () => {
+  const day = getDay(viewingDate);
+  const list = $('taskList'); list.innerHTML='';
+  const filtered = activeCatFilter==='all' ? day.tasks : day.tasks.filter(x=>x.cat===activeCatFilter);
+  filtered.forEach(task=>{
+    const lbl = typeof task.label==='object' ? (task.label[lang]||task.label.en) : task.label;
+    const catCls = CAT_COLORS[task.cat]||'cat-personal';
+    const row = document.createElement('div');
+    row.className = `task-row${task.done?' done':''}`;
+    row.innerHTML = `
+      <label class="cb-wrap" onclick="event.stopPropagation()">
+        <input type="checkbox" ${task.done?'checked':''} data-id="${esc(task.id)}"/>
+        <div class="cb-box">
+          <svg viewBox="0 0 13 13" fill="none" stroke="#080b10" stroke-width="2.5" stroke-linecap="round">
+            <polyline points="1.5 7 5 10.5 11.5 2.5"/>
+          </svg>
+        </div>
+      </label>
+      <span class="task-lbl" style="flex:1;font-size:.875rem;">${esc(lbl)}</span>
+      <span class="cat-badge ${catCls}">${CAT_LABELS(task.cat)}</span>
+      <button class="delbtn task-del" title="${t('confirmDelTask')}" data-id="${esc(task.id)}">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>`;
+    list.appendChild(row);
+  });
+
+  // Checkbox handlers
+  list.querySelectorAll('input[type="checkbox"]').forEach(cb=>{
+    cb.addEventListener('change',e=>{
+      const task=dayCache[viewingDate].tasks.find(x=>x.id===e.target.dataset.id);
+      if(!task)return;
+      task.done=e.target.checked;
+      saveDay(viewingDate);
+      const box=e.target.nextElementSibling;
+      box.classList.add('pop'); box.addEventListener('animationend',()=>box.classList.remove('pop'),{once:true});
+      renderTasks(); updateProgress();
+    });
+  });
+
+  // Delete handlers — with confirm dialog
+  list.querySelectorAll('.task-del').forEach(btn=>{
+    btn.addEventListener('click',e=>{
+      e.stopPropagation();
+      showConfirm(t('confirmDelTask'),t('confirmDelTaskSub'),t('confirmYes'),t('confirmNo'),()=>{
+        dayCache[viewingDate].tasks = dayCache[viewingDate].tasks.filter(x=>x.id!==btn.dataset.id);
+        // Also remove from customTasks if it was a permanent habit
+        const wasCustom = customTasks.findIndex(x=>x.id===btn.dataset.id);
+        if(wasCustom>=0){
+          customTasks.splice(wasCustom,1);
+          saveCfg('customTasks',customTasks);
+        }
+        saveDay(viewingDate); renderTasks(); updateProgress();
+        showToast(lang==='ar'?'تم حذف المهمة 🗑️':'Task deleted 🗑️');
+      });
+    });
+  });
+
+  updateProgress();
+};
+
+const updateProgress = () => {
+  const day=getDay(viewingDate);
+  const total=day.tasks.length, done=day.tasks.filter(x=>x.done).length;
+  $('progressBar').style.width = total?Math.round(done/total*100)+'%':'0%';
+  $('progressLabel').textContent = `${done}/${total} ${t('tasksDone')}`;
+};
+
+$('addTaskBtn').addEventListener('click',()=>{
+  const v=sanitizeText($('newTaskInput').value,60);
+  if(!v){showToast(lang==='ar'?'أدخل نصًا':'Enter text');return;}
+  const allowed=['work','sport','personal','health','prayer'];
+  const cat=allowed.includes($('newTaskCat').value)?$('newTaskCat').value:'personal';
+  const rl=checkRL('add_task','auth');
+  if(!rl.ok){showToast(`${lang==='ar'?'انتظر':'Wait'} ${rl.wait}s`);return;}
+  ensureDay(viewingDate);
+  dayCache[viewingDate].tasks.push({id:'t'+Date.now(),label:{en:v,ar:v},done:false,fixed:false,cat});
+  saveDay(viewingDate); $('newTaskInput').value=''; renderTasks(); updateProgress();
+  showToast(lang==='ar'?'تمت الإضافة ✅':'Added ✅');
+});
+$('newTaskInput').addEventListener('keydown',e=>{if(e.key==='Enter')$('addTaskBtn').click();});
+
+$('resetDayBtn').addEventListener('click',()=>{
+  showConfirm(t('confirmReset'),t('confirmResetSub'),t('confirmYes'),t('confirmNo'),()=>{
+    ensureDay(viewingDate);
+    dayCache[viewingDate].tasks = dayCache[viewingDate].tasks.map(x=>({...x,done:false}));
+    saveDay(viewingDate); renderTasks(); showToast(lang==='ar'?'تم إعادة التعيين 🌅':'Day reset 🌅');
+  });
+});
+
+qsa('.fcat-pill').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    activeCatFilter=btn.dataset.fcat;
+    qsa('.fcat-pill').forEach(b=>{
+      b.className='fcat-pill';
+      if(b.dataset.fcat===activeCatFilter) b.classList.add(activeCatFilter==='all'?'active-all':`active-${activeCatFilter}`);
+    });
+    renderTasks();
+  });
+});
+
+// ── Custom Habit Modal ────────────────────────────────────────────
+$('addHabitBtn').addEventListener('click',()=>{
+  $('habitNameInp').value='';
+  $('habitModal').classList.add('open');
+});
+$('habitCancelBtn').addEventListener('click',()=>$('habitModal').classList.remove('open'));
+$('habitModal').addEventListener('click',e=>{if(e.target===$('habitModal'))$('habitModal').classList.remove('open');});
+$('habitSaveBtn').addEventListener('click',()=>{
+  const v=sanitizeText($('habitNameInp').value,60); if(!v)return;
+  const cat=$('habitCatInp').value||'personal';
+  const rl=checkRL('add_habit','auth'); if(!rl.ok){showToast(`Wait ${rl.wait}s`);return;}
+  const newTask={id:'ct'+Date.now(),label:{en:v,ar:v},done:false,fixed:false,cat,custom:true};
+  customTasks.push(newTask);
+  saveCfg('customTasks',customTasks);
+  ensureDay(viewingDate);
+  dayCache[viewingDate].tasks.push({...newTask,done:false});
+  saveDay(viewingDate); renderTasks(); $('habitModal').classList.remove('open');
+  showToast(lang==='ar'?'تم إضافة العادة ✅':'Habit added ✅');
+});
+$('habitNameInp').addEventListener('keydown',e=>{if(e.key==='Enter')$('habitSaveBtn').click();});
+
+// ── Steps ─────────────────────────────────────────────────────────
+const renderSteps = () => {
+  const day=getDay(viewingDate);
+  const steps=day.steps||0;
+  $('stepsCount').textContent=steps.toLocaleString();
+  $('stepsTargetInput').value=stepsTarget;
+  const circ=2*Math.PI*36, pct=Math.min(steps/stepsTarget,1);
+  $('stepsRing').style.strokeDashoffset=circ-circ*pct;
+  $('stepsRing').style.stroke='var(--text)';
+  const rem=stepsTarget-steps;
+  $('stepsRemaining').textContent=rem>=0?`${rem.toLocaleString()} ${t('stepsRemaining')}`:`${Math.abs(rem).toLocaleString()} ${t('stepsOver')}`;
+  $('stepsRemaining').style.color=rem<0?'var(--danger)':'var(--text2)';
+};
+
+$('logStepsBtn').addEventListener('click',()=>{
+  const v=sanitizeInt($('stepsInput').value,0,99999);
+  if(v===null){showToast(lang==='ar'?'أدخل رقمًا':'Enter a number');return;}
+  ensureDay(viewingDate);
+  dayCache[viewingDate].steps=v;
+  saveDay(viewingDate); renderSteps();
+  $('stepsInput').value='';
+  showToast(lang==='ar'?`${v.toLocaleString()} خطوة ✅`:`${v.toLocaleString()} steps ✅`);
+});
+
+$('stepsTargetInput').addEventListener('change',e=>{
+  const v=sanitizeInt(e.target.value,100,99999);
+  if(v){ stepsTarget=v; saveCfg('stepsTarget',stepsTarget); renderSteps();
+    showToast(lang==='ar'?`الهدف: ${v.toLocaleString()} خطوة`:`Goal: ${v.toLocaleString()} steps`);
+  }
+});
+$('stepsInput').addEventListener('keydown',e=>{if(e.key==='Enter')$('logStepsBtn').click();});
+
+// ── Food Log ──────────────────────────────────────────────────────
+// Meal data shape: {id, name, kcal, type:'meal'|'product', protein?, carbs?, fat?, img?, time, detail?}
+
+const renderMeals = () => {
+  const day = getDay(viewingDate);
+  const meals = day.meals || [];
+  const list = $('mealList'), empty = $('emptyMeals');
+  list.querySelectorAll('.food-card').forEach(r => r.remove());
+  empty.style.display = meals.length ? 'none' : 'block';
+
+  meals.forEach((m, i) => {
+    const card = document.createElement('div');
+    card.className = 'food-card';
+
+    const imgHtml = m.img
+      ? `<img class="food-thumb" src="${m.img}" alt="${esc(m.name)}" loading="lazy"/>`
+      : `<div class="food-thumb-placeholder"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text3)" stroke-width="1.5" stroke-linecap="round"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 002-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 00-5 5v6c0 .55.45 1 1 1h3m0 0v7"/></svg></div>`;
+
+    const typeClass = m.type === 'product' ? 'food-type-product' : 'food-type-meal';
+    const typeLabel = m.type === 'product' ? '⚖️' : '🍽️';
+    const macroHtml = (m.protein || m.carbs || m.fat)
+      ? `<div style="display:flex;gap:.3rem;margin-top:.25rem;">
+          ${m.protein ? `<span style="font-size:.62rem;color:var(--blue);background:rgba(96,165,250,.1);padding:.05rem .35rem;border-radius:4px;">P ${m.protein}g</span>` : ''}
+          ${m.carbs   ? `<span style="font-size:.62rem;color:var(--green);background:rgba(74,222,128,.1);padding:.05rem .35rem;border-radius:4px;">C ${m.carbs}g</span>` : ''}
+          ${m.fat     ? `<span style="font-size:.62rem;color:var(--amber);background:rgba(251,191,36,.1);padding:.05rem .35rem;border-radius:4px;">F ${m.fat}g</span>` : ''}
+        </div>` : '';
+    const detailHtml = m.detail ? `<div style="font-size:.65rem;color:var(--text3);margin-top:.1rem;">${esc(m.detail)}</div>` : '';
+    const timeHtml = m.time ? `<div style="font-size:.62rem;color:var(--text3);">${m.time}</div>` : '';
+
+    card.innerHTML = `
+      ${imgHtml}
+      <div style="flex:1;min-width:0;">
+        <div style="display:flex;align-items:center;gap:.4rem;flex-wrap:wrap;">
+          <span style="font-size:.85rem;font-weight:600;">${esc(m.name)}</span>
+          <span class="food-type-badge ${typeClass}">${typeLabel}</span>
+        </div>
+        ${detailHtml}${macroHtml}${timeHtml}
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:.15rem;flex-shrink:0;">
+        <span style="font-size:.95rem;font-weight:800;color:var(--text);">${m.kcal}</span>
+        <span style="font-size:.62rem;color:var(--text3);">kcal</span>
+        <button class="delbtn meal-del" data-i="${i}" style="margin-top:.1rem;">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>`;
+    list.appendChild(card);
+  });
+
+  list.querySelectorAll('.meal-del').forEach(btn => {
+    btn.addEventListener('click', () => {
+      dayCache[viewingDate].meals.splice(+btn.dataset.i, 1);
+      saveDay(viewingDate); renderMeals();
+    });
+  });
+  updateCalStats(meals);
+};
+
+const updateCalStats = meals => {
+  const total    = meals.reduce((s, m) => s + m.kcal, 0);
+  const proteins = meals.reduce((s, m) => s + (m.protein || 0), 0);
+  const carbsT   = meals.reduce((s, m) => s + (m.carbs   || 0), 0);
+  const fatsT    = meals.reduce((s, m) => s + (m.fat     || 0), 0);
+
+  // Ring
+  const circ = 2 * Math.PI * 44, pct = Math.min(total / calTarget, 1);
+  $('calRing').style.strokeDashoffset = circ - circ * pct;
+  $('calRing').style.stroke = total > calTarget ? 'var(--rose)' : 'var(--amber)';
+  $('calTotal').textContent = total;
+  $('calTotalBig').innerHTML = `${total} <span style="font-size:.85rem;color:var(--text3);font-weight:400;">kcal</span>`;
+  const rem = calTarget - total;
+  $('calRemaining').textContent = rem >= 0
+    ? `${rem} kcal ${t('remaining')}`
+    : `${Math.abs(rem)} kcal ${t('over')}`;
+  $('calRemaining').style.color = rem < 0 ? 'var(--rose)' : 'var(--text2)';
+
+  // Macro mini chips
+  const mb = $('macroBar');
+  if(mb){
+    if(proteins || carbsT || fatsT){
+      mb.style.display = 'grid';
+      mb.innerHTML = `
+        <div class="macro-chip"><span style="font-size:.95rem;font-weight:800;color:var(--text);">${proteins}g</span><span style="font-size:.6rem;color:var(--text3);margin-top:.15rem;">Protein</span></div>
+        <div class="macro-chip"><span style="font-size:.95rem;font-weight:800;color:var(--text);">${carbsT}g</span><span style="font-size:.6rem;color:var(--text3);margin-top:.15rem;">Carbs</span></div>
+        <div class="macro-chip"><span style="font-size:.95rem;font-weight:800;color:var(--text);">${fatsT}g</span><span style="font-size:.6rem;color:var(--text3);margin-top:.15rem;">Fat</span></div>`;
+    } else {
+      mb.style.display = 'none';
+    }
+  }
+};
+
+$('calTargetInput').addEventListener('change', e => {
+  const v = sanitizeInt(e.target.value, 500, 9999);
+  if(v){ calTarget = v; saveCfg('calTarget', calTarget); renderMeals();
+    showToast(`Target: ${v} kcal`);
+  }
+});
+
+$('clearMealsBtn').addEventListener('click', () => {
+  if(!dayCache[viewingDate] || !dayCache[viewingDate].meals.length) return;
+  showConfirm('Clear all meals?', 'This cannot be undone.', 'Clear', 'Cancel', () => {
+    dayCache[viewingDate].meals = [];
+    saveDay(viewingDate); renderMeals();
+    showToast('Meals cleared');
+  });
+});
+
+// ── Food Modal ────────────────────────────────────────────────────
+let fmType    = 'meal';  // 'meal' | 'product' | 'saved'
+let fmImgData = null;    // base64 data URL
+let savedMeals = [];     // persistent library — loaded from localStorage
+
+// Load saved meals library
+const loadSavedMeals = () => {
+  savedMeals = loadCfg('savedMeals', []);
+};
+const persistSavedMeals = () => saveCfg('savedMeals', savedMeals);
+
+// ── Saved Meals library render ────────────────────────────────────
+const renderSavedList = (filter='') => {
+  const list  = $('smList');
+  const empty = $('smEmpty');
+  list.querySelectorAll('.saved-meal-row').forEach(r => r.remove());
+
+  const lc = filter.toLowerCase();
+  const filtered = savedMeals.filter(m => !lc || m.name.toLowerCase().includes(lc));
+
+  if(!filtered.length){
+    empty.style.display = 'block';
+    empty.innerHTML = savedMeals.length
+      ? `No matches for "<strong>${esc(filter)}</strong>"`
+      : `No saved meals yet.<br><span style="font-size:.75rem;">Log a meal to save it here.</span>`;
+    return;
+  }
+  empty.style.display = 'none';
+
+  filtered.forEach(sm => {
+    const row = document.createElement('div');
+    row.className = 'saved-meal-row';
+
+    const thumbHtml = sm.img
+      ? `<img class="sm-thumb" src="${sm.img}" alt="${esc(sm.name)}"/>`
+      : `<div class="sm-thumb-ph"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text3)" stroke-width="1.8" stroke-linecap="round"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 002-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 00-5 5v6c0 .55.45 1 1 1h3m0 0v7"/></svg></div>`;
+
+    const typeLabel = sm.type === 'product' ? '⚖️' : '🍽️';
+    const macroTxt  = [sm.protein?`P${sm.protein}g`:'', sm.carbs?`C${sm.carbs}g`:'', sm.fat?`F${sm.fat}g`:''].filter(Boolean).join(' · ');
+    const subDetail = sm.type === 'product'
+      ? `${sm.baseKcal} kcal per ${sm.baseG}g`
+      : (macroTxt || '');
+
+    row.innerHTML = `
+      ${thumbHtml}
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:.84rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(sm.name)}</div>
+        <div style="font-size:.68rem;color:var(--text3);margin-top:.1rem;">${typeLabel} ${subDetail}</div>
+      </div>
+      <span style="font-size:.88rem;font-weight:800;color:var(--text);flex-shrink:0;margin:0 .3rem;">${sm.type==='product'?sm.baseKcal+'↗':sm.kcal} kcal</span>
+      <button class="sm-add-btn" title="Add to today" data-sid="${esc(sm.sid)}">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      </button>
+      <button class="sm-del-btn" title="Remove from library" data-sid="${esc(sm.sid)}">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>`;
+
+    // Quick-add: for product type, ask for amount; for meal, add directly
+    row.querySelector('.sm-add-btn').addEventListener('click', e => {
+      e.stopPropagation();
+      const sm2 = savedMeals.find(x => x.sid === sm.sid);
+      if(!sm2) return;
+      quickAddSaved(sm2);
+    });
+
+    row.querySelector('.sm-del-btn').addEventListener('click', e => {
+      e.stopPropagation();
+      showConfirm(
+        `Remove "${sm.name}" from library?`, '',
+        'Remove', 'Cancel',
+        () => {
+          savedMeals = savedMeals.filter(x => x.sid !== sm.sid);
+          persistSavedMeals();
+          renderSavedList($('smSearch').value);
+        }
+      );
+    });
+
+    list.appendChild(row);
+  });
+};
+
+// Quick-add a saved meal to today ─────────────────────────────────
+const quickAddSaved = (sm) => {
+  if(sm.type === 'product'){
+    // For "by weight" items, need amount — show a small prompt overlay
+    showAmountPrompt(sm);
+    return;
+  }
+  const now = new Date();
+  const timeStr = now.toLocaleTimeString(lang==='ar'?'ar-SA':'en-US', {hour:'2-digit', minute:'2-digit'});
+  const entry = { ...sm, id:'m'+Date.now(), time:timeStr };
+  delete entry.sid; // don't store library id in day entry
+  ensureDay(viewingDate);
+  dayCache[viewingDate].meals.push(entry);
+  saveDay(viewingDate);
+  renderMeals();
+  closeFoodModal();
+  showToast(`✅ ${entry.name} · ${entry.kcal} kcal`);
+};
+
+// Amount prompt for product-type quick-add ─────────────────────────
+let _apResolve = null;
+const showAmountPrompt = (sm) => {
+  // Build a small inline overlay inside the modal
+  const existing = $('fmAmountPrompt');
+  if(existing) existing.remove();
+
+  const overlay = document.createElement('div');
+  overlay.id = 'fmAmountPrompt';
+  overlay.style.cssText = 'position:absolute;inset:0;background:rgba(13,18,32,.92);backdrop-filter:blur(4px);z-index:10;display:flex;align-items:center;justify-content:center;border-radius:20px;';
+  overlay.innerHTML = `
+    <div style="background:var(--surface);border:1px solid var(--border2);border-radius:14px;padding:1.3rem;width:80%;max-width:300px;box-shadow:0 12px 40px rgba(0,0,0,.5);">
+      <p style="font-size:.9rem;font-weight:700;margin-bottom:.3rem;">${esc(sm.name)}</p>
+      <p style="font-size:.75rem;color:var(--text3);margin-bottom:.85rem;">${sm.baseKcal} kcal per ${sm.baseG}g</p>
+      <label class="fm-lbl">Amount (g)</label>
+      <input class="inp" id="fmApAmt" type="number" min="1" max="9999" placeholder="e.g. 150" style="margin-bottom:.5rem;"/>
+      <div id="fmApCalcPreview" style="font-size:.8rem;color:var(--amber);font-weight:700;min-height:1.2rem;margin-bottom:.7rem;"></div>
+      <div style="display:flex;gap:.5rem;">
+        <button class="btn btn-ghost" id="fmApCancel" style="flex:1;justify-content:center;">Cancel</button>
+        <button class="btn btn-cyan"  id="fmApConfirm" style="flex:1;justify-content:center;">Add</button>
+      </div>
+    </div>`;
+
+  $('foodModal').querySelector('div').style.position = 'relative';
+  $('foodModal').querySelector('div').appendChild(overlay);
+  setTimeout(() => $('fmApAmt').focus(), 80);
+
+  const inp = $('fmApAmt');
+  inp.addEventListener('input', () => {
+    const amt = parseFloat(inp.value);
+    const calc = (amt > 0 && sm.baseG > 0) ? Math.round((sm.baseKcal / sm.baseG) * amt) : null;
+    $('fmApCalcPreview').textContent = calc ? `= ${calc} kcal` : '';
+  });
+
+  $('fmApCancel').addEventListener('click', () => overlay.remove());
+  $('fmApConfirm').addEventListener('click', () => {
+    const amount = sanitizeInt(inp.value, 1, 9999);
+    if(!amount){ showToast('Enter amount'); return; }
+    const kcal = Math.round((sm.baseKcal / sm.baseG) * amount);
+    const now = new Date();
+    const timeStr = now.toLocaleTimeString(lang==='ar'?'ar-SA':'en-US', {hour:'2-digit', minute:'2-digit'});
+    const entry = {
+      id:'m'+Date.now(), name:sm.name, kcal, type:'product',
+      protein:sm.protein||0, carbs:sm.carbs||0, fat:sm.fat||0,
+      img:sm.img||null, time:timeStr,
+      detail:`${amount}g · ${sm.baseKcal} kcal per ${sm.baseG}g`
+    };
+    ensureDay(viewingDate);
+    dayCache[viewingDate].meals.push(entry);
+    saveDay(viewingDate);
+    renderMeals();
+    overlay.remove();
+    closeFoodModal();
+    showToast(`✅ ${entry.name} · ${entry.kcal} kcal`);
+  });
+  inp.addEventListener('keydown', e => { if(e.key==='Enter') $('fmApConfirm').click(); });
+};
+
+// ── Modal open / close ────────────────────────────────────────────
+const openFoodModal = (preTab='meal') => {
+  fmImgData = null;
+  ['fmMealName','fmMealKcal','fmMealProtein','fmMealCarbs','fmMealFat',
+   'fmProdName','fmProdBaseKcal','fmProdBaseG','fmProdAmount','fmProdProtein','fmProdCarbs','fmProdFat','smSearch']
+    .forEach(id => { const el=$(id); if(el) el.value=''; });
+  $('fmImgPreviewWrap').innerHTML = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text3)" stroke-width="1.5" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>`;
+  $('fmImgHint').textContent = 'Click or drag an image';
+  $('fmCalcPreview').style.display = 'none';
+  $('fmSaveRow').style.display = preTab === 'saved' ? 'none' : 'flex';
+  setFmType(preTab);
+  if(preTab === 'saved') renderSavedList();
+  $('foodModal').style.display = 'flex';
+  setTimeout(() => {
+    if(preTab === 'meal')    $('fmMealName').focus();
+    if(preTab === 'product') $('fmProdName').focus();
+    if(preTab === 'saved')   $('smSearch').focus();
+  }, 100);
+};
+
+const closeFoodModal = () => {
+  $('foodModal').style.display = 'none';
+  const ap = $('fmAmountPrompt'); if(ap) ap.remove();
+};
+
+const setFmType = type => {
+  fmType = type;
+  $('fmPanelMeal').style.display    = type==='meal'    ? 'block' : 'none';
+  $('fmPanelProduct').style.display = type==='product' ? 'block' : 'none';
+  $('fmPanelSaved').style.display   = type==='saved'   ? 'block' : 'none';
+  $('fmSaveRow').style.display      = type==='saved'   ? 'none'  : 'flex';
+  $('fmSubmitBtn').style.display    = type==='saved'   ? 'none'  : '';
+  qsa('.fm-3tab').forEach(btn => btn.classList.toggle('active', btn.id === `fmTab${type.charAt(0).toUpperCase()+type.slice(1)}`));
+};
+
+$('openFoodModalBtn').addEventListener('click', () => openFoodModal('meal'));
+$('closeFoodModal').addEventListener('click', closeFoodModal);
+$('foodModal').addEventListener('click', e => { if(e.target === $('foodModal')) closeFoodModal(); });
+$('fmTabMeal').addEventListener('click',    () => setFmType('meal'));
+$('fmTabProduct').addEventListener('click', () => setFmType('product'));
+$('fmTabSaved').addEventListener('click',   () => { setFmType('saved'); renderSavedList(); });
+$('smSearch').addEventListener('input', () => renderSavedList($('smSearch').value));
+
+// Image upload / preview
+$('fmImgInput').addEventListener('change', e => {
+  const file = e.target.files[0]; if(!file) return;
+  if(file.size > 2*1024*1024){ showToast('Image too large (max 2 MB)'); return; }
+  const reader = new FileReader();
+  reader.onload = ev => {
+    fmImgData = ev.target.result;
+    $('fmImgPreviewWrap').innerHTML = `<img src="${fmImgData}" style="width:52px;height:52px;object-fit:cover;border-radius:9px;"/>`;
+    $('fmImgHint').textContent = file.name.slice(0, 28);
+  };
+  reader.readAsDataURL(file);
+});
+
+// Live calorie calculation for product mode
+const calcProduct = () => {
+  const base = parseFloat($('fmProdBaseKcal').value);
+  const per  = parseFloat($('fmProdBaseG').value);
+  const amt  = parseFloat($('fmProdAmount').value);
+  if(base > 0 && per > 0 && amt > 0){
+    const calc = Math.round((base / per) * amt);
+    $('fmCalcValue').textContent = calc;
+    $('fmCalcPreview').style.display = 'block';
+    return calc;
+  }
+  $('fmCalcPreview').style.display = 'none';
+  return null;
+};
+['fmProdBaseKcal','fmProdBaseG','fmProdAmount'].forEach(id => $(id).addEventListener('input', calcProduct));
+
+// Submit
+$('fmSubmitBtn').addEventListener('click', () => {
+  const rl = checkRL('add_meal','auth'); if(!rl.ok){ showToast(`Wait ${rl.wait}s`); return; }
+  const now = new Date();
+  const timeStr = now.toLocaleTimeString(lang==='ar'?'ar-SA':'en-US', {hour:'2-digit', minute:'2-digit'});
+  let entry = null;
+  let libEntry = null; // what gets saved to library
+
+  if(fmType === 'meal'){
+    const name    = sanitizeText($('fmMealName').value, 60);
+    const kcal    = sanitizeInt($('fmMealKcal').value, 1, 9999);
+    if(!name){ showToast('Enter meal name'); return; }
+    if(!kcal){ showToast('Enter calories');  return; }
+    const protein = sanitizeInt($('fmMealProtein').value, 0, 999) || 0;
+    const carbs   = sanitizeInt($('fmMealCarbs').value,   0, 999) || 0;
+    const fat     = sanitizeInt($('fmMealFat').value,     0, 999) || 0;
+    entry    = { id:'m'+Date.now(), name, kcal, type:'meal', protein, carbs, fat, time:timeStr };
+    libEntry = { sid:'s'+Date.now(), name, kcal, type:'meal', protein, carbs, fat };
+
+  } else { // product
+    const name     = sanitizeText($('fmProdName').value, 60);
+    const baseKcal = sanitizeInt($('fmProdBaseKcal').value, 1, 9999);
+    const baseG    = sanitizeInt($('fmProdBaseG').value, 1, 9999);
+    const amount   = sanitizeInt($('fmProdAmount').value, 1, 9999);
+    if(!name)    { showToast('Enter product name');  return; }
+    if(!baseKcal){ showToast('Enter base calories'); return; }
+    if(!baseG)   { showToast('Enter base grams');    return; }
+    if(!amount)  { showToast('Enter amount');         return; }
+    const kcal    = Math.round((baseKcal / baseG) * amount);
+    const protein = sanitizeInt($('fmProdProtein').value, 0, 999) || 0;
+    const carbs   = sanitizeInt($('fmProdCarbs').value,   0, 999) || 0;
+    const fat     = sanitizeInt($('fmProdFat').value,     0, 999) || 0;
+    const detail  = `${amount}g · ${baseKcal} kcal per ${baseG}g`;
+    entry    = { id:'m'+Date.now(), name, kcal, type:'product', protein, carbs, fat, time:timeStr, detail };
+    libEntry = { sid:'s'+Date.now(), name, type:'product', baseKcal, baseG, protein, carbs, fat };
+  }
+
+  if(fmImgData){
+    entry.img    = fmImgData;
+    if(libEntry) libEntry.img = fmImgData;
+  }
+
+  // Save to library if checkbox is ticked and not already saved
+  if($('fmSaveChk').checked && libEntry){
+    const alreadySaved = savedMeals.some(m => m.name.toLowerCase() === libEntry.name.toLowerCase() && m.type === libEntry.type);
+    if(!alreadySaved){
+      savedMeals.push(libEntry);
+      persistSavedMeals();
+    }
+  }
+
+  ensureDay(viewingDate);
+  dayCache[viewingDate].meals.push(entry);
+  saveDay(viewingDate);
+  renderMeals();
+  closeFoodModal();
+  showToast(`✅ ${entry.name} · ${entry.kcal} kcal`);
+});
+
+// ── Notes with Color ──────────────────────────────────────────────
+const NOTE_IDS = {
+  workout:{d:'note-preview-dw',m:'note-preview-mw'},
+  general:{d:'note-preview-dg',m:'note-preview-mg'},
+  food:   {d:'note-preview-df',m:'note-preview-mf'}
+};
+
+const loadNotes = () => {
+  const day=getDay(viewingDate);
+  const saved=day.notes||{workout:'',general:'',food:''};
+  Object.entries(NOTE_IDS).forEach(([cat,{d,m}])=>{
+    const dEl=$(d), mEl=$(m);
+    if(dEl) dEl.innerHTML = saved[cat]||'';
+    if(mEl) mEl.innerHTML = saved[cat]||'';
+  });
+};
+
+const collectNotes = () => {
+  const out={};
+  Object.entries(NOTE_IDS).forEach(([cat,{d,m}])=>{
+    const el=$(d)||$(m); out[cat]=el?el.innerHTML:'';
+  });
+  return out;
+};
+
+const saveTodayNotes = (loud=true) => {
+  ensureDay(viewingDate);
+  dayCache[viewingDate].notes = collectNotes();
+  saveDay(viewingDate);
+  if(loud) showToast(lang==='ar'?'تم الحفظ ✅':'Notes saved ✅');
+};
+
+// Sync desktop ↔ mobile panels
+Object.entries(NOTE_IDS).forEach(([cat,{d,m}])=>{
+  const dEl=$(d), mEl=$(m);
+  if(dEl) dEl.addEventListener('input',()=>{ if(mEl)mEl.innerHTML=dEl.innerHTML; saveTodayNotes(false); });
+  if(mEl) mEl.addEventListener('input',()=>{ if(dEl)dEl.innerHTML=mEl.innerHTML; saveTodayNotes(false); });
+});
+
+$('saveNotesDesktop').addEventListener('click',()=>saveTodayNotes(true));
+$('saveNotesMobile').addEventListener('click',()=>saveTodayNotes(true));
+
+// Note category pills
+const switchNoteCat = cat => {
+  activeNoteCat=cat;
+  ['desktop','mobile'].forEach(side=>{
+    const prefix=side==='desktop'?'d':'m';
+    qsa(`.${prefix}note-panel`).forEach(p=>p.style.display=p.id===`${prefix}panel-${cat}`?'block':'none');
+    const pillsId=side==='desktop'?'pillsDesktop':'pillsMobile';
+    $(pillsId).querySelectorAll('.npill').forEach(btn=>{
+      const c=btn.dataset.cat; btn.className=`npill${c===cat?' p-'+c:''}`;
+    });
+  });
+};
+$('pillsDesktop').querySelectorAll('.npill').forEach(btn=>btn.addEventListener('click',()=>switchNoteCat(btn.dataset.cat)));
+$('pillsMobile').querySelectorAll('.npill').forEach(btn=>btn.addEventListener('click',()=>switchNoteCat(btn.dataset.cat)));
+
+// Color toolbar
+// savedRange: preserve selection when user clicks a swatch (mousedown fires before blur)
+let savedRange = null;
+
+const saveSelection = () => {
+  const sel = window.getSelection();
+  if(sel && sel.rangeCount > 0) savedRange = sel.getRangeAt(0).cloneRange();
+};
+
+const restoreSelection = () => {
+  if(!savedRange) return false;
+  const sel = window.getSelection();
+  sel.removeAllRanges();
+  sel.addRange(savedRange);
+  return true;
+};
+
+const updateSwatchUI = color => {
+  activeNoteColor = color;
+  ['noteToolbarD','noteToolbarM'].forEach(tid=>{
+    const el=$(tid); if(!el) return;
+    el.querySelectorAll('.color-swatch').forEach(sw=>sw.classList.toggle('active-swatch', sw.dataset.color===color));
+  });
+};
+
+// Save selection whenever user interacts with a note editor
+Object.values(NOTE_IDS).forEach(({d,m})=>{
+  [d,m].forEach(id=>{ const el=$(id); if(!el) return;
+    el.addEventListener('mouseup', saveSelection);
+    el.addEventListener('keyup',   saveSelection);
+  });
+});
+
+['noteToolbarD','noteToolbarM'].forEach(tid=>{
+  const toolbar=$(tid); if(!toolbar) return;
+  toolbar.querySelectorAll('.color-swatch').forEach(sw=>{
+    // mousedown: prevent blur so selection isn't lost, then save it
+    sw.addEventListener('mousedown', e=>{
+      e.preventDefault(); // keeps focus in the editor
+      saveSelection();     // capture selection right now (before any focus change)
+    });
+
+    sw.addEventListener('click', ()=>{
+      const color = sw.dataset.color;
+      updateSwatchUI(color);
+
+      const ids = NOTE_IDS[activeNoteCat]; if(!ids) return;
+      const activeEl = $(ids.d) || $(ids.m); if(!activeEl) return;
+
+      // Restore the saved selection and apply color
+      activeEl.focus();
+      if(restoreSelection()){
+        const sel = window.getSelection();
+        if(sel && !sel.isCollapsed){
+          // Text is selected — color it
+          if(color){
+            document.execCommand('styleWithCSS', false, true);
+            document.execCommand('foreColor', false, color);
+          } else {
+            document.execCommand('removeFormat', false, null);
+          }
+          saveSelection(); // update savedRange after modification
+          saveTodayNotes(false);
+          return;
+        }
+      }
+      // Nothing selected — set color for next typed characters
+      // We insert a zero-width span so execCommand has a target
+      if(color){
+        document.execCommand('styleWithCSS', false, true);
+        document.execCommand('foreColor', false, color);
+      }
+    });
+  });
+});
+
+// ── Log ───────────────────────────────────────────────────────────
+const renderLog = () => {
+  const list=$('logList'), empty=$('emptyLog'), counter=$('logCount');
+  // Remove old month groups
+  list.querySelectorAll('.log-month-group').forEach(g=>g.remove());
+
+  const entries = Object.keys(dayCache)
+    .filter(k => /^\d{4}-\d{2}-\d{2}$/.test(k))
+    .sort((a,b) => b.localeCompare(a));
+
+  if(!entries.length){ empty.style.display='block'; counter.textContent=''; return; }
+  empty.style.display='none';
+  counter.textContent = `${entries.length} ${t('logDays')}`;
+
+  // Group by YYYY-MM
+  const groups = {};
+  entries.forEach(date => {
+    const ym = date.slice(0,7);
+    if(!groups[ym]) groups[ym] = [];
+    groups[ym].push(date);
+  });
+
+  Object.keys(groups).sort((a,b)=>b.localeCompare(a)).forEach(ym => {
+    const [yr, mo] = ym.split('-');
+    const monthName = new Date(`${ym}-01T12:00:00`)
+      .toLocaleDateString(lang==='ar'?'ar-SA':'en-US', {month:'long', year:'numeric'});
+
+    const group = document.createElement('div');
+    group.className = 'log-month-group';
+
+    const monthLabel = document.createElement('div');
+    monthLabel.className = 'log-month-label';
+    monthLabel.textContent = monthName;
+    group.appendChild(monthLabel);
+
+    const cardsWrap = document.createElement('div');
+    cardsWrap.style.cssText = 'display:flex;flex-direction:column;gap:.5rem;';
+    group.appendChild(cardsWrap);
+
+    groups[ym].forEach(date => {
+      const d = dayCache[date]; if(!d) return;
+      const isToday = date === todayKey();
+      const dt = new Date(date + 'T12:00:00');
+      const dayNum  = dt.getDate();
+      const dayName = dt.toLocaleDateString(lang==='ar'?'ar-SA':'en-US', {weekday:'short'});
+
+      const done  = d.tasks.filter(x=>x.done).length;
+      const total = d.tasks.length;
+      const kcal  = (d.meals||[]).reduce((s,m)=>s+m.kcal, 0);
+      const steps = d.steps || 0;
+      const pct   = total ? Math.round(done/total*100) : 0;
+
+      // Meal thumbnails (up to 3)
+      const thumbs = (d.meals||[]).filter(m=>m.img).slice(0,3);
+      const thumbsHtml = thumbs.map(m =>
+        `<img src="${m.img}" style="width:26px;height:26px;border-radius:6px;object-fit:cover;border:1px solid var(--border);" />`
+      ).join('');
+
+      const card = document.createElement('div');
+      card.className = 'log-day-card';
+      card.innerHTML = `
+        <div class="log-day-hdr">
+          <!-- Day number box -->
+          <div class="log-day-num ${isToday?'is-today':''}">
+            <span style="font-size:.58rem;font-weight:700;color:var(--text3);text-transform:uppercase;">${dayName}</span>
+            <span style="font-size:1rem;font-weight:800;color:var(--text);">${dayNum}</span>
+          </div>
+          <!-- Stats -->
+          <div style="flex:1;min-width:0;">
+            <div style="display:flex;align-items:center;gap:.4rem;flex-wrap:wrap;margin-bottom:.3rem;">
+              ${isToday?`<span class="log-stat-pill" style="">Today</span>`:''}
+              <span class="log-stat-pill">✓ ${done}/${total}</span>
+              ${kcal?`<span class="log-stat-pill">🔥 ${kcal} kcal</span>`:''}
+              ${steps?`<span class="log-stat-pill">👟 ${steps.toLocaleString()}</span>`:''}
+            </div>
+            <!-- Progress bar -->
+            <div class="log-prog-bar" style="width:min(160px,100%);">
+              <div class="log-prog-fill" style="width:${pct}%;"></div>
+            </div>
+          </div>
+          <!-- Meal thumbs + actions -->
+          <div style="display:flex;align-items:center;gap:.4rem;flex-shrink:0;">
+            ${thumbsHtml ? `<div style="display:flex;gap:2px;">${thumbsHtml}</div>` : ''}
+            <button class="btn btn-ghost log-goto-btn" data-date="${date}" title="Open day" style="font-size:.72rem;padding:.28rem .6rem;">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
+            <button class="delbtn log-del-btn" data-date="${date}" style="opacity:.5;width:28px;height:28px;">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+          </div>
+        </div>
+        <!-- Expandable body -->
+        <div class="log-day-body" id="logb-${date}">
+          ${(d.meals||[]).length ? `
+            <div style="margin-bottom:.7rem;">
+              <div class="slabel" style="margin-bottom:.4rem;">🍽️ Meals</div>
+              <div style="display:flex;flex-direction:column;gap:.25rem;">
+                ${(d.meals||[]).map(m=>`
+                  <div style="display:flex;align-items:center;gap:.5rem;font-size:.78rem;">
+                    ${m.img?`<img src="${m.img}" style="width:22px;height:22px;border-radius:5px;object-fit:cover;"/>`:'<span style="width:22px;text-align:center;">🍴</span>'}
+                    <span style="flex:1;color:var(--text2);">${esc(m.name)}</span>
+                    <span style="font-weight:700;color:var(--amber);">${m.kcal} kcal</span>
+                  </div>`).join('')}
+              </div>
+            </div>` : ''}
+          ${(d.tasks||[]).filter(x=>x.done).length ? `
+            <div style="margin-bottom:.7rem;">
+              <div class="slabel" style="margin-bottom:.4rem;">✅ Completed Tasks</div>
+              <div style="display:flex;flex-wrap:wrap;gap:.3rem;">
+                ${(d.tasks||[]).filter(x=>x.done).map(x=>{
+                  const lbl=typeof x.label==='object'?(x.label[lang]||x.label.en):x.label;
+                  return `<span style="font-size:.72rem;padding:.15rem .5rem;border-radius:99px;background:var(--surface2);color:var(--text2);border:1px solid var(--border);">${esc(lbl)}</span>`;
+                }).join('')}
+              </div>
+            </div>` : ''}
+          ${d.notes?.workout||d.notes?.general||d.notes?.food ? `
+            <div>
+              <div class="slabel" style="margin-bottom:.4rem;">📝 Notes</div>
+              ${d.notes?.workout?`<p style="font-size:.78rem;color:var(--text2);margin-bottom:.25rem;">🏋️ ${d.notes.workout.replace(/<[^>]*>/g,'').slice(0,120)}</p>`:''}
+              ${d.notes?.general?`<p style="font-size:.78rem;color:var(--text2);margin-bottom:.25rem;">📝 ${d.notes.general.replace(/<[^>]*>/g,'').slice(0,120)}</p>`:''}
+              ${d.notes?.food?`<p style="font-size:.78rem;color:var(--text2);">🥗 ${d.notes.food.replace(/<[^>]*>/g,'').slice(0,120)}</p>`:''}
+            </div>` : ''}
+        </div>`;
+
+      cardsWrap.appendChild(card);
+
+      // Toggle expand
+      card.querySelector('.log-day-hdr').addEventListener('click', e => {
+        if(e.target.closest('.log-del-btn')||e.target.closest('.log-goto-btn')) return;
+        card.querySelector('.log-day-body').classList.toggle('open');
+      });
+
+      // Go to day button
+      card.querySelector('.log-goto-btn').addEventListener('click', e => {
+        e.stopPropagation();
+        viewingDate = date;
+        switchTab('today');
+        renderCalBar(); renderAll(); updatePastBanner();
+      });
+
+      // Delete
+      card.querySelector('.log-del-btn').addEventListener('click', e => {
+        e.stopPropagation();
+        showConfirm(t('delDay'),'',t('confirmYes'),t('confirmNo'),()=>{
+          delete dayCache[date];
+          LS.del(`zn_day_${date}`);
+          if(db) db.ref(`${USER_KEY}/zn_day_${date}`).remove().catch(()=>{});
+          renderLog(); renderCalBar();
+        });
+      });
+    });
+
+    list.appendChild(group);
+  });
+};
+
+// ── Week Stats ────────────────────────────────────────────────────
+const renderWeekStats = () => {
+  const days=[];
+  for(let i=6;i>=0;i--){
+    const d=new Date(); d.setDate(d.getDate()-i);
+    const key=d.toISOString().slice(0,10);
+    const dayShort=d.toLocaleDateString(lang==='ar'?'ar-SA':'en-US',{weekday:'short'});
+    days.push({key,dayShort,entry:dayCache[key]||null});
+  }
+  const withData=days.filter(d=>d.entry);
+  const avgTasks=withData.length?Math.round(withData.map(d=>d.entry.tasks.filter(x=>x.done).length/Math.max(d.entry.tasks.length,1)*100).reduce((a,b)=>a+b,0)/withData.length):0;
+  const avgCal=withData.length?Math.round(withData.map(d=>d.entry.meals.reduce((s,m)=>s+m.kcal,0)).reduce((a,b)=>a+b,0)/withData.length):0;
+  let bestDay=null, bestPct=0;
+  withData.forEach(d=>{
+    const pct=d.entry.tasks.filter(x=>x.done).length/Math.max(d.entry.tasks.length,1)*100;
+    if(pct>bestPct){bestPct=pct;bestDay=d;}
+  });
+  $('wAvgTasks').textContent=withData.length?avgTasks+'%':'—';
+  $('wAvgCal').textContent=withData.length?avgCal.toLocaleString():'—';
+  $('wBestDay').textContent=bestDay?bestDay.dayShort:'—';
+
+  const maxTask=Math.max(...days.map(d=>d.entry?d.entry.tasks.length:0),1);
+  const maxCal =Math.max(...days.map(d=>d.entry?d.entry.meals.reduce((s,m)=>s+m.kcal,0):0),1);
+
+  $('wTaskChart').innerHTML=''; $('wTaskChartLabels').innerHTML='';
+  $('wCalChart').innerHTML='';  $('wCalChartLabels').innerHTML='';
+
+  days.forEach(d=>{
+    const isTd=d.key===todayKey();
+    const done=d.entry?d.entry.tasks.filter(x=>x.done).length:0;
+    const total=d.entry?d.entry.tasks.length:0;
+    const h=Math.round(total?done/total*80:0);
+    const bt=document.createElement('div'); bt.className='wbar-wrap';
+    bt.innerHTML=`<div class="wbar-val" style="color:var(--text2);">${done||''}</div><div class="wbar-bg"><div class="wbar-fill" style="height:${h}px;background:${isTd?'var(--accent)':'var(--surface3)'};"></div></div>`;
+    $('wTaskChart').appendChild(bt);
+    const lt=document.createElement('div'); lt.className='wbar-wrap';
+    lt.innerHTML=`<div class="wbar-lbl" style="color:${isTd?'var(--text)':'var(--text3)'};">${d.dayShort}</div>`;
+    $('wTaskChartLabels').appendChild(lt);
+
+    const kcal=d.entry?d.entry.meals.reduce((s,m)=>s+m.kcal,0):0;
+    const hc=Math.round(kcal/maxCal*80);
+    const over=d.entry&&kcal>calTarget;
+    const bc=document.createElement('div'); bc.className='wbar-wrap';
+    bc.innerHTML=`<div class="wbar-val" style="color:var(--text2);">${kcal>0?kcal.toLocaleString():''}</div><div class="wbar-bg"><div class="wbar-fill" style="height:${hc}px;background:${over?'var(--danger)':isTd?'var(--accent)':'var(--surface3)'};"></div></div>`;
+    $('wCalChart').appendChild(bc);
+    const lc=document.createElement('div'); lc.className='wbar-wrap';
+    lc.innerHTML=`<div class="wbar-lbl" style="color:${isTd?'var(--text)':'var(--text3)'};">${d.dayShort}</div>`;
+    $('wCalChartLabels').appendChild(lc);
+  });
+
+  const catTotals={work:{done:0,total:0},sport:{done:0,total:0},personal:{done:0,total:0},health:{done:0,total:0}};
+  days.forEach(d=>{
+    if(!d.entry)return;
+    Object.keys(catTotals).forEach(cat=>{
+      catTotals[cat].done  += d.entry.tasks.filter(x=>x.cat===cat&&x.done).length;
+      catTotals[cat].total += d.entry.tasks.filter(x=>x.cat===cat).length;
+    });
+  });
+  const catColors={work:'var(--text)',sport:'var(--text)',personal:'var(--text)',health:'var(--text)'};
+  const catIcons ={work:'💼',sport:'🏃',personal:'🌱',health:'💊'};
+  $('wCatBreakdown').innerHTML=Object.entries(catTotals).map(([cat,{done,total}])=>{
+    const pct=total?Math.round(done/total*100):0;
+    return `<div><div style="display:flex;justify-content:space-between;font-size:.78rem;margin-bottom:.3rem;"><span>${catIcons[cat]} ${CAT_LABELS(cat)}</span><span style="font-weight:700;">${pct}%</span></div><div class="pbar"><div style="height:100%;border-radius:99px;background:var(--accent);width:${pct}%;transition:width .5s cubic-bezier(.4,0,.2,1);"></div></div></div>`;
+  }).join('');
+};
+
+// ── Confirm dialog ────────────────────────────────────────────────
+let _cb=null;
+const showConfirm = (msg,sub,ok,cancel,cb) => {
+  $('confirmMsg').textContent=msg; $('confirmSub').textContent=sub;
+  $('confirmOk').textContent=ok;   $('confirmCancel').textContent=cancel;
+  _cb=cb; $('confirmDialog').classList.add('open');
+};
+$('confirmOk').addEventListener('click',()=>{ $('confirmDialog').classList.remove('open'); if(_cb){_cb();_cb=null;} });
+$('confirmCancel').addEventListener('click',()=>{ $('confirmDialog').classList.remove('open'); _cb=null; });
+$('confirmDialog').addEventListener('click',e=>{ if(e.target===$('confirmDialog')){$('confirmDialog').classList.remove('open');_cb=null;} });
+
+// ── Toast ─────────────────────────────────────────────────────────
+let _tt=null;
+const showToast = msg => {
+  const el=$('toast'); el.textContent=msg;
+  el.style.opacity='1'; el.style.transform='translateX(-50%) translateY(0)';
+  clearTimeout(_tt);
+  _tt=setTimeout(()=>{ el.style.opacity='0'; el.style.transform='translateX(-50%) translateY(80px)'; },2800);
+};
+
+
+// ── Workout Planner ──────────────────────────────────────────────
+// weekPlan: { 'Mon': { rest:false, focus:'Chest', notes:'', exercises:[{id,name,sets,reps}] }, … }
+// Stored globally per-user (not per-day) in cfg
+const DAYS_EN = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+const DAYS_AR = ['الإثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت','الأحد'];
+const DAY_KEYS = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+
+let weekPlan = {};         // persistent weekly template
+let wpModalDay = null;     // which day is being edited in modal
+
+const loadWeekPlan = () => {
+  weekPlan = loadCfg('weekPlan', {});
+  // Ensure all 7 days exist
+  DAY_KEYS.forEach(d => { if(!weekPlan[d]) weekPlan[d] = {rest:false, focus:'', notes:'', exercises:[]}; });
+};
+const saveWeekPlan = () => saveCfg('weekPlan', weekPlan);
+
+// ── Get today's day key (Mon/Tue/…) ──────────────────────────────
+const todayDayKey = () => {
+  const d = new Date();
+  return DAY_KEYS[d.getDay()===0 ? 6 : d.getDay()-1]; // Sun=0 → index 6
+};
+
+// ── Render the weekly grid ────────────────────────────────────────
+const renderWpGrid = () => {
+  const grid = $('wpGrid'); if(!grid) return;
+  grid.innerHTML = '';
+  const todayKey = todayDayKey();
+  DAY_KEYS.forEach((dk, i) => {
+    const day = weekPlan[dk] || {rest:false, focus:'', exercises:[]};
+    const isToday = dk === todayKey;
+    const label = lang==='ar' ? DAYS_AR[i] : dk;
+
+    const col = document.createElement('div');
+    col.className = 'wp-day-col';
+
+    const hdr = document.createElement('div');
+    hdr.className = 'wp-day-header';
+    hdr.style.color = isToday ? 'var(--text)' : '';
+    hdr.style.fontWeight = isToday ? '800' : '';
+    hdr.textContent = label;
+    col.appendChild(hdr);
+
+    const cell = document.createElement('div');
+    const cls = ['wp-day-cell'];
+    if(day.rest) cls.push('rest-day');
+    else if(day.exercises && day.exercises.length > 0) cls.push('has-workout');
+    if(isToday) cls.push('today-col');
+    cell.className = cls.join(' ');
+
+    if(day.rest){
+      cell.innerHTML = `<span class="wp-rest-label">😴 Rest</span>`;
+    } else if(day.focus || (day.exercises && day.exercises.length)){
+      if(day.focus) cell.innerHTML += `<span class="wp-ex-chip" style="font-weight:700;">${esc(day.focus)}</span>`;
+      (day.exercises||[]).slice(0,3).forEach(ex => {
+        cell.innerHTML += `<span class="wp-ex-chip">${esc(ex.name)} ${ex.sets}×${ex.reps}</span>`;
+      });
+      if((day.exercises||[]).length > 3){
+        cell.innerHTML += `<span style="font-size:.55rem;color:var(--text3);">+${day.exercises.length-3} more</span>`;
+      }
+    } else {
+      cell.innerHTML = `<span style="font-size:.6rem;color:var(--text3);text-align:center;margin:auto;">Tap to plan</span>`;
+    }
+
+    cell.addEventListener('click', () => openWpModal(dk, i));
+    col.appendChild(cell);
+    grid.appendChild(col);
+  });
+};
+
+// ── Render today's exercise log ───────────────────────────────────
+const renderWpExList = () => {
+  const dk = todayDayKey();
+  const day = weekPlan[dk] || {exercises:[]};
+  const list = $('wpExList'), empty = $('wpExEmpty'), summary = $('wpSummary');
+  if(!list) return;
+  list.innerHTML = '';
+
+  const exs = day.exercises || [];
+  empty.style.display = exs.length ? 'none' : 'block';
+  summary.style.display = exs.length ? 'block' : 'none';
+
+  exs.forEach((ex, i) => {
+    const row = document.createElement('div');
+    row.className = 'ex-row';
+    row.innerHTML = `
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:.84rem;font-weight:600;">${esc(ex.name)}</div>
+        ${ex.weight ? `<div style="font-size:.7rem;color:var(--text3);">${ex.weight} kg</div>` : ''}
+      </div>
+      <div style="display:flex;gap:.4rem;align-items:center;flex-shrink:0;">
+        <span style="font-size:.78rem;background:var(--surface3);padding:.18rem .5rem;border-radius:4px;font-weight:600;">${ex.sets} sets</span>
+        <span style="font-size:.78rem;background:var(--surface3);padding:.18rem .5rem;border-radius:4px;font-weight:600;">× ${ex.reps}</span>
+        <button class="delbtn wp-del-ex" data-idx="${i}">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>`;
+    list.appendChild(row);
+  });
+
+  list.querySelectorAll('.wp-del-ex').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      const dk2 = todayDayKey();
+      weekPlan[dk2].exercises.splice(+btn.dataset.idx, 1);
+      saveWeekPlan(); renderWpExList(); renderWpGrid();
+    });
+  });
+
+  if(exs.length){
+    const totalSets = exs.reduce((s, e) => s + (e.sets||0), 0);
+    summary.textContent = `${exs.length} exercise${exs.length!==1?'s':''} · ${totalSets} total sets`;
+  }
+
+  // Update title
+  const titleEl = $('wpLogTitle');
+  if(titleEl){
+    const todayName = lang==='ar' ? DAYS_AR[DAY_KEYS.indexOf(dk)] : dk;
+    titleEl.textContent = `${todayName}'s Exercises`;
+  }
+};
+
+const renderWorkoutTab = () => {
+  renderWpGrid();
+  renderWpExList();
+};
+
+// ── Add exercise ──────────────────────────────────────────────────
+$('wpAddExBtn').addEventListener('click', () => {
+  const row = $('wpAddRow');
+  row.style.display = row.style.display === 'none' ? 'block' : 'none';
+  if(row.style.display !== 'none') $('wpExName').focus();
+});
+
+// Quick-fill chips (common exercises)
+const COMMON_EX = ['Bench Press','Squat','Deadlift','Pull-up','Push-up','OHP','Row','Curl','Dip'];
+const renderQuickFills = () => {
+  const wrap = $('wpQuickFills'); if(!wrap) return;
+  wrap.innerHTML = COMMON_EX.map(n =>
+    `<button class="btn btn-ghost" style="font-size:.65rem;padding:.18rem .5rem;" data-exname="${n}">${n}</button>`
+  ).join('');
+  wrap.querySelectorAll('[data-exname]').forEach(b => {
+    b.addEventListener('click', () => { $('wpExName').value = b.dataset.exname; $('wpExSets').focus(); });
+  });
+};
+
+$('wpExSaveBtn').addEventListener('click', () => {
+  const name = sanitizeText($('wpExName').value, 50);
+  const sets = sanitizeInt($('wpExSets').value, 1, 99) || 1;
+  const reps = sanitizeInt($('wpExReps').value, 1, 999) || 10;
+  if(!name){ showToast('Enter exercise name'); return; }
+  const dk = todayDayKey();
+  if(!weekPlan[dk]) weekPlan[dk] = {rest:false, focus:'', notes:'', exercises:[]};
+  weekPlan[dk].rest = false;
+  weekPlan[dk].exercises.push({ id:'ex'+Date.now(), name, sets, reps });
+  saveWeekPlan();
+  $('wpExName').value=''; $('wpExSets').value=''; $('wpExReps').value='';
+  $('wpAddRow').style.display='none';
+  renderWpExList(); renderWpGrid();
+  showToast(`✅ ${name} · ${sets}×${reps}`);
+});
+['wpExName','wpExSets','wpExReps'].forEach(id => {
+  $(id).addEventListener('keydown', e => { if(e.key==='Enter') $('wpExSaveBtn').click(); });
+});
+
+// Clear week
+$('wpClearWeekBtn').addEventListener('click', () => {
+  showConfirm('Clear entire week plan?', 'All exercises and rest days will be removed.', 'Clear', 'Cancel', () => {
+    DAY_KEYS.forEach(d => { weekPlan[d] = {rest:false, focus:'', notes:'', exercises:[]}; });
+    saveWeekPlan(); renderWpGrid(); renderWpExList();
+    showToast('Week cleared');
+  });
+});
+
+// ── Day Edit Modal ────────────────────────────────────────────────
+const openWpModal = (dk, dayIdx) => {
+  wpModalDay = dk;
+  const day = weekPlan[dk] || {};
+  const dayName = lang==='ar' ? DAYS_AR[dayIdx] : DAYS_EN[dayIdx];
+  $('wmTitle').textContent = dayName;
+  $('wmRestChk').checked = !!day.rest;
+  $('wmFocus').value = day.focus || '';
+  $('wmNotes').value = day.notes || '';
+  $('workoutModal').classList.add('open');
+  setTimeout(() => $('wmFocus').focus(), 80);
+};
+$('closeWorkoutModal').addEventListener('click', () => $('workoutModal').classList.remove('open'));
+$('workoutModal').addEventListener('click', e => { if(e.target===$('workoutModal')) $('workoutModal').classList.remove('open'); });
+$('wmSaveBtn').addEventListener('click', () => {
+  if(!wpModalDay) return;
+  if(!weekPlan[wpModalDay]) weekPlan[wpModalDay] = {exercises:[]};
+  weekPlan[wpModalDay].rest    = $('wmRestChk').checked;
+  weekPlan[wpModalDay].focus   = sanitizeText($('wmFocus').value, 60);
+  weekPlan[wpModalDay].notes   = sanitizeText($('wmNotes').value, 300);
+  saveWeekPlan();
+  $('workoutModal').classList.remove('open');
+  renderWpGrid(); renderWpExList();
+  showToast(lang==='ar'?'تم الحفظ ✅':'Saved ✅');
+});
+
+// ── Section Visibility ───────────────────────────────────────────
+const SECTIONS = {
+  habits:   { id:'sectionHabits',   label:{ en:'Daily Habits',    ar:'العادات اليومية' } },
+  steps:    { id:'sectionSteps',    label:{ en:'Daily Steps',     ar:'الخطوات اليومية' } },
+  calories: { id:'sectionCalories', label:{ en:'Calorie Tracker', ar:'تتبع السعرات' } },
+  notes:    { id:'sectionNotes',    label:{ en:'Day Notes',       ar:'الملاحظات' } },
+  wpplanner:{ id:'sectionWorkoutPlanner', label:{ en:'Workout Schedule', ar:'جدول التمرين' } },
+  wplog:    { id:'sectionWorkoutLog',     label:{ en:'Exercise Log',     ar:'سجل التمارين' } },
+};
+
+let hiddenSections = []; // array of section keys currently hidden
+
+const loadHiddenSections = () => {
+  hiddenSections = loadCfg('hiddenSections', []);
+};
+
+const saveHiddenSections = () => {
+  saveCfg('hiddenSections', hiddenSections);
+};
+
+const applyHiddenSections = () => {
+  Object.entries(SECTIONS).forEach(([key, sec]) => {
+    const el = $(sec.id);
+    if(!el) return;
+    if(hiddenSections.includes(key)){
+      el.style.display = 'none';
+    } else {
+      el.style.display = '';
+    }
+  });
+  renderSectionMgr();
+};
+
+const hideSection = key => {
+  if(!hiddenSections.includes(key)) hiddenSections.push(key);
+  saveHiddenSections();
+  applyHiddenSections();
+  renderQuickFills();
+  const lbl = SECTIONS[key]?.label[lang] || key;
+  showToast(`${lbl} ${lang==='ar'?'مخفي — اضغط ☰ لإرجاعه':'hidden — tap ☰ to restore'}`);
+};
+
+const restoreSection = key => {
+  hiddenSections = hiddenSections.filter(k => k !== key);
+  saveHiddenSections();
+  applyHiddenSections();
+  renderQuickFills();
+};
+
+// ── Manage Sections panel (rendered inline above calendar) ────────
+let sectionMgrOpen = false;
+
+const renderSectionMgr = () => {
+  let mgr = $('sectionMgr');
+
+  // Only render if panel is open
+  if(!sectionMgrOpen){
+    if(mgr) mgr.remove();
+    return;
+  }
+
+  if(!mgr){
+    mgr = document.createElement('div');
+    mgr.id = 'sectionMgr';
+    // Insert after the calendar card
+    const calCard = $('calBar').closest('.card');
+    calCard.after(mgr);
+  }
+
+  const hiddenKeys = Object.keys(SECTIONS).filter(k => hiddenSections.includes(k));
+  const visibleKeys = Object.keys(SECTIONS).filter(k => !hiddenSections.includes(k));
+
+  mgr.innerHTML = `
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem;">
+      <span class="slabel">${lang==='ar'?'الأقسام':'Sections'}</span>
+      <button id="closeSectionMgr" style="background:none;border:none;cursor:pointer;color:var(--text3);font-size:.75rem;font-family:inherit;">
+        ${lang==='ar'?'إغلاق':'Close'}
+      </button>
+    </div>
+    ${Object.keys(SECTIONS).map(key => {
+      const sec = SECTIONS[key];
+      const hidden = hiddenSections.includes(key);
+      const lbl = sec.label[lang];
+      return `
+        <div class="sec-restore-row">
+          <span style="font-size:.84rem;font-weight:500;color:${hidden?'var(--text3)':'var(--text)'};">${lbl}</span>
+          <button class="btn btn-ghost sec-toggle-btn" data-seckey="${key}" style="font-size:.72rem;padding:.25rem .65rem;">
+            ${hidden
+              ? `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg> ${lang==='ar'?'إظهار':'Show'}`
+              : `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg> ${lang==='ar'?'إخفاء':'Hide'}`
+            }
+          </button>
+        </div>`;
+    }).join('')}`;
+
+  $('closeSectionMgr').addEventListener('click', () => {
+    sectionMgrOpen = false;
+    renderSectionMgr();
+  });
+
+  mgr.querySelectorAll('.sec-toggle-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const key = btn.dataset.seckey;
+      if(hiddenSections.includes(key)){
+        restoreSection(key);
+      } else {
+        hideSection(key);
+      }
+    });
+  });
+};
+
+// Manage button toggle
+$('manageSectionsBtn').addEventListener('click', () => {
+  sectionMgrOpen = !sectionMgrOpen;
+  renderSectionMgr();
+});
+
+// Eye toggle on each card header (always visible)
+document.addEventListener('click', e => {
+  const btn = e.target.closest('.section-eye');
+  if(!btn) return;
+  const key = btn.dataset.section;
+  if(key) hideSection(key);
+});
+
+// ── Init ──────────────────────────────────────────────────────────
+function init() {
+  loadSavedMeals();
+  loadWeekPlan();
+  loadHiddenSections();
+  applyTheme();
+  applyLang();
+  applyHiddenSections();
+  renderQuickFills();
+  viewingDate=todayKey();
+  ensureDay(viewingDate);
+  switchNoteCat('workout');
+  updatePastBanner();
+}
+
+// ── Bootstrap (runs after ALL functions defined) ──────────────────
+loadLocalData();
+init();
+
+// Firebase sync in background — never blocks UI
+setTimeout(()=>{
+  initFirebase().then(database=>{
+    db = database;
+    if(!db) return;
+    const fbFetch   = db.ref(USER_KEY).once('value');
+    const fbTimeout = new Promise((_,rej)=>setTimeout(()=>rej('timeout'),8000));
+    Promise.race([fbFetch, fbTimeout]).then(snap=>{
+      mergeFirebaseData(snap);
+      renderAll();
+      renderCalBar();
+    }).catch(()=>{});
+  }).catch(()=>{});
+}, 100);
+</script>
+</body>
+</html>
