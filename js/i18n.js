@@ -2,8 +2,8 @@
 // ── i18n ─────────────────────────────────────────────────────────
 const T = {
   en:{
-    logo:'My Day', greetMorn:'Good morning.', greetAfter:'Good afternoon.', greetEve:'Good evening.',
-    sub:'Your daily overview — make it count.',
+    logo:'Adaa', greetMorn:'Good morning.', greetAfter:'Good afternoon.', greetEve:'Good evening.',
+    sub:'Track your performance. Every day.',
     tabToday:'Today', tabNotes:'Notes', tabWeek:'This Week', tabWorkout:'Workout', tabLog:'Past Days',
     titleHabits:'Daily Habits', titleCalories:'Calorie Tracker', titleNotes:'Day Notes',
     titleNotesMob:'Day Notes', titleLog:'Past Days Log', titleTimer:'Focus Timer',
@@ -41,8 +41,8 @@ const T = {
     stepsUnit:'steps',
   },
   ar:{
-    logo:'يومي', greetMorn:'صباح الخير.', greetAfter:'مساء النور.', greetEve:'مساء الخير.',
-    sub:'نظرتك اليومية — اجعلها تستحق.',
+    logo:'Adaa', greetMorn:'صباح الخير.', greetAfter:'مساء النور.', greetEve:'مساء الخير.',
+    sub:'تتبّع أداءك. كل يوم.',
     tabToday:'اليوم', tabNotes:'الملاحظات', tabWeek:'هذا الأسبوع', tabWorkout:'تمرين', tabLog:'سجل الأيام',
     titleHabits:'العادات اليومية', titleCalories:'تتبع السعرات', titleNotes:'ملاحظات اليوم',
     titleNotesMob:'ملاحظات اليوم', titleLog:'سجل الأيام السابقة', titleTimer:'مؤقت التركيز',
