@@ -400,14 +400,18 @@ $('wpExSaveBtn').addEventListener('click', () => {
     weekPlan[dk].exercises.push({id:'ex'+Date.now(), name, sets:1, reps, muscle:'', weight, setLogs});
   }
 
+  const setNum = (weekPlan[dk].exercises.find(e=>e.name.toLowerCase()===name.toLowerCase())?.setLogs?.length) || 1;
+
   saveWeekPlan(); renderWpExList(); renderWpGrid();
 
-  // Clear only Reps+kg, keep name for next set
-  $('wpExReps').value = ''; $('wpExWeight').value = '';
-  $('wpExName').value = name; // keep name visible
-  $('wpExReps').focus();
+  // After render, restore name and focus reps
+  setTimeout(() => {
+    $('wpExName').value = name;
+    $('wpExReps').value = '';
+    $('wpExWeight').value = '';
+    $('wpExReps').focus();
+  }, 30);
 
-  const setNum = weekPlan[dk].exercises.find(e=>e.name.toLowerCase()===name.toLowerCase())?.setLogs?.length || 1;
   showToast(lang==='ar' ? `✅ جلسة ${setNum}` : `✅ Set ${setNum} added`);
 });
 
