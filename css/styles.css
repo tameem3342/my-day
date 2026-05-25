@@ -303,7 +303,7 @@ textarea.inp{resize:vertical;min-height:95px;line-height:1.75;}
 .tab-btn{
   padding:.38rem .15rem;border-radius:6px;font-size:.72rem;font-weight:500;
   cursor:pointer;border:1px solid transparent;
-  background:transparent;color:var(--text3);transition:all .15s;font-family:inherit;
+  background:transparent;color:var(--text2);transition:all .15s;font-family:inherit;
   display:flex;flex-direction:column;align-items:center;gap:.1rem;
 }
 .tab-btn:hover{color:var(--text2);}
@@ -312,9 +312,9 @@ textarea.inp{resize:vertical;min-height:95px;line-height:1.75;}
   border-color:var(--accent);
 }
 /* Hide text labels on small screens, show on wider */
-.tab-lbl{font-size:.6rem;font-weight:600;white-space:nowrap;}
-@media(max-width:480px){.tab-lbl{display:none;}}
-@media(min-width:481px){.tab-lbl{display:block;}}
+.tab-lbl{font-size:.78rem;font-weight:700;white-space:nowrap;display:block;color:inherit;letter-spacing:-.01em;}
+
+
 
 /* ── Category filter pills ── */
 .fcat-pill{
