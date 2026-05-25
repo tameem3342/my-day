@@ -284,7 +284,15 @@ $('wpAddExBtn').addEventListener('click', () => {
   const isOpen = row.style.display!=='none';
   row.style.display = isOpen?'none':'block';
   $('aiSuggestPanel').classList.remove('open');
-  if(!isOpen) $('wpExName').focus();
+  if(!isOpen) {
+    // Reset state for new exercise session
+    _wpActiveExName = '';
+    _wpActiveExId   = null;
+    $('wpExName').value  = '';
+    $('wpExReps').value  = '';
+    $('wpExWeight').value = '';
+    $('wpExName').focus();
+  }
 });
 
 const renderQuickFills = () => {
@@ -362,55 +370,71 @@ const addExerciseToToday = (name, sets=3, reps=10, muscle='', weight=null) => {
 };
 
 // ── Add exercise: Name once, then Reps+kg+Done per set ──────────
-let _wpActiveExName = ''; // holds the exercise name across sets
+let _wpActiveExName = '';
+let _wpActiveExId   = null; // track which exercise we're adding sets to
 
-$('wpExName').addEventListener('blur', () => {
-  const v = sanitizeText($('wpExName').value, 50);
-  if(v) { _wpActiveExName = v; $('wpExReps').focus(); }
-});
 $('wpExName').addEventListener('keydown', e => {
-  if(e.key === 'Enter') { const v=sanitizeText($('wpExName').value,50); if(v){_wpActiveExName=v; $('wpExReps').focus();} }
+  if(e.key === 'Enter') {
+    const v = sanitizeText($('wpExName').value, 50);
+    if(v) { _wpActiveExName = v; _wpActiveExId = null; $('wpExReps').focus(); }
+  }
+});
+$('wpExName').addEventListener('change', () => {
+  // When name changes, reset the active exercise pointer
+  _wpActiveExId = null;
 });
 
 $('wpExSaveBtn').addEventListener('click', () => {
   const name = sanitizeText($('wpExName').value, 50) || _wpActiveExName;
-  if(!name){ showToast(lang==='ar'?'أدخل اسم التمرين':'Enter exercise name'); return; }
+  if(!name){ showToast(lang==='ar'?'أدخل اسم التمرين':'Enter exercise name'); $('wpExName').focus(); return; }
   _wpActiveExName = name;
-  const reps   = sanitizeInt($('wpExReps').value, 1, 999) || 10;
+
+  const reps = sanitizeInt($('wpExReps').value, 1, 999);
+  if(!reps){ showToast(lang==='ar'?'أدخل عدد التكرارات':'Enter reps'); $('wpExReps').focus(); return; }
+
   const weightRaw = parseFloat($('wpExWeight').value);
-  const weight = !isNaN(weightRaw) && weightRaw > 0 ? Math.round(weightRaw*10)/10 : null;
+  const weight = (!isNaN(weightRaw) && weightRaw >= 0) ? Math.round(weightRaw*10)/10 : null;
 
   const dk = todayDayKey();
-  if(!weekPlan[dk]) weekPlan[dk] = {rest:false,focus:'',notes:'',exercises:[]};
+  if(!weekPlan[dk]) weekPlan[dk] = {rest:false, focus:'', notes:'', exercises:[]};
   weekPlan[dk].rest = false;
 
-  // Check if exercise already exists for today — add set to it
-  const existing = weekPlan[dk].exercises.find(e => e.name.toLowerCase() === name.toLowerCase());
+  // Find by ID first (most reliable), then by name
+  let existing = _wpActiveExId
+    ? weekPlan[dk].exercises.find(e => e.id === _wpActiveExId)
+    : weekPlan[dk].exercises.find(e => e.name.toLowerCase() === name.toLowerCase());
+
   if(existing) {
-    // Remove trailing empty set if present
+    // Clean trailing empty sets
     while(existing.setLogs.length > 0) {
       const last = existing.setLogs[existing.setLogs.length-1];
       if(!last.reps && last.weight == null) existing.setLogs.pop(); else break;
     }
-    existing.setLogs.push({reps, weight, done:false});
+    existing.setLogs.push({reps, weight});
     existing.sets = existing.setLogs.length;
     existing.finished = false;
+    _wpActiveExId = existing.id;
   } else {
-    const setLogs = [{reps, weight, done:false}];
-    weekPlan[dk].exercises.push({id:'ex'+Date.now(), name, sets:1, reps, muscle:'', weight, setLogs});
+    const newEx = {id:'ex'+Date.now(), name, sets:1, reps, muscle:'', weight, setLogs:[{reps, weight}]};
+    weekPlan[dk].exercises.push(newEx);
+    _wpActiveExId = newEx.id;
   }
 
-  const setNum = (weekPlan[dk].exercises.find(e=>e.name.toLowerCase()===name.toLowerCase())?.setLogs?.length) || 1;
+  const setNum = weekPlan[dk].exercises.find(e=>e.id===_wpActiveExId)?.setLogs?.length || 1;
 
-  saveWeekPlan(); renderWpExList(); renderWpGrid();
+  saveWeekPlan();
+  renderWpExList();
+  renderWpGrid();
 
-  // After render, restore name and focus reps
+  // Restore name + clear reps/kg + focus reps
   setTimeout(() => {
-    $('wpExName').value = name;
-    $('wpExReps').value = '';
-    $('wpExWeight').value = '';
-    $('wpExReps').focus();
-  }, 30);
+    const nameEl = $('wpExName');
+    const repsEl = $('wpExReps');
+    const kgEl   = $('wpExWeight');
+    if(nameEl) nameEl.value = _wpActiveExName;
+    if(repsEl) { repsEl.value = ''; repsEl.focus(); }
+    if(kgEl)   kgEl.value = '';
+  }, 40);
 
   showToast(lang==='ar' ? `✅ جلسة ${setNum}` : `✅ Set ${setNum} added`);
 });
