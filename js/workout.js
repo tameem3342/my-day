@@ -359,19 +359,58 @@ const addExerciseToToday = (name, sets=3, reps=10, muscle='', weight=null) => {
   showToast(`✅ ${name} · ${sets}×${reps}${wtStr}`);
 };
 
-$('wpExSaveBtn').addEventListener('click',()=>{
-  const name=sanitizeText($('wpExName').value,50);
-  const sets=sanitizeInt($('wpExSets').value,1,99)||3;
-  const reps=sanitizeInt($('wpExReps').value,1,999)||10;
+// ── Add exercise: Name once, then Reps+kg+Done per set ──────────
+let _wpActiveExName = ''; // holds the exercise name across sets
+
+$('wpExName').addEventListener('blur', () => {
+  const v = sanitizeText($('wpExName').value, 50);
+  if(v) { _wpActiveExName = v; $('wpExReps').focus(); }
+});
+$('wpExName').addEventListener('keydown', e => {
+  if(e.key === 'Enter') { const v=sanitizeText($('wpExName').value,50); if(v){_wpActiveExName=v; $('wpExReps').focus();} }
+});
+
+$('wpExSaveBtn').addEventListener('click', () => {
+  const name = sanitizeText($('wpExName').value, 50) || _wpActiveExName;
+  if(!name){ showToast(lang==='ar'?'أدخل اسم التمرين':'Enter exercise name'); return; }
+  _wpActiveExName = name;
+  const reps   = sanitizeInt($('wpExReps').value, 1, 999) || 10;
   const weightRaw = parseFloat($('wpExWeight').value);
   const weight = !isNaN(weightRaw) && weightRaw > 0 ? Math.round(weightRaw*10)/10 : null;
-  if(!name){showToast('Enter exercise name');return;}
-  addExerciseToToday(name,sets,reps,'',weight);
-  $('wpExName').value=''; $('wpExSets').value=''; $('wpExReps').value=''; $('wpExWeight').value='';
-  $('wpAddRow').style.display='none';
+
+  const dk = todayDayKey();
+  if(!weekPlan[dk]) weekPlan[dk] = {rest:false,focus:'',notes:'',exercises:[]};
+  weekPlan[dk].rest = false;
+
+  // Check if exercise already exists for today — add set to it
+  const existing = weekPlan[dk].exercises.find(e => e.name.toLowerCase() === name.toLowerCase());
+  if(existing) {
+    // Remove trailing empty set if present
+    while(existing.setLogs.length > 0) {
+      const last = existing.setLogs[existing.setLogs.length-1];
+      if(!last.reps && last.weight == null) existing.setLogs.pop(); else break;
+    }
+    existing.setLogs.push({reps, weight, done:false});
+    existing.sets = existing.setLogs.length;
+    existing.finished = false;
+  } else {
+    const setLogs = [{reps, weight, done:false}];
+    weekPlan[dk].exercises.push({id:'ex'+Date.now(), name, sets:1, reps, muscle:'', weight, setLogs});
+  }
+
+  saveWeekPlan(); renderWpExList(); renderWpGrid();
+
+  // Clear only Reps+kg, keep name for next set
+  $('wpExReps').value = ''; $('wpExWeight').value = '';
+  $('wpExName').value = name; // keep name visible
+  $('wpExReps').focus();
+
+  const setNum = weekPlan[dk].exercises.find(e=>e.name.toLowerCase()===name.toLowerCase())?.setLogs?.length || 1;
+  showToast(lang==='ar' ? `✅ جلسة ${setNum}` : `✅ Set ${setNum} added`);
 });
-['wpExName','wpExSets','wpExReps','wpExWeight'].forEach(id=>{
-  $(id).addEventListener('keydown',e=>{if(e.key==='Enter')$('wpExSaveBtn').click();});
+
+['wpExReps','wpExWeight'].forEach(id=>{
+  $(id)&&$(id).addEventListener('keydown',e=>{if(e.key==='Enter')$('wpExSaveBtn').click();});
 });
 
 $('wpClearWeekBtn').addEventListener('click',()=>{

@@ -896,18 +896,19 @@
 
           <!-- Add row -->
           <div id="wpAddRow" style="display:none;background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:.7rem;margin-top:.35rem;">
-            <div style="display:grid;grid-template-columns:1fr 52px 52px 70px auto;gap:.35rem;align-items:center;">
-              <input class="inp" id="wpExName" type="text" maxlength="50" placeholder="Exercise…" style="font-size:.82rem;"/>
-              <input class="inp" id="wpExSets" type="number" min="1" max="99" placeholder="Sets" style="font-size:.82rem;text-align:center;padding:.5rem .3rem;"/>
-              <input class="inp" id="wpExReps" type="number" min="1" max="999" placeholder="Reps" style="font-size:.82rem;text-align:center;padding:.5rem .3rem;"/>
-              <div style="position:relative;">
-                <input class="inp" id="wpExWeight" type="number" min="0" max="999" step="0.5" placeholder="kg" style="font-size:.82rem;text-align:center;padding:.5rem .3rem;padding-right:1.6rem;"/>
-                <span style="position:absolute;right:.35rem;top:50%;transform:translateY(-50%);font-size:.62rem;color:var(--text3);pointer-events:none;">kg</span>
+            <div style="display:flex;flex-direction:column;gap:.4rem;">
+              <input class="inp" id="wpExName" type="text" maxlength="50" placeholder="Exercise name…" style="font-size:.88rem;font-weight:600;width:100%;"/>
+              <div style="display:grid;grid-template-columns:1fr 1fr auto;gap:.35rem;align-items:center;">
+                <input class="inp" id="wpExReps" type="number" min="1" max="999" placeholder="Reps" style="font-size:.85rem;text-align:center;"/>
+                <div style="position:relative;">
+                  <input class="inp" id="wpExWeight" type="number" min="0" max="999" step="0.5" placeholder="kg" style="font-size:.85rem;text-align:center;padding-right:1.6rem;width:100%;"/>
+                  <span style="position:absolute;right:.35rem;top:50%;transform:translateY(-50%);font-size:.62rem;color:var(--text3);pointer-events:none;">kg</span>
+                </div>
+                <button class="btn btn-cyan" id="wpExSaveBtn" style="padding:.45rem .9rem;font-size:.82rem;white-space:nowrap;font-weight:700;">
+                  Done
+                </button>
               </div>
-              <button class="btn btn-cyan" id="wpExSaveBtn" style="padding:.45rem .7rem;font-size:.8rem;white-space:nowrap;">
-                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                Add
-              </button>
+              <input type="hidden" id="wpExSets" value="1"/>
             </div>
             <div style="position:relative;margin-top:.4rem;" id="wpQuickFillsWrap">
               <button class="btn btn-ghost" id="wpLibPickerBtn" style="font-size:.75rem;width:100%;justify-content:space-between;">
