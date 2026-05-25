@@ -166,7 +166,7 @@ const renderWeekStats = () => {
   }
   const withData=days.filter(d=>d.entry);
   const avgTasks=withData.length?Math.round(withData.map(d=>d.entry.tasks.filter(x=>x.done).length/Math.max(d.entry.tasks.length,1)*100).reduce((a,b)=>a+b,0)/withData.length):0;
-  const avgCal=withData.length?Math.round(withData.map(d=>d.entry.meals.reduce((s,m)=>s+m.kcal,0)).reduce((a,b)=>a+b,0)/withData.length):0;
+  const avgCal=withData.length?Math.round(withData.map(d=>(d.entry.meals||[]).reduce((s,m)=>s+(m.kcal||0),0)).reduce((a,b)=>a+b,0)/withData.length):0;
   let bestDay=null, bestPct=0;
   withData.forEach(d=>{
     const pct=d.entry.tasks.filter(x=>x.done).length/Math.max(d.entry.tasks.length,1)*100;
@@ -177,7 +177,7 @@ const renderWeekStats = () => {
   $('wBestDay').textContent=bestDay?bestDay.dayShort:'—';
 
   const maxTask=Math.max(...days.map(d=>d.entry?d.entry.tasks.length:0),1);
-  const maxCal =Math.max(...days.map(d=>d.entry?d.entry.meals.reduce((s,m)=>s+m.kcal,0):0),1);
+  const maxCal =Math.max(...days.map(d=>d.entry?(d.entry.meals||[]).reduce((s,m)=>s+(m.kcal||0),0):0),1);
 
   $('wTaskChart').innerHTML=''; $('wTaskChartLabels').innerHTML='';
   $('wCalChart').innerHTML='';  $('wCalChartLabels').innerHTML='';
@@ -194,7 +194,7 @@ const renderWeekStats = () => {
     lt.innerHTML=`<div class="wbar-lbl" style="color:${isTd?'var(--text)':'var(--text3)'};">${d.dayShort}</div>`;
     $('wTaskChartLabels').appendChild(lt);
 
-    const kcal=d.entry?d.entry.meals.reduce((s,m)=>s+m.kcal,0):0;
+    const kcal=d.entry?(d.entry.meals||[]).reduce((s,m)=>s+(m.kcal||0),0):0;
     const hc=Math.round(kcal/maxCal*80);
     const over=d.entry&&kcal>calTarget;
     const bc=document.createElement('div'); bc.className='wbar-wrap';
