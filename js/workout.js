@@ -89,7 +89,9 @@ const renderWpExList = () => {
     if(!ex.setLogs || !ex.setLogs.length) {
       ex.setLogs = Array.from({length: ex.sets||1}, () => ({reps: ex.reps||10, weight: ex.weight||null}));
     }
-    if(!ex.finished) {
+    // Only auto-add trailing empty set when wpAddRow is closed
+    const addRowOpen = $('wpAddRow') && $('wpAddRow').style.display !== 'none';
+    if(!ex.finished && !addRowOpen) {
       const last = ex.setLogs[ex.setLogs.length-1];
       const lastFilled = last && (last.reps || last.weight != null);
       if(lastFilled) ex.setLogs.push({reps:'', weight:null});
