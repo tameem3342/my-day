@@ -1,185 +1,1369 @@
-// ── يومي — Weight Tracker & SVG Line Chart
-// ── Weight Tracker ────────────────────────────────────────────────
-const renderWeightLog = () => {
-  const list=$('wtList'), empty=$('wtEmpty'), cur=$('wtCurrentVal'), unitEl=$('wtUnit');
-  if(!list) return;
-  list.innerHTML='';
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" data-theme="dark">
+<head>
+<meta charset="UTF-8"/>
+<!-- Early init: must run before render (anti-iframe + lang dir) -->
+<script src="js/init.js"></script>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<meta http-equiv="X-Content-Type-Options" content="nosniff"/>
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' https: data: blob:; script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://cdn.jsdelivr.net https://fonts.googleapis.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://fonts.gstatic.com; font-src https://fonts.gstatic.com; img-src 'self' data: blob: https:; connect-src https://xqxcecuhotuwmpzxbfxq.supabase.co https://fonts.googleapis.com https://fonts.gstatic.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self';"/>
+<meta http-equiv="X-Frame-Options" content="DENY"/>
+<meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin"/>
+<title>يومي — لوحة متابعة</title>
+<link rel="manifest" href="/manifest.json"/>
+<link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png"/>
+<link rel="apple-touch-icon" href="/icon-192.png"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="يومي"/>
+<meta name="theme-color" content="#0a0a0a"/>
 
-  if(!weightLog.length){
-    if(empty) empty.style.display='block';
-    if(cur) cur.textContent='—';
-    drawWeightLineChart([]);
-    return;
-  }
-  if(empty) empty.style.display='none';
-  const last=weightLog[weightLog.length-1];
-  if(cur) cur.textContent=last.val;
-  if(unitEl) unitEl.textContent=last.unit||'kg';
+<!-- External libs -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js" integrity="sha384-rRoXxn2yHlrZYB587Ki9RO1tONhLdM6XfORg7Rw4uwH4/Fh/5nP7IUX91bkaKUgs" crossorigin="anonymous"></script>
 
-  // Draw SVG line chart
-  drawWeightLineChart(weightLog);
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=Instrument+Sans:ital,wght@0,400;0,500;0,600;1,400&family=Cairo:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700;800;900&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
 
-  // History list (latest first, up to 8)
-  weightLog.slice().reverse().slice(0,8).forEach((w,i)=>{
-    const arr = weightLog.slice().reverse();
-    const prev = arr[i+1];
-    const diff = prev ? (w.val - prev.val).toFixed(1) : null;
-    const diffHtml = diff!==null
-      ? `<span style="font-size:.7rem;font-weight:600;color:${+diff>0?'var(--danger)':+diff<0?'var(--success)':'var(--text3)'};">${+diff>0?'▲':'▼'} ${Math.abs(diff)}</span>`
-      : '';
-    const row=document.createElement('div');
-    row.className='weight-row';
-    row.innerHTML=`
-      <div class="weight-dot"></div>
-      <span style="font-size:.84rem;font-weight:600;flex:1;">${w.val} <span style="font-weight:400;color:var(--text3);font-size:.78rem;">${w.unit||'kg'}</span></span>
-      ${diffHtml}
-      <span style="font-size:.7rem;color:var(--text3);">${w.dateLabel||w.dateKey||''}</span>
-      <button class="delbtn wt-del" data-wid="${w.id}" style="opacity:0;">
-        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-      </button>`;
-    row.addEventListener('mouseenter',()=>row.querySelector('.wt-del').style.opacity='1');
-    row.addEventListener('mouseleave',()=>row.querySelector('.wt-del').style.opacity='0');
-    list.appendChild(row);
-  });
-  list.querySelectorAll('.wt-del').forEach(btn=>{
-    btn.addEventListener('click',()=>{
-      weightLog=weightLog.filter(w=>w.id!==btn.dataset.wid);
-      saveWeightLog(); renderWeightLog();
-    });
-  });
-};
+<!-- App styles — extracted from inline to enable browser caching -->
+<link rel="stylesheet" href="css/styles.css"/>
+</head>
+<body>
 
-// ── SVG Line Chart for Weight ─────────────────────────────────────
-function drawWeightLineChart(data) {
-  const svg = document.getElementById('wtLineChart');
-  const emptyTxt = document.getElementById('wtChartEmpty');
-  if(!svg) return;
+</head>
+<body>
+<div class="bg-mesh"></div>
 
-  // Clear previous paths/circles/labels (keep defs)
-  [...svg.querySelectorAll('.wt-line,.wt-dot,.wt-label,.wt-area,.wt-grid')].forEach(el=>el.remove());
+<!-- PWA INSTALL BANNER -->
+<div id="pwaBanner" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:9999;padding:1rem;background:var(--surface);border-top:1px solid var(--border);box-shadow:0 -8px 32px rgba(0,0,0,.3);animation:fadeUp .3s ease;">
+  <div style="max-width:420px;margin:0 auto;">
+    <div style="display:flex;align-items:center;gap:.85rem;margin-bottom:.85rem;">
+      <div style="width:52px;height:52px;border-radius:12px;flex-shrink:0;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:1.6rem;">🗓️</div>
+      <div>
+        <div style="font-weight:800;font-size:.95rem;">ثبّت تطبيق يومي</div>
+        <div style="font-size:.75rem;color:var(--text2);margin-top:.15rem;">يشتغل أوفلاين ويبدو زي تطبيق حقيقي</div>
+      </div>
+    </div>
+    <!-- Steps -->
+    <div style="display:flex;flex-direction:column;gap:.5rem;margin-bottom:.9rem;">
+      <div style="display:flex;align-items:center;gap:.65rem;font-size:.8rem;">
+        <span style="width:22px;height:22px;border-radius:50%;background:var(--accent);color:var(--accent-fg);display:inline-flex;align-items:center;justify-content:center;font-weight:800;font-size:.68rem;flex-shrink:0;">1</span>
+        <span style="color:var(--text2);">اضغط زر المشاركة <span style="font-size:1rem;">⎙</span> في أسفل Safari</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:.65rem;font-size:.8rem;">
+        <span style="width:22px;height:22px;border-radius:50%;background:var(--accent);color:var(--accent-fg);display:inline-flex;align-items:center;justify-content:center;font-weight:800;font-size:.68rem;flex-shrink:0;">2</span>
+        <span style="color:var(--text2);">اختر <strong style="color:var(--text);">"Add to Home Screen"</strong></span>
+      </div>
+      <div style="display:flex;align-items:center;gap:.65rem;font-size:.8rem;">
+        <span style="width:22px;height:22px;border-radius:50%;background:var(--accent);color:var(--accent-fg);display:inline-flex;align-items:center;justify-content:center;font-weight:800;font-size:.68rem;flex-shrink:0;">3</span>
+        <span style="color:var(--text2);">اضغط <strong style="color:var(--text);">"Add"</strong> وافتحه من الهوم سكرين 🎉</span>
+      </div>
+    </div>
+    <div style="display:flex;gap:.6rem;">
+      <button onclick="dismissPWABanner()" style="flex:1;padding:.6rem;border-radius:10px;border:1px solid var(--border);background:transparent;color:var(--text2);font-family:inherit;font-size:.82rem;cursor:pointer;">لاحقاً</button>
+      <button onclick="dismissPWABanner(true)" style="flex:2;padding:.6rem;border-radius:10px;border:none;background:var(--accent);color:var(--accent-fg);font-family:inherit;font-size:.82rem;font-weight:700;cursor:pointer;">فهمت ✓</button>
+    </div>
+  </div>
+</div>
 
-  const pts = data.slice(-20); // last 20 entries
-  if(pts.length < 2) {
-    if(emptyTxt) emptyTxt.style.display = pts.length===0 ? 'block' : 'none';
-    return;
-  }
-  if(emptyTxt) emptyTxt.style.display = 'none';
+<!-- LOADING SKELETON -->
+<div id="skeletonOverlay">
+  <div style="width:min(420px,92%);display:flex;flex-direction:column;gap:1rem;">
+    <!-- header skeleton -->
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem;">
+      <div class="skeleton skeleton-line" style="width:80px;height:22px;"></div>
+      <div class="skeleton skeleton-line" style="width:60px;height:28px;border-radius:8px;"></div>
+    </div>
+    <!-- card skeleton 1 -->
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1.25rem;">
+      <div class="skeleton skeleton-line med" style="height:16px;margin-bottom:14px;"></div>
+      <div class="skeleton skeleton-line full"></div>
+      <div class="skeleton skeleton-line full"></div>
+      <div class="skeleton skeleton-line short"></div>
+    </div>
+    <!-- card skeleton 2 -->
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1.25rem;display:flex;gap:1rem;align-items:center;">
+      <div class="skeleton skeleton-circle"></div>
+      <div style="flex:1;">
+        <div class="skeleton skeleton-line med"></div>
+        <div class="skeleton skeleton-line short"></div>
+      </div>
+    </div>
+    <p style="font-size:.75rem;color:var(--text3);text-align:center;margin-top:.5rem;" id="skeletonMsg">Loading your data…</p>
+  </div>
+</div>
 
-  const W = svg.clientWidth || 300;
-  const H = 90;
-  const PAD = { top:12, right:8, bottom:22, left:32 };
-  const cw = W - PAD.left - PAD.right;
-  const ch = H - PAD.top  - PAD.bottom;
+<!-- CONFIRM DIALOG -->
+<div id="confirmDialog">
+  <div class="confirm-box">
+    <p style="font-size:.95rem;font-weight:600;margin-bottom:.5rem;" id="confirmMsg"></p>
+    <p style="font-size:.8rem;color:var(--text2);margin-bottom:1.25rem;" id="confirmSub"></p>
+    <div style="display:flex;gap:.6rem;justify-content:flex-end;">
+      <button class="btn btn-ghost" id="confirmCancel"></button>
+      <button class="btn btn-danger" id="confirmOk"></button>
+    </div>
+  </div>
+</div>
 
-  const vals = pts.map(p=>p.val);
-  const minV = Math.min(...vals);
-  const maxV = Math.max(...vals);
-  const range = maxV - minV || 1;
 
-  const xOf = i => PAD.left + (i / (pts.length-1)) * cw;
-  const yOf = v => PAD.top  + ch - ((v - minV) / range) * ch;
+<!-- ONBOARDING MODAL — Smart setup questionnaire -->
+<div id="onboardingModal" aria-modal="true" role="dialog" style="display:none;">
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:24px;width:100%;max-width:400px;max-height:95vh;overflow-y:auto;box-shadow:0 32px 80px rgba(0,0,0,.5);animation:fadeUp .25s ease;">
 
-  // Grid lines (2)
-  [minV, maxV].forEach(v=>{
-    const y = yOf(v);
-    const line = document.createElementNS('http://www.w3.org/2000/svg','line');
-    line.setAttribute('class','wt-grid');
-    line.setAttribute('x1', PAD.left); line.setAttribute('x2', W - PAD.right);
-    line.setAttribute('y1', y); line.setAttribute('y2', y);
-    line.setAttribute('stroke','var(--border)'); line.setAttribute('stroke-width','1');
-    line.setAttribute('stroke-dasharray','3,3');
-    svg.insertBefore(line, svg.firstChild);
-    // Y label
-    const txt = document.createElementNS('http://www.w3.org/2000/svg','text');
-    txt.setAttribute('class','wt-grid');
-    txt.setAttribute('x', PAD.left - 4); txt.setAttribute('y', y+4);
-    txt.setAttribute('text-anchor','end'); txt.setAttribute('font-size','9');
-    txt.setAttribute('fill','var(--text3)'); txt.setAttribute('font-family','inherit');
-    txt.textContent = v.toFixed(1);
-    svg.appendChild(txt);
-  });
+    <!-- Progress bar -->
+    <div style="height:3px;background:var(--surface3);border-radius:99px;margin:1.2rem 1.4rem .2rem;">
+      <div id="obProgressBar" style="height:100%;background:var(--accent);border-radius:99px;transition:width .35s ease;width:0%;"></div>
+    </div>
+    <div style="display:flex;justify-content:space-between;padding:.3rem 1.4rem .8rem;">
+      <span style="font-size:.65rem;color:var(--text3);font-weight:600;" id="obStepLabel">الخطوة 1 من 4</span>
+      <button onclick="closeOnboarding()" style="background:none;border:none;cursor:pointer;color:var(--text3);font-size:.72rem;font-family:inherit;padding:0;">تخطي</button>
+    </div>
 
-  // Area fill
-  const areaD = pts.map((p,i)=>`${i===0?'M':'L'}${xOf(i)},${yOf(p.val)}`).join(' ')
-    + ` L${xOf(pts.length-1)},${H-PAD.bottom} L${xOf(0)},${H-PAD.bottom} Z`;
-  const area = document.createElementNS('http://www.w3.org/2000/svg','path');
-  area.setAttribute('class','wt-area');
-  area.setAttribute('d', areaD);
-  area.setAttribute('fill','var(--accent)'); area.setAttribute('opacity','0.07');
-  svg.appendChild(area);
+    <!-- ══ STEP 0: الوزن ══ -->
+    <div id="obStep0" class="ob-step" style="display:none;padding:.5rem 1.4rem 1.5rem;">
+      <div style="font-size:2.5rem;margin-bottom:.75rem;">⚖️</div>
+      <h2 style="font-size:1.2rem;font-weight:800;margin-bottom:.3rem;">كم وزنك الحالي؟</h2>
+      <p style="font-size:.8rem;color:var(--text2);margin-bottom:1.2rem;">نحتاجه لحساب احتياجك من السعرات</p>
+      <div style="display:flex;gap:.5rem;margin-bottom:1.2rem;">
+        <input class="inp" id="obWeight" type="number" min="30" max="300" step="0.5"
+          placeholder="مثال: 80"
+          style="flex:1;font-size:1.3rem;font-weight:700;text-align:center;padding:.75rem;"
+          oninput="obLiveCalc()" onkeydown="if(event.key==='Enter') obNext(0)"/>
+        <select class="cat-select" id="obWeightUnit" style="width:65px;font-size:.88rem;" onchange="obLiveCalc()">
+          <option value="kg">kg</option>
+          <option value="lbs">lbs</option>
+        </select>
+      </div>
+      <button onclick="obNext(0)" class="ob-next-btn" id="obBtn0">التالي ←</button>
+    </div>
 
-  // Line
-  const lineD = pts.map((p,i)=>`${i===0?'M':'L'}${xOf(i)},${yOf(p.val)}`).join(' ');
-  const path = document.createElementNS('http://www.w3.org/2000/svg','path');
-  path.setAttribute('class','wt-line');
-  path.setAttribute('d', lineD);
-  path.setAttribute('fill','none');
-  path.setAttribute('stroke','var(--accent)'); path.setAttribute('stroke-width','2');
-  path.setAttribute('stroke-linecap','round'); path.setAttribute('stroke-linejoin','round');
-  svg.appendChild(path);
+    <!-- ══ STEP 1: الوزن المستهدف ══ -->
+    <div id="obStep1" class="ob-step" style="display:none;padding:.5rem 1.4rem 1.5rem;">
+      <div style="font-size:2.5rem;margin-bottom:.75rem;">🎯</div>
+      <h2 style="font-size:1.2rem;font-weight:800;margin-bottom:.3rem;">ما وزنك المستهدف؟</h2>
+      <p style="font-size:.8rem;color:var(--text2);margin-bottom:1.2rem;">سنحسب لك الوقت المتوقع للوصول إليه</p>
+      <div style="display:flex;gap:.5rem;margin-bottom:.75rem;">
+        <input class="inp" id="obTargetWeight" type="number" min="30" max="300" step="0.5"
+          placeholder="مثال: 75"
+          style="flex:1;font-size:1.3rem;font-weight:700;text-align:center;padding:.75rem;"
+          onkeydown="if(event.key==='Enter') obNext(1)"/>
+        <div style="display:flex;align-items:center;padding:0 .75rem;background:var(--surface2);border:1px solid var(--border);border-radius:8px;font-size:.88rem;color:var(--text2);font-weight:600;">kg</div>
+      </div>
+      <p style="font-size:.72rem;color:var(--text3);margin-bottom:1.2rem;text-align:center;">اتركه فارغاً إذا ما تعرف أو ما تبي تحدد</p>
+      <button onclick="obNext(1)" class="ob-next-btn">التالي ←</button>
+      <button onclick="obBack(1)" class="ob-back-btn">رجوع</button>
+    </div>
 
-  // Dots + X labels (show first, last, and every ~4th)
-  pts.forEach((p,i)=>{
-    const x=xOf(i), y=yOf(p.val);
-    const isLast = i===pts.length-1;
-    const showLabel = isLast || i===0 || (pts.length>4 && i%(Math.ceil(pts.length/4))===0);
+    <!-- ══ STEP 2: الطول ══ -->
+    <div id="obStep2" class="ob-step" style="display:none;padding:.5rem 1.4rem 1.5rem;">
+      <div style="font-size:2.5rem;margin-bottom:.75rem;">📏</div>
+      <h2 style="font-size:1.2rem;font-weight:800;margin-bottom:.3rem;">كم طولك؟</h2>
+      <p style="font-size:.8rem;color:var(--text2);margin-bottom:1.2rem;">بالسنتيمتر</p>
+      <input class="inp" id="obHeight" type="number" min="100" max="250"
+        placeholder="مثال: 175"
+        style="width:100%;font-size:1.3rem;font-weight:700;text-align:center;padding:.75rem;margin-bottom:1.2rem;"
+        oninput="obLiveCalc()" onkeydown="if(event.key==='Enter') obNext(2)"/>
+      <button onclick="obNext(2)" class="ob-next-btn">التالي ←</button>
+      <button onclick="obBack(2)" class="ob-back-btn">رجوع</button>
+    </div>
 
-    const circle = document.createElementNS('http://www.w3.org/2000/svg','circle');
-    circle.setAttribute('class','wt-dot');
-    circle.setAttribute('cx',x); circle.setAttribute('cy',y);
-    circle.setAttribute('r', isLast ? '4' : '2.5');
-    circle.setAttribute('fill', isLast ? 'var(--accent)' : 'var(--surface)');
-    circle.setAttribute('stroke','var(--accent)'); circle.setAttribute('stroke-width','2');
-    svg.appendChild(circle);
+    <!-- ══ STEP 3: العمر والجنس ══ -->
+    <div id="obStep3" class="ob-step" style="display:none;padding:.5rem 1.4rem 1.5rem;">
+      <div style="font-size:2.5rem;margin-bottom:.75rem;">🙋</div>
+      <h2 style="font-size:1.2rem;font-weight:800;margin-bottom:.3rem;">عمرك وجنسك؟</h2>
+      <p style="font-size:.8rem;color:var(--text2);margin-bottom:1.2rem;">لحساب معدل الحرق الأساسي بدقة</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.65rem;margin-bottom:1.2rem;">
+        <input class="inp" id="obAge" type="number" min="10" max="100"
+          placeholder="العمر"
+          style="font-size:1.1rem;font-weight:700;text-align:center;padding:.7rem;"
+          oninput="obLiveCalc()" onkeydown="if(event.key==='Enter') obNext(3)"/>
+        <select class="cat-select inp" id="obGender" style="font-size:.92rem;text-align:center;" onchange="obLiveCalc()">
+          <option value="m">ذكر 👨</option>
+          <option value="f">أنثى 👩</option>
+        </select>
+      </div>
+      <button onclick="obNext(3)" class="ob-next-btn">التالي ←</button>
+      <button onclick="obBack(3)" class="ob-back-btn">رجوع</button>
+    </div>
 
-    if(showLabel) {
-      const lbl = document.createElementNS('http://www.w3.org/2000/svg','text');
-      lbl.setAttribute('class','wt-label');
-      lbl.setAttribute('x', x); lbl.setAttribute('y', H - PAD.bottom + 14);
-      lbl.setAttribute('text-anchor','middle'); lbl.setAttribute('font-size','9');
-      lbl.setAttribute('fill', isLast ? 'var(--text)' : 'var(--text3)');
-      lbl.setAttribute('font-family','inherit');
-      lbl.textContent = p.dateLabel || p.dateKey?.slice(5) || '';
-      svg.appendChild(lbl);
-    }
-  });
-}
+    <!-- ══ STEP 4: معدل النشاط ══ -->
+    <div id="obStep4" class="ob-step" style="display:none;padding:.5rem 1.4rem 1.5rem;">
+      <div style="font-size:2.5rem;margin-bottom:.75rem;">🏃</div>
+      <h2 style="font-size:1.2rem;font-weight:800;margin-bottom:.3rem;">معدل نشاطك اليومي؟</h2>
+      <p style="font-size:.8rem;color:var(--text2);margin-bottom:1rem;">يؤثر مباشرة على حساب سعراتك</p>
+      <div style="display:flex;flex-direction:column;gap:.45rem;margin-bottom:1.2rem;">
+        <button class="ob-goal-btn" data-act="1.2" onclick="obSelectActivity(this)">
+          <span style="font-size:1.3rem;">🪑</span>
+          <div style="text-align:right;flex:1;">
+            <div style="font-weight:700;font-size:.88rem;">خامل جداً</div>
+            <div style="font-size:.72rem;color:var(--text2);">عمل مكتبي، بدون رياضة</div>
+          </div>
+        </button>
+        <button class="ob-goal-btn" data-act="1.375" onclick="obSelectActivity(this)">
+          <span style="font-size:1.3rem;">🚶</span>
+          <div style="text-align:right;flex:1;">
+            <div style="font-weight:700;font-size:.88rem;">نشاط خفيف</div>
+            <div style="font-size:.72rem;color:var(--text2);">رياضة 1-3 أيام في الأسبوع</div>
+          </div>
+        </button>
+        <button class="ob-goal-btn" data-act="1.55" onclick="obSelectActivity(this)">
+          <span style="font-size:1.3rem;">🏋️</span>
+          <div style="text-align:right;flex:1;">
+            <div style="font-weight:700;font-size:.88rem;">نشاط متوسط</div>
+            <div style="font-size:.72rem;color:var(--text2);">رياضة 3-5 أيام في الأسبوع</div>
+          </div>
+        </button>
+        <button class="ob-goal-btn" data-act="1.725" onclick="obSelectActivity(this)">
+          <span style="font-size:1.3rem;">🔥</span>
+          <div style="text-align:right;flex:1;">
+            <div style="font-weight:700;font-size:.88rem;">نشاط عالي</div>
+            <div style="font-size:.72rem;color:var(--text2);">رياضة 6-7 أيام في الأسبوع</div>
+          </div>
+        </button>
+        <button class="ob-goal-btn" data-act="1.9" onclick="obSelectActivity(this)">
+          <span style="font-size:1.3rem;">⚡</span>
+          <div style="text-align:right;flex:1;">
+            <div style="font-weight:700;font-size:.88rem;">نشاط شديد</div>
+            <div style="font-size:.72rem;color:var(--text2);">عمل جسدي + تمرين يومي</div>
+          </div>
+        </button>
+      </div>
+      <button onclick="obNext(4)" class="ob-next-btn" id="obActNextBtn" style="opacity:.4;pointer-events:none;">التالي ←</button>
+      <button onclick="obBack(4)" class="ob-back-btn">رجوع</button>
+    </div>
 
-$('wtLogBtn').addEventListener('click',()=>{
-  const val=parseFloat($('wtInput').value);
-  if(!val||val<20||val>300){showToast('Enter a valid weight (20–300)');return;}
-  const unit=$('wtUnitSel').value;
-  const now=new Date();
-  const dateKey=now.toISOString().slice(0,10);
-  const dateLabel=now.toLocaleDateString(lang==='ar'?'ar-SA':'en-US',{month:'short',day:'numeric'});
-  weightLog.push({id:'w'+Date.now(),val:Math.round(val*10)/10,unit,dateKey,dateLabel});
-  saveWeightLog(); $('wtInput').value=''; renderWeightLog();
-  showToast(`✅ ${val} ${unit} logged`);
-});
-$('wtInput').addEventListener('keydown',e=>{if(e.key==='Enter')$('wtLogBtn').click();});
+    <!-- ══ STEP 5: الهدف ══ -->
+    <div id="obStep5" class="ob-step" style="display:none;padding:.5rem 1.4rem 1.5rem;">
+      <div style="font-size:2.5rem;margin-bottom:.75rem;">🎯</div>
+      <h2 style="font-size:1.2rem;font-weight:800;margin-bottom:.3rem;">ما هو هدفك؟</h2>
+      <p style="font-size:.8rem;color:var(--text2);margin-bottom:1rem;">اختر واحداً</p>
+      <div style="display:flex;flex-direction:column;gap:.5rem;margin-bottom:1.2rem;">
+        <button class="ob-goal-btn" data-goal="lose" onclick="obSelectGoal(this)">
+          <span style="font-size:1.4rem;">📉</span>
+          <div style="text-align:right;flex:1;">
+            <div style="font-weight:700;font-size:.9rem;">إنقاص الوزن</div>
+            <div style="font-size:.72rem;color:var(--text2);">سعرات −500 تحت الـ TDEE</div>
+          </div>
+          <span id="obLosePrev" style="font-size:.8rem;font-weight:700;color:var(--danger);min-width:50px;text-align:left;"></span>
+        </button>
+        <button class="ob-goal-btn" data-goal="maintain" onclick="obSelectGoal(this)">
+          <span style="font-size:1.4rem;">⚖️</span>
+          <div style="text-align:right;flex:1;">
+            <div style="font-weight:700;font-size:.9rem;">الحفاظ على الوزن</div>
+            <div style="font-size:.72rem;color:var(--text2);">سعرات متوازنة تساوي TDEE</div>
+          </div>
+          <span id="obMaintainPrev" style="font-size:.8rem;font-weight:700;color:var(--amber);min-width:50px;text-align:left;"></span>
+        </button>
+        <button class="ob-goal-btn" data-goal="gain" onclick="obSelectGoal(this)">
+          <span style="font-size:1.4rem;">💪</span>
+          <div style="text-align:right;flex:1;">
+            <div style="font-weight:700;font-size:.9rem;">زيادة الكتلة العضلية</div>
+            <div style="font-size:.72rem;color:var(--text2);">سعرات +300 فوق الـ TDEE</div>
+          </div>
+          <span id="obGainPrev" style="font-size:.8rem;font-weight:700;color:var(--success);min-width:50px;text-align:left;"></span>
+        </button>
+      </div>
+      <button onclick="obNext(5)" class="ob-next-btn" id="obGoalNextBtn" style="opacity:.4;pointer-events:none;">التالي ←</button>
+      <button onclick="obBack(5)" class="ob-back-btn">رجوع</button>
+    </div>
 
-// ── Day Edit Modal ────────────────────────────────────────────────
-const openWpModal=(dk,dayIdx)=>{
-  wpModalDay=dk;
-  const day=weekPlan[dk]||{};
-  const dayName=lang==='ar'?DAYS_AR[dayIdx]:DAYS_EN[dayIdx];
-  $('wmTitle').textContent=dayName;
-  $('wmRestChk').checked=!!day.rest;
-  $('wmFocus').value=day.focus||'';
-  $('wmNotes').value=day.notes||'';
-  $('workoutModal').classList.add('open');
-  setTimeout(()=>$('wmFocus').focus(),80);
-};
-$('closeWorkoutModal').addEventListener('click',()=>$('workoutModal').classList.remove('open'));
-$('workoutModal').addEventListener('click',e=>{if(e.target===$('workoutModal'))$('workoutModal').classList.remove('open');});
-$('wmSaveBtn').addEventListener('click',()=>{
-  if(!wpModalDay)return;
-  if(!weekPlan[wpModalDay])weekPlan[wpModalDay]={exercises:[]};
-  weekPlan[wpModalDay].rest=  $('wmRestChk').checked;
-  weekPlan[wpModalDay].focus= sanitizeText($('wmFocus').value,60);
-  weekPlan[wpModalDay].notes= sanitizeText($('wmNotes').value,300);
-  saveWeekPlan();
-  $('workoutModal').classList.remove('open');
-  renderWpGrid(); renderWpExList();
-  showToast('Saved ✅');
-});
+    <!-- ══ STEP 6: النتائج ══ -->
+    <div id="obStep6" class="ob-step" style="display:none;padding:.5rem 1.4rem 1.5rem;">
+      <div style="font-size:2.5rem;margin-bottom:.5rem;">✨</div>
+      <h2 style="font-size:1.15rem;font-weight:800;margin-bottom:.25rem;">هدفك اليومي جاهز!</h2>
+      <p style="font-size:.78rem;color:var(--text2);margin-bottom:1rem;">بناءً على جسمك وهدفك — بالمعادلة العلمية Harris-Benedict</p>
+
+      <!-- البطاقة الرئيسية — السعرات -->
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:16px;padding:1.1rem;margin-bottom:.75rem;text-align:center;">
+        <div style="font-size:.6rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);margin-bottom:.4rem;">هدف السعرات اليومي</div>
+        <div style="font-size:3rem;font-weight:900;color:var(--text);line-height:1;" id="obResultCal">—</div>
+        <div style="font-size:.8rem;color:var(--text2);margin-top:.3rem;">kcal / يوم</div>
+        <!-- شريط الهدف -->
+        <div style="display:flex;justify-content:center;gap:.5rem;margin-top:.8rem;">
+          <span id="obGoalBadge" style="font-size:.72rem;font-weight:700;padding:.25rem .7rem;border-radius:99px;background:var(--surface3);color:var(--text2);">—</span>
+        </div>
+      </div>
+
+      <!-- شبكة معلومات -->
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:.4rem;margin-bottom:.85rem;">
+        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:.6rem .4rem;text-align:center;">
+          <div style="font-size:.55rem;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.2rem;">الوقت المتوقع</div>
+          <div style="font-size:1rem;font-weight:800;" id="obResultETA">—</div>
+          <div style="font-size:.6rem;color:var(--text3);" id="obResultETAUnit">أسبوع</div>
+        </div>
+        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:.6rem .4rem;text-align:center;">
+          <div style="font-size:.55rem;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.2rem;">وزن مثالي</div>
+          <div style="font-size:1rem;font-weight:800;" id="obResultIdeal">—</div>
+          <div style="font-size:.6rem;color:var(--text3);">kg</div>
+        </div>
+        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:.6rem .4rem;text-align:center;">
+          <div style="font-size:.55rem;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.2rem;">TDEE</div>
+          <div style="font-size:1rem;font-weight:800;" id="obResultTDEE">—</div>
+          <div style="font-size:.6rem;color:var(--text3);">kcal</div>
+        </div>
+      </div>
+
+      <div style="font-size:.67rem;color:var(--text3);line-height:1.6;margin-bottom:.9rem;padding:.55rem .7rem;background:var(--surface2);border-radius:8px;border:1px solid var(--border);">
+        ⚠️ هذه تقديرات بناءً على معادلات علمية — استشر متخصصاً للحصول على خطة دقيقة.
+      </div>
+
+      <button onclick="obFinish()" style="width:100%;padding:.85rem;border-radius:14px;border:none;background:var(--accent);color:var(--accent-fg);font-family:inherit;font-size:1rem;font-weight:800;cursor:pointer;margin-bottom:.5rem;letter-spacing:-.01em;">
+        ابدأ التتبع 🚀
+      </button>
+      <button onclick="obBack(6)" class="ob-back-btn">تعديل المعلومات</button>
+    </div>
+
+  </div>
+</div>
+
+<!-- AUTH MODAL -->
+<div id="authModal" style="display:none;position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,.7);backdrop-filter:blur(6px);align-items:center;justify-content:center;">
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:2rem;max-width:380px;width:92%;box-shadow:0 16px 48px rgba(0,0,0,.3);animation:fadeUp .2s ease;">
+    <div style="text-align:center;margin-bottom:1.5rem;">
+      <svg width="36" height="36" viewBox="0 0 32 32" fill="none" style="margin:0 auto .75rem;display:block;"><circle cx="16" cy="16" r="14" fill="transparent" stroke="var(--text)" stroke-width="1.5"/><path d="M16 9v7l4 3" stroke="var(--text)" stroke-width="2" stroke-linecap="round"/></svg>
+      <h2 class="font-display" style="font-size:1.25rem;font-weight:800;" id="authModalTitle">سجّل دخولك لحفظ بياناتك</h2>
+      <p style="font-size:.82rem;color:var(--text2);margin-top:.35rem;" id="authModalSub">بياناتك تتزامن على جميع أجهزتك</p>
+    </div>
+
+    <!-- Step 1: Enter email -->
+    <div id="authStep1">
+      <button id="authGoogleBtn" onclick="authWithGoogle()" style="width:100%;padding:.75rem;border-radius:10px;border:1.5px solid var(--border);background:var(--surface2);color:var(--text);font-family:inherit;font-size:.92rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:.65rem;margin-bottom:.85rem;transition:all .15s;box-shadow:0 1px 4px rgba(0,0,0,.08);" onmouseover="this.style.borderColor='var(--border2)';this.style.background='var(--surface3)'" onmouseout="this.style.borderColor='var(--border)';this.style.background='var(--surface2)'">
+        <svg width="20" height="20" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9 3.2l6.7-6.7C35.7 2.5 30.2 0 24 0 14.7 0 6.7 5.5 2.6 13.5l7.8 6C12.4 13.1 17.8 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v8.5h12.7c-.6 3-2.3 5.5-4.8 7.2l7.5 5.8c4.4-4 7.1-10 7.1-17z"/><path fill="#FBBC05" d="M10.4 28.5c-.5-1.5-.8-3-.8-4.5s.3-3 .8-4.5l-7.8-6C.9 16.5 0 20.1 0 24s.9 7.5 2.6 10.5l7.8-6z"/><path fill="#34A853" d="M24 48c6.2 0 11.4-2 15.2-5.5l-7.5-5.8c-2 1.4-4.6 2.2-7.7 2.2-6.2 0-11.5-3.6-13.6-8.9l-7.8 6C6.7 42.5 14.7 48 24 48z"/></svg>
+        <span id="googleBtnLabel">تسجيل الدخول بـ Google</span>
+      </button>
+      <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.85rem;"><div style="flex:1;height:1px;background:var(--border);"></div><span style="font-size:.72rem;color:var(--text3);" id="authOrLabel">أو</span><div style="flex:1;height:1px;background:var(--border);"></div></div>
+      <input class="inp" id="authEmail" type="email" placeholder="أدخل بريدك الإلكتروني" style="margin-bottom:.75rem;" onkeydown="if(event.key==='Enter') sendEmailLink()"/>
+      <p id="authError" style="font-size:.78rem;color:var(--danger);margin-bottom:.6rem;display:none;"></p>
+      <button onclick="sendEmailLink()" style="width:100%;padding:.7rem;border-radius:9px;border:none;background:var(--accent);color:var(--accent-fg);font-family:inherit;font-size:.88rem;font-weight:700;cursor:pointer;" id="emailSignInBtn">إرسال رابط الدخول</button>
+
+    </div>
+
+    <!-- Step 2: Email sent confirmation -->
+    <div id="authStep2" style="display:none;text-align:center;">
+      <div style="font-size:2.5rem;margin-bottom:.75rem;">✉️</div>
+      <h3 style="font-weight:700;font-size:1rem;margin-bottom:.5rem;" id="authStep2Title">تحقق من بريدك!</h3>
+      <p style="font-size:.82rem;color:var(--text2);margin-bottom:.75rem;" id="authSentMsg">أرسلنا رابط الدخول إلى بريدك. اضغط على الرابط لتسجيل الدخول.</p>
+      <div style="background:rgba(251,191,36,.12);border:1px solid rgba(251,191,36,.3);border-radius:8px;padding:.6rem .85rem;margin-bottom:1.25rem;display:flex;align-items:flex-start;gap:.5rem;">
+        <span style="font-size:.9rem;flex-shrink:0;">⚠️</span>
+        <p style="font-size:.76rem;color:var(--amber);line-height:1.5;margin:0;" id="authSpamNote">إذا لم تجد الرسالة، تحقق من مجلد <strong>Spam</strong> أو <strong>Junk</strong>.</p>
+      </div>
+      <button onclick="sendEmailLink(true)" id="authResendBtn" style="width:100%;padding:.65rem;border-radius:9px;border:1px solid var(--border);background:transparent;color:var(--text2);font-family:inherit;font-size:.82rem;cursor:pointer;margin-bottom:.5rem;">إعادة الإرسال</button>
+      <button onclick="closeAuthModal()" id="authCloseBtn" style="width:100%;padding:.55rem;border-radius:9px;border:none;background:transparent;color:var(--text3);font-family:inherit;font-size:.8rem;cursor:pointer;">إغلاق</button>
+    </div>
+  </div>
+</div>
+<!-- SETTINGS MODAL -->
+<div id="settingsModal" style="display:none;position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,.7);backdrop-filter:blur(6px);align-items:center;justify-content:center;">
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:1.75rem;max-width:400px;width:92%;box-shadow:0 16px 48px rgba(0,0,0,.3);animation:fadeUp .2s ease;max-height:85vh;overflow-y:auto;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;">
+      <h2 class="font-display" style="font-size:1.1rem;font-weight:800;" id="settingsModalTitle">الإعدادات</h2>
+      <button onclick="closeSettingsModal()" style="background:none;border:none;cursor:pointer;color:var(--text3);padding:.25rem;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+
+    <!-- Avatar Section -->
+    <div style="margin-bottom:1.5rem;">
+      <p style="font-size:.72rem;font-weight:700;color:var(--text3);letter-spacing:.08em;text-transform:uppercase;margin-bottom:.85rem;" id="settingsAvatarLabel">الصورة الشخصية</p>
+      <!-- Avatar preview -->
+      <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1rem;">
+        <div id="settingsAvatarPreview" style="width:64px;height:64px;border-radius:50%;background:var(--surface2);border:2px solid var(--border2);overflow:hidden;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:1.5rem;font-weight:800;color:var(--text3);">
+          👤
+        </div>
+        <div style="flex:1;">
+          <p style="font-size:.82rem;font-weight:600;color:var(--text);margin-bottom:.2rem;" id="settingsAvatarName">لا توجد صورة</p>
+          <p style="font-size:.72rem;color:var(--text3);" id="settingsAvatarSub">ارفع صورة أو استخدم صورة Google</p>
+        </div>
+      </div>
+      <!-- Options -->
+      <div style="display:flex;flex-direction:column;gap:.5rem;">
+        <button id="settingsGoogleAvatarBtn" onclick="useGoogleAvatar()" style="width:100%;padding:.6rem .85rem;border-radius:9px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-family:inherit;font-size:.84rem;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:.6rem;transition:all .15s;" onmouseover="this.style.background='var(--surface3)'" onmouseout="this.style.background='var(--surface2)'">
+          <svg width="16" height="16" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9 3.2l6.7-6.7C35.7 2.5 30.2 0 24 0 14.7 0 6.7 5.5 2.6 13.5l7.8 6C12.4 13.1 17.8 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v8.5h12.7c-.6 3-2.3 5.5-4.8 7.2l7.5 5.8c4.4-4 7.1-10 7.1-17z"/><path fill="#FBBC05" d="M10.4 28.5c-.5-1.5-.8-3-.8-4.5s.3-3 .8-4.5l-7.8-6C.9 16.5 0 20.1 0 24s.9 7.5 2.6 10.5l7.8-6z"/><path fill="#34A853" d="M24 48c6.2 0 11.4-2 15.2-5.5l-7.5-5.8c-2 1.4-4.6 2.2-7.7 2.2-6.2 0-11.5-3.6-13.6-8.9l-7.8 6C6.7 42.5 14.7 48 24 48z"/></svg>
+          <span id="settingsGoogleAvatarLbl">استخدام صورة Google</span>
+        </button>
+        <label style="width:100%;padding:.6rem .85rem;border-radius:9px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-family:inherit;font-size:.84rem;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:.6rem;transition:all .15s;box-sizing:border-box;" onmouseover="this.style.background='var(--surface3)'" onmouseout="this.style.background='var(--surface2)'">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          <span id="settingsUploadAvatarLbl">رفع صورة من الجهاز</span>
+          <input type="file" id="settingsAvatarInput" accept="image/*" style="display:none;" onchange="handleSettingsAvatarUpload(event)"/>
+        </label>
+        <button onclick="removeAvatar()" id="settingsRemoveAvatarBtn" style="width:100%;padding:.6rem .85rem;border-radius:9px;border:1px solid var(--border);background:transparent;color:var(--danger);font-family:inherit;font-size:.82rem;font-weight:600;cursor:pointer;display:none;transition:all .15s;">
+          <span id="settingsRemoveAvatarLbl">حذف الصورة الشخصية</span>
+        </button>
+      </div>
+    </div>
+
+    <div style="height:1px;background:var(--border);margin-bottom:1.25rem;"></div>
+
+    <!-- Language Section -->
+    <div style="margin-bottom:1.25rem;">
+      <p style="font-size:.72rem;font-weight:700;color:var(--text3);letter-spacing:.08em;text-transform:uppercase;margin-bottom:.75rem;" id="settingsLangLabel">اللغة</p>
+      <div style="display:flex;gap:.5rem;">
+        <button id="settingsLangAR" onclick="setLang('ar')" style="flex:1;padding:.6rem .85rem;border-radius:9px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-family:inherit;font-size:.84rem;font-weight:600;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:.45rem;">
+          <span style="font-size:1rem;">🇸🇦</span>
+          <span>العربية</span>
+        </button>
+        <button id="settingsLangEN" onclick="setLang('en')" style="flex:1;padding:.6rem .85rem;border-radius:9px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-family:inherit;font-size:.84rem;font-weight:600;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:.45rem;">
+          <span style="font-size:1rem;">🇺🇸</span>
+          <span>English</span>
+        </button>
+      </div>
+    </div>
+
+    <div style="height:1px;background:var(--border);margin-bottom:1.25rem;"></div>
+
+    <!-- Sign out -->
+    <button onclick="authSignOut();closeSettingsModal();" style="width:100%;padding:.65rem;border-radius:9px;border:1px solid rgba(248,113,113,.3);background:rgba(248,113,113,.06);color:var(--danger);font-family:inherit;font-size:.84rem;font-weight:700;cursor:pointer;" id="settingsSignOutBtn">
+      <span id="settingsSignOutLbl">تسجيل الخروج</span>
+    </button>
+  </div>
+</div>
+
+<!-- HABIT MODAL -->
+<div id="habitModal">
+  <div class="modal-box">
+    <h3 class="font-display" style="font-size:1rem;font-weight:700;margin-bottom:1rem;" id="modalTitle">إضافة عادة مخصصة</h3>
+    <input class="inp" id="habitNameInp" type="text" maxlength="60" style="margin-bottom:.6rem;" placeholder="اسم العادة…"/>
+    <select class="cat-select inp" id="habitCatInp" style="margin-bottom:1rem;">
+      <option value="personal">شخصي</option>
+      <option value="work">شغل</option>
+      <option value="sport">رياضة</option>
+      <option value="health">صحة</option>
+      <option value="prayer">دين/صلاة</option>
+    </select>
+    <div style="display:flex;gap:.6rem;justify-content:flex-end;">
+      <button class="btn btn-ghost" id="habitCancelBtn">إلغاء</button>
+      <button class="btn btn-cyan" id="habitSaveBtn">إضافة</button>
+    </div>
+  </div>
+</div>
+
+<!-- HEADER -->
+<header style="background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:50;" id="mainHeader">
+  <div style="max-width:1000px;margin:0 auto;padding:.7rem 1rem;display:flex;align-items:center;justify-content:space-between;gap:.75rem;">
+    <div style="display:flex;align-items:center;gap:.6rem;flex-shrink:0;">
+      <svg width="24" height="24" viewBox="0 0 32 32" fill="none"><circle cx="16" cy="16" r="14" fill="transparent" stroke="var(--text)" stroke-width="1.5"/><path d="M16 9v7l4 3" stroke="var(--text)" stroke-width="2" stroke-linecap="round"/></svg>
+      <span class="font-display grad" style="font-size:1.25rem;font-weight:800;" id="logoText">يومي</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:.5rem;justify-content:flex-end;">
+      <span id="headerDate" style="font-size:.72rem;color:var(--text3);display:none;" class="hdate-lg"></span>
+      <!-- compact controls row -->
+      <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme" title="Toggle dark/light">
+        <!-- Sun icon (light mode) -->
+        <span class="t-icon t-sun">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+            <circle cx="12" cy="12" r="4"/>
+            <line x1="12" y1="2" x2="12" y2="5"/>
+            <line x1="12" y1="19" x2="12" y2="22"/>
+            <line x1="4.22" y1="4.22" x2="6.34" y2="6.34"/>
+            <line x1="17.66" y1="17.66" x2="19.78" y2="19.78"/>
+            <line x1="2" y1="12" x2="5" y2="12"/>
+            <line x1="19" y1="12" x2="22" y2="12"/>
+            <line x1="4.22" y1="19.78" x2="6.34" y2="17.66"/>
+            <line x1="17.66" y1="6.34" x2="19.78" y2="4.22"/>
+          </svg>
+        </span>
+        <!-- Moon icon (dark mode) -->
+        <span class="t-icon t-moon">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+            <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>
+          </svg>
+        </span>
+      </button>
+      <button id="settingsHeaderBtn" onclick="openSettingsModal()" style="padding:.38rem .5rem;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--text2);font-family:inherit;font-size:.78rem;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:.35rem;transition:all .15s;margin-right:.35rem;" onmouseover="this.style.borderColor='var(--border2)';this.style.color='var(--text)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text2)'" title="Settings">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+      </button>
+      <button id="authHeaderBtn" onclick="openAuthModal()" style="padding:.38rem .75rem;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--text2);font-family:inherit;font-size:.78rem;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:.35rem;transition:all .15s;" onmouseover="this.style.borderColor='var(--border2)';this.style.color='var(--text)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text2)'">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <span id="authHeaderLabel">Sign In</span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main style="max-width:1000px;margin:0 auto;padding:1.5rem 1rem;position:relative;z-index:1;">
+  <div style="margin-bottom:1.5rem;">
+    <h1 class="font-display" id="greeting" style="-webkit-text-fill-color:var(--text);font-size:2rem;font-weight:800;line-height:1.15;margin-bottom:.3rem;"></h1>
+    <p id="subGreeting" style="font-size:.875rem;color:var(--text2);"></p>
+  </div>
+
+  <!-- Tabs -->
+  <!-- Tab bar + sections button -->
+  <div style="display:flex;align-items:center;gap:.25rem;margin-bottom:1.25rem;" id="tabBar">
+    <button class="tab-btn active" data-tab="today"   id="tabToday"   style="flex:1;text-align:center;padding:.38rem .15rem;display:flex;flex-direction:column;align-items:center;gap:.1rem;"><span style="font-size:.9rem;">🏠</span><span class="tab-lbl" id="tabTodayLbl"></span></button>
+    <button class="tab-btn"        data-tab="workout" id="tabWorkout" style="flex:1;text-align:center;padding:.38rem .15rem;display:flex;flex-direction:column;align-items:center;gap:.1rem;"><span style="font-size:.9rem;">💪</span><span class="tab-lbl" id="tabWorkoutLbl"></span></button>
+    <button class="tab-btn"        data-tab="notes"   id="tabNotes"   style="flex:1;text-align:center;padding:.38rem .15rem;display:flex;flex-direction:column;align-items:center;gap:.1rem;"><span style="font-size:.9rem;">📝</span><span class="tab-lbl" id="tabNotesLbl"></span></button>
+    <button class="tab-btn"        data-tab="week"    id="tabWeek"    style="flex:1;text-align:center;padding:.38rem .15rem;display:flex;flex-direction:column;align-items:center;gap:.1rem;"><span style="font-size:.9rem;">📊</span><span class="tab-lbl" id="tabWeekLbl"></span></button>
+    <button class="tab-btn"        data-tab="log"     id="tabLog"     style="flex:1;text-align:center;padding:.38rem .15rem;display:flex;flex-direction:column;align-items:center;gap:.1rem;"><span style="font-size:.9rem;">📅</span><span class="tab-lbl" id="tabLogLbl"></span></button>
+    <button id="manageSectionsBtn" title="Show / Hide sections" style="flex-shrink:0;width:32px;height:32px;border-radius:7px;background:var(--surface2);border:1px solid var(--border);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text2);transition:all .15s;font-family:inherit;">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    </button>
+  </div>
+
+  <!-- ══ TAB: TODAY ══ -->
+  <div id="tab-today">
+    <!-- Calendar / day navigator -->
+    <div class="card" style="margin-bottom:1.2rem;padding:1rem;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.65rem;">
+        <span class="slabel" id="lblCalNav">التنقل بين الأيام</span>
+<button class="btn btn-ghost" style="font-size:.73rem;padding:.3rem .7rem;" id="jumpTodayBtn">Today</button>
+      </div>
+      <div class="cal-bar" id="calBar"></div>
+    </div>
+    <!-- Past-day banner -->
+    <div class="viewing-past" id="pastBanner" style="display:none;">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      <span id="pastBannerText"></span>
+    </div>
+
+    <div class="mgrid">
+      <!-- LEFT -->
+      <div class="scol" id="todayColLeft">
+        <!-- HABITS / TASKS -->
+        <div class="card card-cyan" id="sectionHabits" data-seckey="habits">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">
+            <div style="display:flex;align-items:center;gap:.5rem;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text2)" stroke-width="2" stroke-linecap="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+              <h2 class="font-display" style="font-size:1rem;font-weight:700;" id="titleHabits"></h2>
+            </div>
+            <div style="display:flex;align-items:center;gap:.35rem;">
+              <!-- زر + Habit الرئيسي — واضح دايماً -->
+              <button class="btn btn-ghost" style="font-size:.78rem;padding:.32rem .7rem;gap:.3rem;" id="addHabitBtn">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                <span id="lblAddHabit">Habit</span>
+              </button>
+              <!-- قائمة ⋯ تضم Reset + Hide -->
+              <div style="position:relative;">
+                <button class="btn-icon" id="habitsMenuBtn" title="More options" style="width:28px;height:28px;border-radius:7px;">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg>
+                </button>
+                <div id="habitsMenuDrop" style="display:none;position:absolute;top:calc(100% + 4px);right:0;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:.3rem;box-shadow:0 6px 20px rgba(0,0,0,.15);z-index:100;min-width:140px;">
+                  <button id="resetDayBtn" style="display:flex;align-items:center;gap:.55rem;width:100%;padding:.45rem .65rem;border-radius:7px;font-family:inherit;font-size:.82rem;font-weight:500;background:transparent;border:none;cursor:pointer;color:var(--text2);transition:background .12s;" onmouseover="this.style.background='var(--surface2)'" onmouseout="this.style.background='transparent'">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg>
+                    <span id="resetDayBtnLbl">Reset Day</span>
+                  </button>
+                  <div style="height:1px;background:var(--border);margin:.25rem 0;"></div>
+                  <button class="section-eye" data-section="habits" style="display:flex;align-items:center;gap:.55rem;width:100%;padding:.45rem .65rem;border-radius:7px;font-family:inherit;font-size:.82rem;font-weight:500;background:transparent;border:none;cursor:pointer;color:var(--text3);transition:background .12s;" onmouseover="this.style.background='var(--surface2)'" onmouseout="this.style.background='transparent'">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                    Hide Section
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- Category filter pills -->
+          <div style="display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:.85rem;" id="catFilterBar">
+            <button class="fcat-pill active-all" data-fcat="all"     id="fcatAll"></button>
+            <button class="fcat-pill"            data-fcat="work"    id="fcatWork"></button>
+            <button class="fcat-pill"            data-fcat="sport"   id="fcatSport"></button>
+            <button class="fcat-pill"            data-fcat="personal"id="fcatPersonal"></button>
+            <button class="fcat-pill"            data-fcat="health"  id="fcatHealth"></button>
+          </div>
+          <!-- Progress -->
+          <div style="margin-bottom:1rem;">
+            <div style="display:flex;justify-content:space-between;font-size:.75rem;color:var(--text2);margin-bottom:.5rem;">
+              <span id="lblProgress"></span><span id="progressLabel"></span>
+            </div>
+            <div class="pbar"><div class="pbar-fill" id="progressBar" style="width:0%"></div></div>
+          </div>
+          <!-- Task list -->
+          <div id="taskList" style="display:flex;flex-direction:column;gap:.2rem;margin-bottom:1rem;"></div>
+          <!-- Add task row -->
+          <div style="display:flex;gap:.5rem;flex-wrap:wrap;">
+            <input class="inp" style="flex:1;min-width:120px;" id="newTaskInput" type="text" maxlength="60"/>
+            <select class="cat-select" id="newTaskCat">
+              <option value="personal" id="optPersonal"></option>
+              <option value="work"     id="optWork"></option>
+              <option value="sport"    id="optSport"></option>
+              <option value="health"   id="optHealth"></option>
+              <option value="prayer"   id="optPrayer"></option>
+            </select>
+            <button class="btn btn-cyan flex-shrink-0" id="addTaskBtn"></button>
+          </div>
+        </div>
+
+        <!-- STEPS -->
+        <div class="card card-teal" id="sectionSteps" data-seckey="steps">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">
+            <div style="display:flex;align-items:center;gap:.4rem;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text2)" stroke-width="2" stroke-linecap="round"><path d="M13 4H9l-5 9h4l-2 7 11-11h-4l3-5z"/></svg>
+              <h2 class="font-display" style="font-size:1rem;font-weight:700;" id="titleSteps">الخطوات اليومية</h2>
+              <button class="section-eye" data-section="steps" title="Hide section">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+              </button>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:1.25rem;margin-bottom:1rem;">
+            <div class="steps-ring-wrap">
+              <svg width="90" height="90" style="transform:rotate(-90deg)" viewBox="0 0 90 90">
+                <circle class="steps-ring-bg" cx="45" cy="45" r="36"/>
+                <circle class="steps-ring-fg" id="stepsRing" cx="45" cy="45" r="36" stroke-dasharray="226.2" stroke-dashoffset="226.2"/>
+              </svg>
+              <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;">
+                <span style="font-size:1.1rem;font-weight:800;color:var(--text);" id="stepsCount">0</span>
+                <span style="font-size:.58rem;color:var(--text3);" id="lblStepsUnit">خطوة</span>
+              </div>
+            </div>
+            <div style="flex:1;">
+              <div style="display:flex;align-items:center;gap:.3rem;font-size:.82rem;color:var(--text2);margin-bottom:.5rem;">
+                <span id="lblStepTarget">الهدف:</span>
+                <input class="step-target-inp" id="stepsTargetInput" type="number" min="1000" max="99999" value="10000"/>
+                <span id="lblStepsUnitGoal">خطوة</span>
+              </div>
+              <p style="font-size:.75rem;color:var(--text2);" id="stepsRemaining"></p>
+            </div>
+          </div>
+          <div style="display:flex;gap:.5rem;">
+            <input class="inp" id="stepsInput" type="number" min="0" max="99999" style="flex:1;" placeholder="0"/>
+            <button class="btn btn-cyan" id="logStepsBtn" style="flex-shrink:0;">
+              <span id="lblLogSteps">تسجيل</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- FOOD LOG -->
+        <div class="card card-amber" id="sectionCalories" data-seckey="calories" onclick="event.stopPropagation()">
+          <!-- Header -->
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">
+            <div style="display:flex;align-items:center;gap:.4rem;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text2)" stroke-width="2" stroke-linecap="round"><path d="M8.5 14.5A2.5 2.5 0 0011 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 01-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 002.5 3z"/></svg>
+              <h2 class="font-display" style="font-size:1rem;font-weight:700;" id="titleCalories"></h2>
+              <button class="section-eye" data-section="calories" title="Hide section">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+              </button>
+            </div>
+            <button class="btn btn-cyan" id="openFoodModalBtn" style="font-size:.78rem;padding:.38rem .8rem;gap:.35rem;">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              <span id="lblAddFood">Add Food</span>
+            </button>
+          </div>
+
+          <!-- Summary ring + stats -->
+          <div style="display:flex;align-items:center;gap:1.25rem;margin-bottom:1.2rem;">
+            <div style="position:relative;flex-shrink:0;width:108px;height:108px;">
+              <svg width="108" height="108" class="rsvg" viewBox="0 0 108 108">
+                <circle class="rbg" cx="54" cy="54" r="44"/>
+                <circle class="rfg" id="calRing" cx="54" cy="54" r="44" stroke-dasharray="276.46" stroke-dashoffset="276.46"/>
+              </svg>
+              <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;">
+                <span style="font-size:1.2rem;font-weight:800;color:var(--text);" id="calTotal">0</span>
+                <span style="font-size:.65rem;color:var(--text3);">kcal</span>
+              </div>
+            </div>
+            <div style="flex:1;">
+              <p style="font-size:.75rem;color:var(--text2);" id="lblConsumed"></p>
+              <p style="font-size:1.4rem;font-weight:800;line-height:1.2;" id="calTotalBig">0 <span style="font-size:.85rem;color:var(--text2);font-weight:400;">kcal</span></p>
+              <div style="display:flex;align-items:center;gap:.3rem;font-size:.82rem;color:var(--text2);margin-top:.4rem;">
+                <span id="lblTarget"></span>
+                <input class="target-inp" id="calTargetInput" type="number" min="500" max="9999" value="2500"/>
+                <span>kcal</span>
+              </div>
+              <p style="font-size:.75rem;margin-top:.3rem;" id="calRemaining"></p>
+            </div>
+          </div>
+
+          <!-- Macro mini-bars -->
+          <div id="macroBar" style="display:grid;grid-template-columns:repeat(3,1fr);gap:.5rem;margin-bottom:1rem;"></div>
+
+          <!-- Food log list -->
+          <!-- Food log list -->
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.6rem;">
+            <button class="btn btn-danger" style="font-size:.7rem;padding:.2rem .6rem;opacity:.7;" id="clearMealsBtn"></button>
+            <div class="slabel" id="lblMealLog"></div>
+          </div>
+          <div id="mealList" style="display:flex;flex-direction:column;gap:.4rem;max-height:260px;overflow-y:auto;">
+            <p style="font-size:.82rem;color:var(--text3);text-align:center;padding:1.25rem 0;" id="emptyMeals"></p>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT: Notes card (desktop) -->
+      <div class="scol" id="todayColRight">
+
+        <!-- LAST WEEK ACHIEVEMENTS CARD -->
+        <div class="card" id="lastWeekCard" style="border-left:3px solid var(--violet);display:none;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.85rem;">
+            <div style="display:flex;align-items:center;gap:.45rem;">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--violet)" stroke-width="2" stroke-linecap="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+              <span style="font-size:.88rem;font-weight:700;" id="lastWeekTitle">الأسبوع الماضي</span>
+            </div>
+            <span style="font-size:.68rem;color:var(--text3);" id="lastWeekRange"></span>
+          </div>
+          <div id="lastWeekStats" style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem;margin-bottom:.85rem;"></div>
+          <div id="lastWeekBadges" style="display:flex;flex-wrap:wrap;gap:.4rem;"></div>
+        </div>
+        <div class="card card-violet" id="sectionNotes" data-seckey="notes">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">
+            <div style="display:flex;align-items:center;gap:.4rem;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text2)" stroke-width="2" stroke-linecap="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+              <h2 class="font-display" style="font-size:1rem;font-weight:700;" id="titleNotes"></h2>
+              <button class="section-eye" data-section="notes" title="Hide section">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+              </button>
+            </div>
+          </div>
+          <div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:.75rem;" id="pillsDesktop">
+            <button class="npill p-workout" data-cat="workout">🏋️ <span class="pill-lbl" data-key="workout"></span></button>
+            <button class="npill p-general" data-cat="general">📝 <span class="pill-lbl" data-key="general"></span></button>
+            <button class="npill p-food"    data-cat="food">🥗 <span class="pill-lbl" data-key="food"></span></button>
+          </div>
+          <!-- Color toolbar desktop -->
+          <div style="font-size:.62rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--text3);margin-bottom:.3rem;">🎨 Text Color</div>
+          <div class="note-toolbar" id="noteToolbarD" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:.4rem .5rem;">
+            <div class="color-swatch active-swatch" data-color="" style="background:var(--text);border-color:var(--text3);" title="عادي"></div>
+            <div class="color-swatch" data-color="#22d3ee" style="background:#22d3ee;" title="سماوي"></div>
+            <div class="color-swatch" data-color="#fbbf24" style="background:#fbbf24;" title="ذهبي"></div>
+            <div class="color-swatch" data-color="#fb7185" style="background:#fb7185;" title="وردي"></div>
+            <div class="color-swatch" data-color="#a78bfa" style="background:#a78bfa;" title="بنفسجي"></div>
+            <div class="color-swatch" data-color="#4ade80" style="background:#4ade80;" title="أخضر"></div>
+            <div class="color-swatch" data-color="#fb923c" style="background:#fb923c;" title="برتقالي"></div>
+          </div>
+          <div id="dpanel-workout" class="dnote-panel">
+            <div id="note-preview-dw" style="min-height:95px;padding:.5rem .85rem;font-size:.875rem;line-height:1.75;background:var(--surface2);border:1.5px solid var(--border);border-radius:10px;outline:none;white-space:pre-wrap;word-break:break-word;" contenteditable="true" data-note="workout"></div>
+          </div>
+          <div id="dpanel-general" class="dnote-panel" style="display:none;">
+            <div id="note-preview-dg" style="min-height:95px;padding:.5rem .85rem;font-size:.875rem;line-height:1.75;background:var(--surface2);border:1.5px solid var(--border);border-radius:10px;outline:none;white-space:pre-wrap;word-break:break-word;" contenteditable="true" data-note="general"></div>
+          </div>
+          <div id="dpanel-food" class="dnote-panel" style="display:none;">
+            <div id="note-preview-df" style="min-height:95px;padding:.5rem .85rem;font-size:.875rem;line-height:1.75;background:var(--surface2);border:1.5px solid var(--border);border-radius:10px;outline:none;white-space:pre-wrap;word-break:break-word;" contenteditable="true" data-note="food"></div>
+          </div>
+          <button class="btn btn-cyan" style="width:100%;justify-content:center;margin-top:.9rem;" id="saveNotesDesktop"></button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ TAB: NOTES (full page) ══ -->
+  <div id="tab-notes" style="display:none;">
+    <div class="card card-violet">
+      <div style="display:flex;align-items:center;gap:.6rem;margin-bottom:1rem;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--violet)" stroke-width="2" stroke-linecap="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        <h2 class="font-display" style="font-size:1rem;font-weight:700;" id="titleNotesMob"></h2>
+      </div>
+      <div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:.75rem;" id="pillsMobile">
+        <button class="npill p-workout" data-cat="workout">🏋️ <span class="pill-lbl" data-key="workout"></span></button>
+        <button class="npill p-general" data-cat="general">📝 <span class="pill-lbl" data-key="general"></span></button>
+        <button class="npill p-food"    data-cat="food">🥗 <span class="pill-lbl" data-key="food"></span></button>
+      </div>
+      <div style="font-size:.62rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--text3);margin-bottom:.3rem;">🎨 Text Color</div>
+      <div class="note-toolbar" id="noteToolbarM" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:.4rem .5rem;">
+        <div class="color-swatch active-swatch" data-color="" style="background:var(--text);border-color:var(--text3);" title="عادي"></div>
+        <div class="color-swatch" data-color="#22d3ee" style="background:#22d3ee;"></div>
+        <div class="color-swatch" data-color="#fbbf24" style="background:#fbbf24;"></div>
+        <div class="color-swatch" data-color="#fb7185" style="background:#fb7185;"></div>
+        <div class="color-swatch" data-color="#a78bfa" style="background:#a78bfa;"></div>
+        <div class="color-swatch" data-color="#4ade80" style="background:#4ade80;"></div>
+        <div class="color-swatch" data-color="#fb923c" style="background:#fb923c;"></div>
+      </div>
+      <div id="mpanel-workout" class="mnote-panel">
+        <div id="note-preview-mw" style="min-height:120px;padding:.5rem .85rem;font-size:.875rem;line-height:1.75;background:var(--surface2);border:1.5px solid var(--border);border-radius:10px;outline:none;white-space:pre-wrap;word-break:break-word;" contenteditable="true" data-note="workout"></div>
+      </div>
+      <div id="mpanel-general" class="mnote-panel" style="display:none;">
+        <div id="note-preview-mg" style="min-height:120px;padding:.5rem .85rem;font-size:.875rem;line-height:1.75;background:var(--surface2);border:1.5px solid var(--border);border-radius:10px;outline:none;white-space:pre-wrap;word-break:break-word;" contenteditable="true" data-note="general"></div>
+      </div>
+      <div id="mpanel-food" class="mnote-panel" style="display:none;">
+        <div id="note-preview-mf" style="min-height:120px;padding:.5rem .85rem;font-size:.875rem;line-height:1.75;background:var(--surface2);border:1.5px solid var(--border);border-radius:10px;outline:none;white-space:pre-wrap;word-break:break-word;" contenteditable="true" data-note="food"></div>
+      </div>
+      <button class="btn btn-cyan" style="width:100%;justify-content:center;margin-top:.9rem;" id="saveNotesMobile"></button>
+    </div>
+  </div>
+
+  <!-- ══ TAB: WEEK STATS ══ -->
+  <div id="tab-week" style="display:none;">
+    <div class="scol">
+      <!-- Weekly Summary -->
+      <div class="week-summary-card" id="weeklySummaryCard">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">
+          <div style="display:flex;align-items:center;gap:.5rem;">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--violet)" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            <span style="font-size:.95rem;font-weight:700;" id="weeklySummaryTitle">This Week</span>
+          </div>
+          <span style="font-size:.72rem;color:var(--text3);" id="weeklySummaryRange"></span>
+        </div>
+        <div id="weekDayRows"></div>
+        <div style="display:flex;gap:.75rem;margin-top:1rem;padding-top:.75rem;border-top:1px solid var(--border);">
+          <div style="flex:1;text-align:center;">
+            <div style="font-size:1.3rem;font-weight:800;" id="wSumStreak">0</div>
+            <div style="font-size:.65rem;color:var(--text2);">🔥 Best streak</div>
+          </div>
+          <div style="flex:1;text-align:center;">
+            <div style="font-size:1.3rem;font-weight:800;" id="wSumAvg">0%</div>
+            <div style="font-size:.65rem;color:var(--text2);">✅ Avg tasks</div>
+          </div>
+          <div style="flex:1;text-align:center;">
+            <div style="font-size:1.3rem;font-weight:800;" id="wSumSteps">0</div>
+            <div style="font-size:.65rem;color:var(--text2);">👟 Avg steps</div>
+          </div>
+          <div style="flex:1;text-align:center;">
+            <div style="font-size:1.3rem;font-weight:800;" id="wSumCal">0</div>
+            <div style="font-size:.65rem;color:var(--text2);">🔥 Avg kcal</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:.75rem;margin-bottom:1.2rem;">
+        <div class="stat-mini card-cyan" style="border:1px solid var(--border2);">
+          <span style="font-size:1.4rem;font-weight:800;color:var(--text);" id="wAvgTasks">—</span>
+          <span style="font-size:.65rem;color:var(--text2);margin-top:.2rem;" id="wLblAvgTasks"></span>
+        </div>
+        <div class="stat-mini" style="border:1px solid var(--border2);">
+          <span style="font-size:1.4rem;font-weight:800;color:var(--text);" id="wAvgCal">—</span>
+          <span style="font-size:.65rem;color:var(--text2);margin-top:.2rem;" id="wLblAvgCal"></span>
+        </div>
+        <div class="stat-mini" style="border:1px solid var(--border2);">
+          <span style="font-size:1.4rem;font-weight:800;color:var(--text);" id="wBestDay">—</span>
+          <span style="font-size:.65rem;color:var(--text2);margin-top:.2rem;" id="wLblBestDay"></span>
+        </div>
+      </div>
+      <div class="card card-cyan">
+        <div style="display:flex;align-items:center;gap:.6rem;margin-bottom:1rem;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--cyan)" stroke-width="2" stroke-linecap="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          <h2 class="font-display" style="font-size:1rem;font-weight:700;" id="wTitleTasks"></h2>
+        </div>
+        <div style="display:flex;gap:.5rem;align-items:flex-end;height:110px;" id="wTaskChart"></div>
+        <div style="display:flex;gap:.5rem;margin-top:.4rem;" id="wTaskChartLabels"></div>
+      </div>
+      <div class="card card-amber">
+        <div style="display:flex;align-items:center;gap:.6rem;margin-bottom:1rem;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--amber)" stroke-width="2" stroke-linecap="round"><path d="M8.5 14.5A2.5 2.5 0 0011 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 01-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 002.5 3z"/></svg>
+          <h2 class="font-display" style="font-size:1rem;font-weight:700;" id="wTitleCal"></h2>
+        </div>
+        <div style="display:flex;gap:.5rem;align-items:flex-end;height:110px;" id="wCalChart"></div>
+        <div style="display:flex;gap:.5rem;margin-top:.4rem;" id="wCalChartLabels"></div>
+      </div>
+      <div class="card card-violet">
+        <div style="display:flex;align-items:center;gap:.6rem;margin-bottom:1rem;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--violet)" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+          <h2 class="font-display" style="font-size:1rem;font-weight:700;" id="wTitleCats"></h2>
+        </div>
+        <div id="wCatBreakdown" style="display:flex;flex-direction:column;gap:.5rem;"></div>
+      </div>
+    </div>
+  </div>
+
+
+
+  <!-- ══ TAB: WORKOUT PLANNER ══ -->
+  <div id="tab-workout" style="display:none;">
+    <div class="mgrid">
+
+      <!-- ── LEFT COLUMN ── -->
+      <div class="scol">
+
+        <!-- Weekly Schedule -->
+        <div class="card" id="sectionWorkoutPlanner" data-seckey="wpplanner">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">
+            <div style="display:flex;align-items:center;gap:.5rem;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text2)" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              <h2 class="font-display" style="font-size:1rem;font-weight:700;">Weekly Schedule</h2>
+              <button class="section-eye" data-section="wpplanner" title="Hide section"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg></button>
+            </div>
+            <button class="btn btn-ghost" style="font-size:.7rem;padding:.25rem .6rem;" id="wpClearWeekBtn">Clear</button>
+          </div>
+          <div id="wpGrid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:.3rem;"></div>
+        </div>
+
+        <!-- Today's Exercise Log -->
+        <div class="card" id="sectionWorkoutLog" data-seckey="wplog">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">
+            <div style="display:flex;align-items:center;gap:.5rem;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text2)" stroke-width="2" stroke-linecap="round"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg>
+              <h2 class="font-display" style="font-size:1rem;font-weight:700;" id="wpLogTitle">Today's Exercises</h2>
+              <button class="section-eye" data-section="wplog" title="Hide section"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg></button>
+            </div>
+            <div style="display:flex;gap:.35rem;">
+              <button class="btn btn-ghost" style="font-size:.7rem;padding:.25rem .6rem;" id="wpAddExBtn">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                Add
+              </button>
+            </div>
+          </div>
+
+          <!-- AI Suggest Panel (hidden) -->
+          <div id="aiSuggestPanel" style="display:none;">
+            <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.65rem;">
+              <input class="inp" id="aiMuscleInput" type="text" maxlength="60" placeholder="Muscle group…" style="font-size:.82rem;flex:1;"/>
+              <button class="btn btn-cyan" id="aiSuggestRunBtn" style="font-size:.78rem;padding:.45rem .8rem;flex-shrink:0;">Go</button>
+            </div>
+            <div id="aiSuggestResults" style="display:flex;flex-direction:column;gap:.35rem;margin-bottom:.75rem;"></div>
+          </div>
+
+          <!-- Exercise list -->
+          <div id="wpExList" style="display:flex;flex-direction:column;gap:.4rem;margin-bottom:.5rem;"></div>
+          <p id="wpExEmpty" style="font-size:.82rem;color:var(--text3);text-align:center;padding:.75rem 0;">No exercises logged yet.</p>
+
+          <!-- Add row -->
+          <div id="wpAddRow" style="display:none;background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:.7rem;margin-top:.35rem;">
+            <div style="display:grid;grid-template-columns:1fr 52px 52px 70px auto;gap:.35rem;align-items:center;">
+              <input class="inp" id="wpExName" type="text" maxlength="50" placeholder="Exercise…" style="font-size:.82rem;"/>
+              <input class="inp" id="wpExSets" type="number" min="1" max="99" placeholder="Sets" style="font-size:.82rem;text-align:center;padding:.5rem .3rem;"/>
+              <input class="inp" id="wpExReps" type="number" min="1" max="999" placeholder="Reps" style="font-size:.82rem;text-align:center;padding:.5rem .3rem;"/>
+              <div style="position:relative;">
+                <input class="inp" id="wpExWeight" type="number" min="0" max="999" step="0.5" placeholder="kg" style="font-size:.82rem;text-align:center;padding:.5rem .3rem;padding-right:1.6rem;"/>
+                <span style="position:absolute;right:.35rem;top:50%;transform:translateY(-50%);font-size:.62rem;color:var(--text3);pointer-events:none;">kg</span>
+              </div>
+              <button class="btn btn-cyan" id="wpExSaveBtn" style="padding:.45rem .7rem;font-size:.8rem;white-space:nowrap;">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                Add
+              </button>
+            </div>
+            <div style="position:relative;margin-top:.4rem;" id="wpQuickFillsWrap">
+              <button class="btn btn-ghost" id="wpLibPickerBtn" style="font-size:.75rem;width:100%;justify-content:space-between;">
+                <span>📚 My Saved Exercises</span>
+                <svg id="wpLibPickerArrow" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+              </button>
+              <div id="wpLibPickerList" style="display:none;position:absolute;top:calc(100% + 4px);left:0;right:0;background:var(--surface);border:1px solid var(--border);border-radius:9px;box-shadow:0 6px 24px rgba(0,0,0,.12);z-index:50;max-height:260px;overflow-y:auto;padding:.3rem;">
+                <div style="padding:.3rem .3rem .2rem;" id="wpLibPickerSearchWrap">
+                  <input class="inp" id="wpLibPickerSearch" type="text" placeholder="Search…" style="font-size:.78rem;" onclick="event.stopPropagation()"/>
+                </div>
+                <div id="wpLibPickerItems"></div>
+              </div>
+            </div>
+          </div>
+
+          <div id="wpSummary" style="display:none;margin-top:.6rem;padding:.5rem .7rem;background:var(--surface2);border-radius:7px;border:1px solid var(--border);font-size:.76rem;color:var(--text2);"></div>
+        </div><!-- end sectionWorkoutLog card -->
+
+        <!-- Exercise Library -->
+        <div class="card" id="sectionExLib" data-seckey="exlib">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.85rem;">
+            <div style="display:flex;align-items:center;gap:.5rem;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text2)" stroke-width="2" stroke-linecap="round"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
+              <h2 class="font-display" style="font-size:1rem;font-weight:700;">Exercise Library</h2>
+              <button class="section-eye" data-section="exlib" title="Hide section"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg></button>
+            </div>
+            <button class="btn btn-ghost" style="font-size:.7rem;padding:.25rem .6rem;" id="exLibAddBtn">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              New
+            </button>
+          </div>
+          <!-- Search -->
+          <input class="inp" id="exLibSearch" type="text" placeholder="Search exercises…" style="font-size:.82rem;margin-bottom:.6rem;"/>
+          <!-- Add form -->
+          <div id="exLibAddRow" style="display:none;background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:.65rem;margin-bottom:.6rem;">
+            <div style="display:flex;gap:.35rem;align-items:center;">
+              <input class="inp" id="exLibName" type="text" maxlength="50" placeholder="Exercise name…" style="font-size:.82rem;flex:1;"/>
+              <button class="btn btn-cyan" id="exLibSaveBtn" style="font-size:.78rem;padding:.4rem .65rem;flex-shrink:0;">Save</button>
+            </div>
+          </div>
+          <!-- Library list -->
+          <div id="exLibList" style="display:flex;flex-direction:column;gap:.35rem;max-height:340px;overflow-y:auto;"></div>
+          <p id="exLibEmpty" style="font-size:.8rem;color:var(--text3);text-align:center;padding:.75rem 0;">No saved exercises yet.<br><span style="font-size:.72rem;">Add your own or use AI Suggest.</span></p>
+        </div>
+
+        <!-- Weight Tracker -->
+        <!-- ══ BODY WEIGHT + CALORIE CALCULATOR ══ -->
+        <div class="card" id="sectionWeight" data-seckey="weight">
+          <!-- Header -->
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">
+            <div style="display:flex;align-items:center;gap:.5rem;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text2)" stroke-width="2" stroke-linecap="round"><path d="M3 3h7v7H3z"/><path d="M14 3h7v7h-7z"/><path d="M14 14h7v7h-7z"/><path d="M3 14h7v7H3z"/></svg>
+              <h2 class="font-display" style="font-size:1rem;font-weight:700;">Body Weight</h2>
+              <button class="section-eye" data-section="weight" title="Hide section"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg></button>
+            </div>
+            <div style="display:flex;align-items:center;gap:.5rem;">
+              <span style="font-size:1.4rem;font-weight:800;color:var(--text);" id="wtCurrentVal">—</span>
+              <span style="font-size:.75rem;color:var(--text3);" id="wtUnit">kg</span>
+            </div>
+          </div>
+
+          <!-- ── LINE CHART SVG ── -->
+          <div style="position:relative;margin-bottom:1rem;">
+            <svg id="wtLineChart" width="100%" height="90" style="overflow:visible;display:block;">
+              <text id="wtChartEmpty" x="50%" y="50%" text-anchor="middle" dominant-baseline="middle"
+                fill="var(--text3)" font-size="11" font-family="inherit">No data yet</text>
+            </svg>
+          </div>
+
+          <!-- Log form -->
+          <div style="display:flex;gap:.4rem;margin-bottom:.85rem;">
+            <input class="inp" id="wtInput" type="number" min="20" max="300" step="0.1"
+              placeholder="e.g. 75.5" style="flex:1;font-size:.88rem;"/>
+            <select class="cat-select" id="wtUnitSel" style="width:60px;font-size:.8rem;padding:.5rem .4rem;">
+              <option value="kg">kg</option>
+              <option value="lbs">lbs</option>
+            </select>
+            <button class="btn btn-cyan" id="wtLogBtn" style="padding:.45rem .8rem;font-size:.82rem;flex-shrink:0;">Log</button>
+          </div>
+
+          <!-- History list -->
+          <div id="wtList" style="display:flex;flex-direction:column;gap:.2rem;max-height:160px;overflow-y:auto;margin-bottom:.5rem;"></div>
+          <p id="wtEmpty" style="font-size:.8rem;color:var(--text3);text-align:center;padding:.5rem 0;display:none;">No weight logged yet.</p>
+        </div>
+
+        <!-- ══ CALORIE CALCULATOR ══ -->
+        <div class="card card-amber" id="sectionCalCalc" data-seckey="calcal">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">
+            <div style="display:flex;align-items:center;gap:.5rem;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--amber)" stroke-width="2" stroke-linecap="round"><path d="M8.5 14.5A2.5 2.5 0 0011 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 01-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 002.5 3z"/></svg>
+              <h2 class="font-display" style="font-size:1rem;font-weight:700;">Calorie Calculator</h2>
+              <button class="section-eye" data-section="calcal" title="Hide section"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg></button>
+            </div>
+            <span style="font-size:.65rem;color:var(--text3);font-weight:500;">Harris-Benedict</span>
+          </div>
+
+          <!-- Inputs grid -->
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem;margin-bottom:.5rem;">
+            <div>
+              <label class="fm-lbl">Weight (kg)</label>
+              <input class="inp" id="ccWeight" type="number" min="30" max="300" step="0.5" placeholder="75" style="font-size:.84rem;" oninput="calcCalories()"/>
+            </div>
+            <div>
+              <label class="fm-lbl">Height (cm)</label>
+              <input class="inp" id="ccHeight" type="number" min="100" max="250" placeholder="175" style="font-size:.84rem;" oninput="calcCalories()"/>
+            </div>
+            <div>
+              <label class="fm-lbl">Age</label>
+              <input class="inp" id="ccAge" type="number" min="10" max="100" placeholder="25" style="font-size:.84rem;" oninput="calcCalories()"/>
+            </div>
+            <div>
+              <label class="fm-lbl">Gender</label>
+              <select class="cat-select inp" id="ccGender" style="font-size:.82rem;" onchange="calcCalories()">
+                <option value="m">Male / ذكر</option>
+                <option value="f">Female / أنثى</option>
+              </select>
+            </div>
+          </div>
+          <div style="margin-bottom:.85rem;">
+            <label class="fm-lbl">Activity Level</label>
+            <select class="cat-select inp" id="ccActivity" style="font-size:.82rem;width:100%;" onchange="calcCalories()">
+              <option value="1.2">Sedentary — desk job, no exercise</option>
+              <option value="1.375">Light — 1-3x / week</option>
+              <option value="1.55" selected>Moderate — 3-5x / week</option>
+              <option value="1.725">Active — 6-7x / week</option>
+              <option value="1.9">Very Active — physical job + training</option>
+            </select>
+          </div>
+
+          <!-- Result cards -->
+          <div id="ccResult" style="display:none;">
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:.4rem;margin-bottom:.6rem;">
+
+              <!-- LOSE -->
+              <button class="cc-goal-card" id="ccCardLose" data-goal="lose" onclick="ccSelectGoal('lose')" style="background:var(--surface2);border:1.5px solid var(--border);border-radius:9px;padding:.6rem .4rem;text-align:center;cursor:pointer;font-family:inherit;transition:all .18s;width:100%;">
+                <div style="font-size:.55rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--text3);margin-bottom:.2rem;">📉 Lose</div>
+                <div style="font-size:1.1rem;font-weight:800;color:var(--danger);" id="ccLose">—</div>
+                <div style="font-size:.58rem;color:var(--text3);">kcal</div>
+              </button>
+
+              <!-- MAINTAIN -->
+              <button class="cc-goal-card" id="ccCardMaintain" data-goal="maintain" onclick="ccSelectGoal('maintain')" style="background:var(--surface2);border:1.5px solid var(--border);border-radius:9px;padding:.6rem .4rem;text-align:center;cursor:pointer;font-family:inherit;transition:all .18s;width:100%;">
+                <div style="font-size:.55rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--text3);margin-bottom:.2rem;">⚖️ Maintain</div>
+                <div style="font-size:1.1rem;font-weight:800;color:var(--text);" id="ccMaintain">—</div>
+                <div style="font-size:.58rem;color:var(--text3);">kcal</div>
+              </button>
+
+              <!-- GAIN -->
+              <button class="cc-goal-card" id="ccCardGain" data-goal="gain" onclick="ccSelectGoal('gain')" style="background:var(--surface2);border:1.5px solid var(--border);border-radius:9px;padding:.6rem .4rem;text-align:center;cursor:pointer;font-family:inherit;transition:all .18s;width:100%;">
+                <div style="font-size:.55rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--text3);margin-bottom:.2rem;">💪 Gain</div>
+                <div style="font-size:1.1rem;font-weight:800;color:var(--success);" id="ccGain">—</div>
+                <div style="font-size:.58rem;color:var(--text3);">kcal</div>
+              </button>
+            </div>
+
+            <!-- Apply button — shows selected value -->
+            <button id="ccApplyBtn" onclick="ccApplyTarget()" class="btn btn-cyan" style="width:100%;justify-content:center;font-size:.84rem;gap:.45rem;opacity:.4;pointer-events:none;">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+              <span id="ccApplyLabel">Select a goal first</span>
+            </button>
+          </div>
+          <p id="ccHint" style="font-size:.78rem;color:var(--text3);text-align:center;padding:.5rem 0;">Fill in your info to see your TDEE</p>
+        </div>
+
+        <!-- Water Tracker -->
+        <div class="card card-teal" id="sectionWater" data-seckey="water">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">
+            <div style="display:flex;align-items:center;gap:.5rem;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--teal)" stroke-width="2" stroke-linecap="round"><path d="M12 2.69l5.66 5.66a8 8 0 11-11.31 0z"/></svg>
+              <h2 class="font-display" style="font-size:1rem;font-weight:700;">💧 Water Intake</h2>
+              <button class="section-eye" data-section="water" title="Hide section"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg></button>
+            </div>
+            <div style="display:flex;align-items:center;gap:.5rem;">
+              <span style="font-size:1.5rem;font-weight:800;color:var(--teal);" id="waterTotal">0</span>
+              <select class="cat-select" id="waterUnitSel" style="width:58px;font-size:.78rem;padding:.4rem .3rem;">
+                <option value="cup">Cup</option>
+                <option value="L">L</option>
+              </select>
+            </div>
+          </div>
+          <!-- Visual cups row -->
+          <div id="waterCupsViz" style="display:flex;flex-wrap:wrap;gap:.35rem;margin-bottom:.85rem;min-height:34px;"></div>
+          <!-- Goal bar -->
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.4rem;">
+            <span style="font-size:.7rem;color:var(--text3);">Daily goal</span>
+            <div style="display:flex;align-items:center;gap:.3rem;">
+              <input class="target-inp" id="waterGoal" type="number" min="1" max="30" value="8" style="width:40px;"/>
+              <span id="waterGoalUnit" style="font-size:.72rem;color:var(--text3);">cups</span>
+            </div>
+          </div>
+          <div class="pbar" style="margin-bottom:.9rem;"><div class="pbar-fill" id="waterBar" style="width:0%;background:var(--teal);"></div></div>
+          <!-- Log buttons -->
+          <div style="display:flex;gap:.4rem;flex-wrap:wrap;">
+            <button class="btn btn-ghost" id="waterAdd1" style="font-size:.8rem;flex:1;justify-content:center;">+1 <span class="water-unit-lbl">cup</span></button>
+            <button class="btn btn-ghost" id="waterAdd2" style="font-size:.8rem;flex:1;justify-content:center;">+2 <span class="water-unit-lbl">cups</span></button>
+            <button class="btn btn-ghost" id="waterReset" style="font-size:.78rem;padding:.45rem .65rem;color:var(--danger);">✕ Reset</button>
+          </div>
+        </div><!-- end sectionWater card -->
+
+        <div class="card" id="sectionWorkoutHistory" data-seckey="whistory">
+          <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.85rem;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text2)" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            <h2 class="font-display" style="font-size:1rem;font-weight:700;" id="whistoryTitle">السجل التاريخي</h2>
+          </div>
+          <div id="whistoryList" style="display:flex;flex-direction:column;gap:.5rem;"></div>
+          <p id="whistoryEmpty" style="font-size:.82rem;color:var(--text3);text-align:center;padding:.75rem 0;display:none;">لا يوجد سجل بعد.</p>
+        </div>
+
+      </div><!-- end left -->
+
+      <!-- ── RIGHT COLUMN ── -->
+      <div class="scol">
+
+
+            </div><!-- end right -->
+    </div><!-- end mgrid -->
+  </div><!-- end tab-workout -->
+
+  <!-- ══ TAB: LOG ══ -->
+  <div id="tab-log" style="display:none;">
+    <!-- Month/year header -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">
+      <div style="display:flex;align-items:center;gap:.6rem;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--rose)" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        <h2 class="font-display" style="font-size:1rem;font-weight:700;" id="titleLog"></h2>
+      </div>
+      <span style="font-size:.75rem;color:var(--text2);" id="logCount"></span>
+    </div>
+    <!-- Month groups rendered here -->
+    <div id="logList" style="display:flex;flex-direction:column;gap:1.25rem;">
+      <p style="font-size:.85rem;color:var(--text3);text-align:center;padding:3rem 0;" id="emptyLog"></p>
+    </div>
+  </div>
+
+<!-- WORKOUT DAY MODAL -->
+<div id="workoutModal">
+  <div class="wm-box">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:1rem 1.2rem .8rem;border-bottom:1px solid var(--border);">
+      <h3 class="font-display" style="font-size:.95rem;font-weight:700;" id="wmTitle">Edit Day</h3>
+      <button id="closeWorkoutModal" style="width:28px;height:28px;border-radius:6px;background:var(--surface2);border:1px solid var(--border);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text2);">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div style="padding:1rem 1.2rem;">
+      <!-- Rest day toggle -->
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;padding:.6rem .75rem;background:var(--surface2);border-radius:8px;border:1px solid var(--border);">
+        <div style="display:flex;align-items:center;gap:.5rem;">
+          <span style="font-size:.84rem;font-weight:500;">Rest Day</span>
+          <span style="font-size:.72rem;color:var(--text3);">😴</span>
+        </div>
+        <label class="cb-wrap">
+          <input type="checkbox" id="wmRestChk"/>
+          <div class="cb-box"><svg viewBox="0 0 13 13" fill="none" stroke="var(--accent-fg)" stroke-width="2.5" stroke-linecap="round"><polyline points="1.5 7 5 10.5 11.5 2.5"/></svg></div>
+        </label>
+      </div>
+      <!-- Muscle group focus -->
+      <div style="margin-bottom:.8rem;">
+        <label class="fm-lbl">Focus / Muscle Group</label>
+        <input class="inp" id="wmFocus" type="text" maxlength="60" placeholder="e.g. Chest & Triceps, Legs, Full Body…" style="font-size:.84rem;"/>
+      </div>
+      <!-- Notes -->
+      <div style="margin-bottom:1rem;">
+        <label class="fm-lbl">Notes</label>
+        <textarea class="inp" id="wmNotes" maxlength="300" rows="3" placeholder="Any notes for this day…" style="font-size:.84rem;resize:none;"></textarea>
+      </div>
+      <button class="btn btn-cyan" id="wmSaveBtn" style="width:100%;justify-content:center;">Save</button>
+    </div>
+  </div>
+</div>
+
+</main>
+
+<!-- ══ FOOD LOG MODAL ══ -->
+<div id="foodModal" style="position:fixed;inset:0;z-index:400;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.65);backdrop-filter:blur(6px);padding:1rem;">
+  <div style="background:var(--surface);border:1px solid var(--border2);border-radius:20px;width:100%;max-width:440px;max-height:90vh;overflow-y:auto;box-shadow:0 24px 64px rgba(0,0,0,.5);animation:fadeUp .22s ease;">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:1.1rem 1.3rem .8rem;border-bottom:1px solid var(--border);">
+      <h3 class="font-display" style="font-size:1rem;font-weight:700;" id="fmTitle">Add Food</h3>
+      <button id="closeFoodModal" style="width:30px;height:30px;border-radius:8px;background:var(--surface2);border:1px solid var(--border);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text2);">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div style="padding:1.1rem 1.3rem;">
+      <div style="display:flex;gap:.3rem;background:var(--surface2);border-radius:10px;padding:.25rem;margin-bottom:1.1rem;">
+        <button class="fm-3tab active" id="fmTabMeal">🍽️ <span id="lblFmTabMeal">Ready Meal</span></button>
+        <button class="fm-3tab" id="fmTabProduct">⚖️ <span id="lblFmTabProduct">By Weight</span></button>
+        <button class="fm-3tab" id="fmTabSaved">⭐ <span id="lblFmTabSaved">Saved</span></button>
+      </div>
+      <div style="margin-bottom:.85rem;">
+        <label id="fmImgLabel" style="font-size:.7rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);display:block;margin-bottom:.4rem;">Photo (optional)</label>
+        <div id="fmImgDrop" style="border:2px dashed var(--border2);border-radius:12px;padding:.75rem;display:flex;align-items:center;gap:.75rem;cursor:pointer;transition:border-color .2s;position:relative;overflow:hidden;">
+          <div id="fmImgPreviewWrap" style="width:52px;height:52px;border-radius:9px;background:var(--surface2);flex-shrink:0;overflow:hidden;display:flex;align-items:center;justify-content:center;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text3)" stroke-width="1.5" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          </div>
+          <div>
+            <p style="font-size:.82rem;font-weight:600;color:var(--text2);" id="fmImgHint">Click or drag an image</p>
+            <p style="font-size:.72rem;color:var(--text3);">JPG, PNG, WebP · تُضغط تلقائياً</p>
+          </div>
+          <input type="file" id="fmImgInput" accept="image/*" style="position:absolute;inset:0;opacity:0;cursor:pointer;"/>
+        </div>
+      </div>
+      <div id="fmPanelMeal">
+        <div style="margin-bottom:.65rem;">
+          <label class="fm-lbl" id="fmLblName1">Meal Name</label>
+          <input class="inp" id="fmMealName" type="text" maxlength="60" placeholder="e.g. Grilled Chicken…"/>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.55rem;margin-bottom:.65rem;">
+          <div>
+            <label class="fm-lbl" id="fmLblKcal">Total Calories</label>
+            <input class="inp" id="fmMealKcal" type="number" min="1" max="9999" placeholder="kcal"/>
+          </div>
+          <div>
+            <label class="fm-lbl" id="fmLblProtein">Protein (g) <span style="color:var(--text3);font-weight:400;">opt.</span></label>
+            <input class="inp" id="fmMealProtein" type="number" min="0" max="999" placeholder="g"/>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.55rem;margin-bottom:.9rem;">
+          <div>
+            <label class="fm-lbl" id="fmLblCarbs">Carbs (g) <span style="color:var(--text3);font-weight:400;">opt.</span></label>
+            <input class="inp" id="fmMealCarbs" type="number" min="0" max="999" placeholder="g"/>
+          </div>
+          <div>
+            <label class="fm-lbl" id="fmLblFat">Fat (g) <span style="color:var(--text3);font-weight:400;">opt.</span></label>
+            <input class="inp" id="fmMealFat" type="number" min="0" max="999" placeholder="g"/>
+          </div>
+        </div>
+      </div>
+      <div id="fmPanelProduct" style="display:none;">
+        <div style="margin-bottom:.65rem;">
+          <label class="fm-lbl" id="fmLblProdName">Product Name</label>
+          <input class="inp" id="fmProdName" type="text" maxlength="60" placeholder="e.g. Oats…"/>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.55rem;margin-bottom:.65rem;">
+          <div>
+            <label class="fm-lbl" id="fmLblBaseKcal">Calories</label>
+            <input class="inp" id="fmProdBaseKcal" type="number" min="1" max="9999" placeholder="kcal"/>
+          </div>
+          <div>
+            <label class="fm-lbl" id="fmLblBasePer">Per (g)</label>
+            <input class="inp" id="fmProdBaseG" type="number" min="1" max="9999" placeholder="100"/>
+          </div>
+        </div>
+        <div style="margin-bottom:.65rem;">
+          <label class="fm-lbl" id="fmLblAmount">Amount Consumed (g)</label>
+          <input class="inp" id="fmProdAmount" type="number" min="1" max="9999" placeholder="e.g. 150"/>
+        </div>
+        <div id="fmCalcPreview" style="background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.2);border-radius:10px;padding:.6rem .85rem;margin-bottom:.9rem;display:none;">
+          <span style="font-size:.78rem;color:var(--text2);" id="fmCalcLabel">Calculated:</span>
+          <span style="font-size:1.1rem;font-weight:800;color:var(--amber);margin-left:.4rem;" id="fmCalcValue">—</span>
+          <span style="font-size:.75rem;color:var(--text2);"> kcal</span>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:.55rem;margin-bottom:.9rem;">
+          <div>
+            <label class="fm-lbl" id="fmLblProdProtein">Protein (g) <span style="color:var(--text3);font-weight:400;">opt.</span></label>
+            <input class="inp" id="fmProdProtein" type="number" min="0" max="999" placeholder="g"/>
+          </div>
+          <div>
+            <label class="fm-lbl" id="fmLblProdCarbs">Carbs (g) <span style="color:var(--text3);font-weight:400;">opt.</span></label>
+            <input class="inp" id="fmProdCarbs" type="number" min="0" max="999" placeholder="g"/>
+          </div>
+          <div>
+            <label class="fm-lbl" id="fmLblProdFat">Fat (g) <span style="color:var(--text3);font-weight:400;">opt.</span></label>
+            <input class="inp" id="fmProdFat" type="number" min="0" max="999" placeholder="g"/>
+          </div>
+        </div>
+      </div>
+      <div id="fmPanelSaved" style="display:none;">
+        <div style="margin-bottom:.65rem;">
+          <input class="inp" id="smSearch" type="text" placeholder="Search saved meals…" style="margin-bottom:.6rem;"/>
+        </div>
+        <div id="smList" style="display:flex;flex-direction:column;gap:.4rem;max-height:280px;overflow-y:auto;">
+          <p id="smEmpty" style="font-size:.82rem;color:var(--text3);text-align:center;padding:1.5rem 0;">No saved meals yet.<br><span style="font-size:.75rem;">Log a meal to save it here.</span></p>
+        </div>
+      </div>
+      <div id="fmSaveRow" style="display:flex;align-items:center;gap:.55rem;margin-bottom:.7rem;padding:.55rem .7rem;background:rgba(251,191,36,.06);border:1px solid rgba(251,191,36,.15);border-radius:10px;">
+        <label class="cb-wrap" style="flex-shrink:0;">
+          <input type="checkbox" id="fmSaveChk"/>
+          <div class="cb-box"><svg viewBox="0 0 13 13" fill="none" stroke="var(--accent-fg)" stroke-width="2.5" stroke-linecap="round"><polyline points="1.5 7 5 10.5 11.5 2.5"/></svg></div>
+        </label>
+        <span style="font-size:.8rem;color:var(--text2);" id="fmSaveLabel">Save to my meals library</span>
+        <span style="font-size:.7rem;color:var(--text3);margin-right:auto;">⭐</span>
+      </div>
+      <button class="btn btn-cyan" id="fmSubmitBtn" style="width:100%;justify-content:center;font-size:.9rem;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        <span id="fmSubmitLbl">Log Food</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ EDIT EXERCISE MODAL ══ -->
+<div id="editExModal" style="position:fixed;inset:0;z-index:500;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.65);backdrop-filter:blur(6px);padding:1rem;">
+  <div style="background:var(--surface);border:1px solid var(--border2);border-radius:16px;width:100%;max-width:340px;box-shadow:0 24px 64px rgba(0,0,0,.5);animation:fadeUp .2s ease;">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:.9rem 1.1rem .7rem;border-bottom:1px solid var(--border);">
+      <h3 class="font-display" style="font-size:.95rem;font-weight:700;">Edit Exercise</h3>
+      <button id="closeEditExModal" style="width:28px;height:28px;border-radius:6px;background:var(--surface2);border:1px solid var(--border);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text2);">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div style="padding:.9rem 1.1rem 1.1rem;">
+      <input type="hidden" id="editExIdx"/>
+      <div style="margin-bottom:.65rem;">
+        <label class="fm-lbl">Exercise Name</label>
+        <input class="inp" id="editExName" type="text" maxlength="50" style="font-size:.85rem;"/>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:.4rem;margin-bottom:.9rem;">
+        <div>
+          <label class="fm-lbl">Sets</label>
+          <input class="inp" id="editExSets" type="number" min="1" max="99" style="font-size:.85rem;text-align:center;"/>
+        </div>
+        <div>
+          <label class="fm-lbl">Reps</label>
+          <input class="inp" id="editExReps" type="number" min="1" max="999" style="font-size:.85rem;text-align:center;"/>
+        </div>
+        <div>
+          <label class="fm-lbl">Weight (kg)</label>
+          <input class="inp" id="editExWeight" type="number" min="0" max="999" step="0.5" style="font-size:.85rem;text-align:center;"/>
+        </div>
+      </div>
+      <button class="btn btn-cyan" id="editExSaveBtn" style="width:100%;justify-content:center;">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+
+<div id="toast"></div>
+
+
+<!-- ═══════════════════════════════════════════════════════════════
+     App Modules — loaded in dependency order
+     Split from monolithic inline script for maintainability.
+     
+     Load order matters:
+     1. i18n      — translation strings (no deps)
+     2. storage   — LS wrapper + Supabase client (needs i18n for toast)
+     3. data      — state vars, presets, day management (needs storage)
+     4. ui        — rendering helpers, tabs, tasks (needs data)
+     5. food      — food log, meal modal (needs ui)
+     6. notes_log — notes editor, history log (needs ui)
+     7. workout   — workout planner, exercise lib (needs ui)
+     8. weight    — weight tracker + chart (needs ui)
+     9. settings  — section mgmt, settings modal (needs ui)
+     10. auth     — auth modal, Supabase bootstrap (needs storage + ui)
+     11. health   — BMI, TDEE, onboarding (needs auth)
+     12. pwa      — Service Worker, install banner (needs auth)
+═══════════════════════════════════════════════════════════════ -->
+<script src="js/i18n.js"></script>
+<script src="js/storage.js"></script>
+<script src="js/data.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/food.js"></script>
+<script src="js/notes_log.js"></script>
+<script src="js/workout.js"></script>
+<script src="js/weight.js"></script>
+<script src="js/settings.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/health.js"></script>
+<script src="js/pwa.js"></script>
+</body>
+</html>
