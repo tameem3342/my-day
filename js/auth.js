@@ -32,7 +32,7 @@ async function signInWithGoogle() {
   try {
     const { error } = await _supa.auth.signInWithOAuth({
       provider: 'google',
-      options: { redirectTo: window.location.origin + window.location.pathname }
+      options: { redirectTo: window.location.origin + '/app.html' }
     });
     if(error) showAuthError(lang==='ar'?'فشل تسجيل الدخول بـ Google: '+error.message:'Google sign-in failed: '+error.message);
   } catch(e) {
@@ -51,7 +51,7 @@ async function sendEmailLink(resend=false) {
   try {
     const { error } = await _supa.auth.signInWithOtp({
       email,
-      options: { emailRedirectTo: window.location.origin + window.location.pathname }
+      options: { emailRedirectTo: window.location.origin + '/app.html' }
     });
     if(error) { showAuthError(error.message); return; }
     document.getElementById('authStep1').style.display = 'none';
