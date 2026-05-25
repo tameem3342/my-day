@@ -1377,17 +1377,5 @@
   }
 })();
 </script>
-
-<script>
-(function() {
-  if (new URLSearchParams(window.location.search).get('signin') === 'true') {
-    window.addEventListener('load', function() {
-      setTimeout(function() {
-        if (typeof openAuthModal === 'function') openAuthModal();
-      }, 800);
-    });
-  }
-})();
-</script>
 </body>
 </html>
