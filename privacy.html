@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Privacy Policy — Adaa</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --bg: #080808;
+  --surface: #111111;
+  --surface2: #181818;
+  --border: rgba(255,255,255,.07);
+  --text: #f0f0f0;
+  --text2: #888;
+  --text3: #444;
+  --accent: #00FF87;
+  --accent2: #00cc6a;
+  --accent-dim: rgba(0,255,135,.08);
+  --accent-dim2: rgba(0,255,135,.15);
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  line-height: 1.8;
+}
+
+/* NAV */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  padding: 1.1rem 2rem;
+  display: flex; align-items: center; justify-content: space-between;
+  background: rgba(8,8,8,.9);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+}
+.nav-logo {
+  display: flex; align-items: center; gap: .6rem;
+  font-family: 'Syne', sans-serif;
+  font-weight: 800; font-size: 1.2rem;
+  color: var(--text); text-decoration: none;
+}
+.nav-back {
+  font-size: .85rem; color: var(--text2); text-decoration: none;
+  font-weight: 500; transition: color .2s;
+  display: flex; align-items: center; gap: .4rem;
+}
+.nav-back:hover { color: var(--text); }
+.lang-toggle {
+  font-size: .78rem; background: none; border: 1px solid var(--border);
+  border-radius: 6px; padding: .3rem .65rem;
+  cursor: pointer; color: var(--text2); font-family: inherit;
+  transition: all .2s;
+}
+.lang-toggle:hover { border-color: rgba(255,255,255,.2); color: var(--text); }
+
+/* CONTENT */
+.page-wrap {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 8rem 2rem 5rem;
+}
+.page-label {
+  font-size: .72rem; font-weight: 700; color: var(--accent);
+  letter-spacing: .12em; text-transform: uppercase;
+  margin-bottom: .75rem;
+}
+.page-title {
+  font-family: 'Syne', sans-serif;
+  font-size: clamp(2rem, 5vw, 3rem);
+  font-weight: 800; letter-spacing: -.03em;
+  margin-bottom: .5rem; line-height: 1.1;
+}
+.page-date {
+  font-size: .82rem; color: var(--text3);
+  margin-bottom: 3rem;
+}
+.section {
+  margin-bottom: 2.5rem;
+}
+.section h2 {
+  font-family: 'Syne', sans-serif;
+  font-size: 1.15rem; font-weight: 700;
+  margin-bottom: .75rem; color: var(--text);
+}
+.section p {
+  color: var(--text2);
+  font-size: .95rem;
+  margin-bottom: .75rem;
+}
+.section ul {
+  list-style: none;
+  padding: 0;
+}
+.section ul li {
+  color: var(--text2);
+  font-size: .95rem;
+  padding: .3rem 0 .3rem 1.4rem;
+  position: relative;
+}
+.section ul li::before {
+  content: '';
+  position: absolute;
+  left: 0; top: .7rem;
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+html[dir="rtl"] .section ul li {
+  padding: .3rem 1.4rem .3rem 0;
+}
+html[dir="rtl"] .section ul li::before {
+  left: auto; right: 0;
+}
+.divider {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 2rem 0;
+}
+.contact-box {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 1.5rem;
+  margin-top: 2.5rem;
+}
+.contact-box p { color: var(--text2); font-size: .9rem; }
+.contact-box a { color: var(--accent); text-decoration: none; }
+.contact-box a:hover { text-decoration: underline; }
+
+/* FOOTER */
+footer {
+  text-align: center;
+  padding: 3rem 2rem;
+  border-top: 1px solid var(--border);
+  color: var(--text3);
+  font-size: .8rem;
+}
+footer a { color: var(--text3); text-decoration: none; }
+footer a:hover { color: var(--text2); }
+</style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-logo" href="index.html">
+    <svg width="28" height="28" viewBox="0 0 100 100" fill="none" style="border-radius:7px;flex-shrink:0;">
+      <rect width="100" height="100" rx="20" fill="#0a0a0a"/>
+      <polyline points="20,76 50,22 80,76" fill="none" stroke="white" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+      <polyline points="20,76 50,22 80,76" fill="none" stroke="#00FF87" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="100 200" stroke-dashoffset="-40"/>
+      <polygon points="74,54 86,80 60,72" fill="#00FF87"/>
+    </svg>
+    Adaa
+  </a>
+  <a class="nav-back" href="index.html" id="back-link">← Back</a>
+  <button class="lang-toggle" onclick="toggleLang()">العربية</button>
+</nav>
+
+<div class="page-wrap">
+
+  <!-- EN CONTENT -->
+  <div id="content-en">
+    <div class="page-label">Legal</div>
+    <h1 class="page-title">Privacy Policy</h1>
+    <div class="page-date">Last updated: May 25, 2026</div>
+
+    <div class="section">
+      <h2>1. Introduction</h2>
+      <p>Welcome to Adaa. We are committed to protecting your personal information and your right to privacy. This Privacy Policy explains how we collect, use, and safeguard your data when you use our app.</p>
+    </div>
+
+    <hr class="divider"/>
+
+    <div class="section">
+      <h2>2. Information We Collect</h2>
+      <p>We collect only what's necessary to deliver the Adaa experience:</p>
+      <ul>
+        <li>Account information (name, email) when you sign in with Google</li>
+        <li>Health and fitness data you manually enter (habits, calories, workouts, weight)</li>
+        <li>App usage data to improve performance and fix bugs</li>
+        <li>Device information (OS, app version) for compatibility</li>
+      </ul>
+    </div>
+
+    <hr class="divider"/>
+
+    <div class="section">
+      <h2>3. How We Use Your Data</h2>
+      <p>Your data is used solely to power the app features you use:</p>
+      <ul>
+        <li>Syncing your data across devices</li>
+        <li>Calculating your TDEE, calorie goals, and progress</li>
+        <li>Generating weekly performance insights</li>
+        <li>Improving app stability and performance</li>
+      </ul>
+      <p>We never sell your data. We never use it for advertising. Ever.</p>
+    </div>
+
+    <hr class="divider"/>
+
+    <div class="section">
+      <h2>4. Data Storage & Security</h2>
+      <p>Your data is encrypted in transit and at rest. We use industry-standard security practices to protect your information. Your data is stored securely in the cloud and is only accessible by you.</p>
+    </div>
+
+    <hr class="divider"/>
+
+    <div class="section">
+      <h2>5. Third-Party Services</h2>
+      <p>Adaa uses the following third-party services:</p>
+      <ul>
+        <li><strong>Google Sign-In</strong> — for authentication only. We do not access your Google data beyond your name and email.</li>
+        <li><strong>Firebase</strong> — for secure cloud storage and sync.</li>
+      </ul>
+      <p>These services have their own privacy policies. We encourage you to review them.</p>
+    </div>
+
+    <hr class="divider"/>
+
+    <div class="section">
+      <h2>6. Your Rights</h2>
+      <p>You have full control over your data:</p>
+      <ul>
+        <li>Access all your data anytime within the app</li>
+        <li>Delete your account and all associated data permanently</li>
+        <li>Export your data upon request</li>
+      </ul>
+    </div>
+
+    <hr class="divider"/>
+
+    <div class="section">
+      <h2>7. Changes to This Policy</h2>
+      <p>We may update this policy from time to time. We will notify you of significant changes through the app. Continued use of Adaa after changes means you accept the updated policy.</p>
+    </div>
+
+    <div class="contact-box">
+      <h2 style="margin-bottom:.5rem;">Questions?</h2>
+      <p>If you have any questions about this Privacy Policy, reach out to us at <a href="mailto:privacy@adaa.health">privacy@adaa.health</a></p>
+    </div>
+  </div>
+
+  <!-- AR CONTENT -->
+  <div id="content-ar" style="display:none;">
+    <div class="page-label">قانوني</div>
+    <h1 class="page-title">سياسة الخصوصية</h1>
+    <div class="page-date">آخر تحديث: ٢٥ مايو ٢٠٢٦</div>
+
+    <div class="section">
+      <h2>١. مقدمة</h2>
+      <p>أهلاً بك في Adaa. نحن ملتزمون بحماية معلوماتك الشخصية وحقك في الخصوصية. توضح سياسة الخصوصية هذه كيف نجمع بياناتك ونستخدمها ونحميها عند استخدامك للتطبيق.</p>
+    </div>
+
+    <hr class="divider"/>
+
+    <div class="section">
+      <h2>٢. البيانات التي نجمعها</h2>
+      <p>نجمع فقط ما هو ضروري لتقديم تجربة Adaa:</p>
+      <ul>
+        <li>معلومات الحساب (الاسم، البريد الإلكتروني) عند تسجيل الدخول بجوجل</li>
+        <li>بيانات الصحة واللياقة التي تدخلها يدوياً (العادات، السعرات، التمارين، الوزن)</li>
+        <li>بيانات استخدام التطبيق لتحسين الأداء وإصلاح الأخطاء</li>
+        <li>معلومات الجهاز (نظام التشغيل، إصدار التطبيق) للتوافقية</li>
+      </ul>
+    </div>
+
+    <hr class="divider"/>
+
+    <div class="section">
+      <h2>٣. كيف نستخدم بياناتك</h2>
+      <p>بياناتك تُستخدم فقط لتشغيل ميزات التطبيق التي تستخدمها:</p>
+      <ul>
+        <li>مزامنة بياناتك عبر الأجهزة</li>
+        <li>حساب TDEE وأهداف السعرات والتقدم</li>
+        <li>توليد تقارير الأداء الأسبوعية</li>
+        <li>تحسين استقرار التطبيق وأدائه</li>
+      </ul>
+      <p>لا نبيع بياناتك أبداً. لا نستخدمها للإعلانات. أبداً.</p>
+    </div>
+
+    <hr class="divider"/>
+
+    <div class="section">
+      <h2>٤. تخزين البيانات وأمانها</h2>
+      <p>بياناتك مشفرة أثناء النقل وعند التخزين. نستخدم ممارسات أمان معيارية في الصناعة لحماية معلوماتك. بياناتك مخزنة بأمان في السحابة ولا يمكن الوصول إليها إلا من قِبلك.</p>
+    </div>
+
+    <hr class="divider"/>
+
+    <div class="section">
+      <h2>٥. خدمات الطرف الثالث</h2>
+      <p>يستخدم Adaa الخدمات التالية من طرف ثالث:</p>
+      <ul>
+        <li><strong>تسجيل دخول Google</strong> — للمصادقة فقط. لا نصل إلى بيانات جوجل الخاصة بك سوى اسمك وبريدك الإلكتروني.</li>
+        <li><strong>Firebase</strong> — للتخزين السحابي الآمن والمزامنة.</li>
+      </ul>
+      <p>لهذه الخدمات سياسات خصوصية خاصة بها. نشجعك على مراجعتها.</p>
+    </div>
+
+    <hr class="divider"/>
+
+    <div class="section">
+      <h2>٦. حقوقك</h2>
+      <p>لديك تحكم كامل في بياناتك:</p>
+      <ul>
+        <li>الوصول إلى جميع بياناتك في أي وقت داخل التطبيق</li>
+        <li>حذف حسابك وجميع البيانات المرتبطة به نهائياً</li>
+        <li>تصدير بياناتك عند الطلب</li>
+      </ul>
+    </div>
+
+    <hr class="divider"/>
+
+    <div class="section">
+      <h2>٧. التغييرات على هذه السياسة</h2>
+      <p>قد نحدّث هذه السياسة من وقت لآخر. سنخطرك بالتغييرات المهمة من خلال التطبيق. الاستمرار في استخدام Adaa بعد التغييرات يعني قبولك للسياسة المحدّثة.</p>
+    </div>
+
+    <div class="contact-box">
+      <h2 style="margin-bottom:.5rem;">أسئلة؟</h2>
+      <p>إذا كان لديك أي أسئلة حول سياسة الخصوصية، تواصل معنا على <a href="mailto:privacy@adaa.health">privacy@adaa.health</a></p>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  <span id="footer-copy">© 2026 Adaa. Built for performance.</span>
+</footer>
+
+<script>
+let currentLang = 'en';
+
+function applyLang(lang) {
+  currentLang = lang;
+  const html = document.documentElement;
+  html.lang = lang;
+  html.dir = lang === 'ar' ? 'rtl' : 'ltr';
+
+  document.getElementById('content-en').style.display = lang === 'en' ? '' : 'none';
+  document.getElementById('content-ar').style.display = lang === 'ar' ? '' : 'none';
+  document.querySelector('.lang-toggle').textContent = lang === 'en' ? 'العربية' : 'English';
+  document.getElementById('back-link').textContent = lang === 'ar' ? '→ رجوع' : '← Back';
+  document.getElementById('footer-copy').textContent = lang === 'ar'
+    ? '© 2026 Adaa. مبني للأداء.'
+    : '© 2026 Adaa. Built for performance.';
+  document.title = lang === 'ar' ? 'سياسة الخصوصية — Adaa' : 'Privacy Policy — Adaa';
+  localStorage.setItem('adaa-lang', lang);
+}
+
+function toggleLang() {
+  applyLang(currentLang === 'en' ? 'ar' : 'en');
+}
+
+// Read lang from localStorage (set by index.html) or browser
+(function() {
+  const saved = localStorage.getItem('adaa-lang');
+  if (saved) {
+    applyLang(saved);
+  } else {
+    const browserLang = (navigator.language || 'en').toLowerCase();
+    if (browserLang.startsWith('ar')) applyLang('ar');
+  }
+})();
+</script>
+</body>
+</html>

@@ -444,13 +444,7 @@ footer {
 <!-- NAV -->
 <nav>
   <a class="nav-logo" href="#">
-    <svg width="26" height="26" viewBox="0 0 100 100" fill="none">
-      <rect width="100" height="100" rx="20" fill="#0a0a0a"/>
-      <polygon points="50,12 22,78 34,78 50,38 66,78 78,78" fill="white"/>
-      <rect x="31" y="60" width="38" height="7" rx="2" fill="white"/>
-      <polyline points="20,76 50,22 80,76" fill="none" stroke="#00FF87" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
-      <polygon points="74,54 86,80 60,72" fill="#00FF87"/>
-    </svg>
+    <img src="icon-192.png" alt="Adaa" width="28" height="28" style="border-radius:7px;"/>
     Adaa
   </a>
   <div class="nav-links">
@@ -616,28 +610,23 @@ footer {
 <!-- FOOTER -->
 <footer>
   <a class="footer-logo" href="#">
-    <svg width="20" height="20" viewBox="0 0 100 100" fill="none">
-      <rect width="100" height="100" rx="20" fill="#111"/>
-      <polygon points="50,12 22,78 34,78 50,38 66,78 78,78" fill="white"/>
-      <rect x="31" y="60" width="38" height="7" rx="2" fill="white"/>
-      <polyline points="20,76 50,22 80,76" fill="none" stroke="#00FF87" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
-      <polygon points="74,54 86,80 60,72" fill="#00FF87"/>
-    </svg>
+    <img src="icon-192.png" alt="Adaa" width="22" height="22" style="border-radius:6px;"/>
     Adaa
   </a>
   <div class="footer-copy" data-en="© 2026 Adaa. Built for performance." data-ar="© 2026 Adaa. مبني للأداء.">© 2026 Adaa. Built for performance.</div>
   <div class="footer-links">
     <a href="https://www.adaa.health" target="_self" data-en="Open App" data-ar="افتح التطبيق">Open App</a>
-    <a href="https://www.adaa.health/privacy" target="_self" data-en="Privacy Policy" data-ar="سياسة الخصوصية">Privacy Policy</a>
-    <a href="https://www.adaa.health/terms" target="_self" data-en="Terms of Service" data-ar="شروط الاستخدام">Terms of Service</a>
+    <a href="privacy.html" id="link-privacy" data-en="Privacy Policy" data-ar="سياسة الخصوصية">Privacy Policy</a>
+    <a href="terms.html" id="link-terms" data-en="Terms of Service" data-ar="شروط الاستخدام">Terms of Service</a>
   </div>
 </footer>
 
 <script>
 // ── Language Toggle ──
 let currentLang = 'en';
-function toggleLang() {
-  currentLang = currentLang === 'en' ? 'ar' : 'en';
+
+function applyLang(lang) {
+  currentLang = lang;
   const html = document.documentElement;
   html.lang = currentLang;
   html.dir = currentLang === 'ar' ? 'rtl' : 'ltr';
@@ -649,6 +638,27 @@ function toggleLang() {
 
   document.querySelector('.lang-toggle').textContent = currentLang === 'en' ? 'العربية' : 'English';
 }
+
+function toggleLang() {
+  applyLang(currentLang === 'en' ? 'ar' : 'en');
+}
+
+// ── Auto-detect browser language ──
+(function() {
+  const browserLang = (navigator.language || navigator.userLanguage || 'en').toLowerCase();
+  const isArabic = browserLang.startsWith('ar');
+  if (isArabic) {
+    applyLang('ar');
+  }
+})();
+
+// ── Pass lang to sub-pages ──
+document.getElementById('link-privacy').addEventListener('click', () => {
+  localStorage.setItem('adaa-lang', currentLang);
+});
+document.getElementById('link-terms').addEventListener('click', () => {
+  localStorage.setItem('adaa-lang', currentLang);
+});
 
 // ── Scroll Reveal ──
 const observer = new IntersectionObserver((entries) => {
