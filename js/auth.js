@@ -75,7 +75,7 @@ async function authSignOut() {
   if(_supa) await _supa.auth.signOut();
   currentSupaUser = null;
   updateAuthUI(null);
-  showToast('Signed out');
+  window.location.replace('/');
 }
 
 function showUserMenu() {
