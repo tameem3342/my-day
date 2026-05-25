@@ -1,6 +1,26 @@
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
 <head>
+<script>
+(function() {
+  try {
+    var SUPA_URL = atob('aHR0cHM6Ly94cXhjZWN1aG90dXdtcHp4YmZ4cS5zdXBhYmFzZS5jbw==');
+    var SUPA_KEY = atob('c2JfcHVibGlzaGFibGVfSzRBVFBnaG1SZWRVRDNKeGo1b1hkQV9tenotN0JlNA==');
+    var script = document.createElement('script');
+    script.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js';
+    script.onload = function() {
+      var supa = window.supabase.createClient(SUPA_URL, SUPA_KEY);
+      supa.auth.getSession().then(function(res) {
+        if (res.data && res.data.session && res.data.session.user) {
+          window.location.replace('app.html');
+        }
+      }).catch(function(){});
+    };
+    document.head.appendChild(script);
+  } catch(e) {}
+})();
+</script>
+
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
 <title>Adaa — Track Your Performance. Every Day.</title>
