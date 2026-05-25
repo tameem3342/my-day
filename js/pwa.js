@@ -23,8 +23,8 @@ function initPWABanner() {
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     // Only register SW if the file actually exists (avoids 404 errors when running locally)
-    fetch('/sw.js', { method: 'HEAD' }).then(r => {
-      if(r.ok) navigator.serviceWorker.register('/sw.js').catch(() => {});
+    fetch('sw.js', { method: 'HEAD' }).then(r => {
+      if(r.ok) navigator.serviceWorker.register('sw.js').catch(() => {});
     }).catch(() => {});
     initPWABanner();
   });

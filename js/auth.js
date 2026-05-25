@@ -148,11 +148,7 @@ function updateAuthUI(user) {
   }
 }
 
-const _requireAuth = (fn) => {
-  return (...args) => {
-    return fn(...args);
-  };
-};
+
 
 // ── Load user data from Supabase ──────────────────────────────────
 async function loadSupabaseData(user) {
