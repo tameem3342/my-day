@@ -15,7 +15,7 @@ function initPWABanner() {
   if(!isStandalone && !isDismissed && isIOS && isSafari) {
     setTimeout(() => {
       document.getElementById('pwaBanner').style.display = 'block';
-    }, 2500); // show after 2.5s so page loads first
+    }, 8000); // show after 8s so page loads first
   }
 }
 

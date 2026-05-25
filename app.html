@@ -1369,30 +1369,39 @@
 <script>
 (function() {
   if (new URLSearchParams(window.location.search).get('signin') === 'true') {
-    // Clean URL first
+    // Clean URL
     var url = new URL(window.location.href);
     url.searchParams.delete('signin');
     window.history.replaceState({}, '', url.toString());
-
+    // Wait for auth to fully initialize, then check
+    var opened = false;
+    var openOnce = function() {
+      if (opened) return;
+      opened = true;
+      if (typeof openAuthModal === 'function') openAuthModal();
+    };
     window.addEventListener('load', function() {
       var attempts = 0;
       var check = function() {
         attempts++;
-        // If _supa not ready yet, wait
         if (!window._supa) {
-          if (attempts < 20) setTimeout(check, 300);
+          if (attempts < 30) setTimeout(check, 200);
           return;
         }
         window._supa.auth.getSession().then(function(res) {
-          // Only open modal if user is NOT already signed in
           if (!res.data || !res.data.session || !res.data.session.user) {
-            if (typeof openAuthModal === 'function') openAuthModal();
+            // Double check after short delay (session might still be loading)
+            setTimeout(function() {
+              window._supa.auth.getSession().then(function(res2) {
+                if (!res2.data || !res2.data.session || !res2.data.session.user) {
+                  openOnce();
+                }
+              }).catch(openOnce);
+            }, 800);
           }
-        }).catch(function() {
-          if (typeof openAuthModal === 'function') openAuthModal();
-        });
+        }).catch(openOnce);
       };
-      setTimeout(check, 500);
+      setTimeout(check, 800);
     });
   }
 })();
