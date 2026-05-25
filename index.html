@@ -428,9 +428,12 @@ footer {
 /* ── RESPONSIVE ── */
 @media (max-width: 600px) {
   nav { padding: 1rem; }
-  .nav-links { display: none; }
+  .nav-links { display: flex; gap: .75rem; }
+  .nav-links a { display: none; }
+  .lang-toggle { display: block; }
   .stats { gap: 1.5rem; }
   .hero-actions { flex-direction: column; align-items: center; }
+  .btn-primary, .btn-secondary { width: 100%; justify-content: center; }
   footer { flex-direction: column; text-align: center; }
   .footer-links { justify-content: center; }
 }
@@ -625,8 +628,8 @@ footer {
   <div class="footer-copy" data-en="© 2026 Adaa. Built for performance." data-ar="© 2026 Adaa. مبني للأداء.">© 2026 Adaa. Built for performance.</div>
   <div class="footer-links">
     <a href="https://www.adaa.health" target="_self" data-en="Open App" data-ar="افتح التطبيق">Open App</a>
-    <a href="#" data-en="Privacy Policy" data-ar="سياسة الخصوصية">Privacy Policy</a>
-    <a href="#" data-en="Terms of Service" data-ar="شروط الاستخدام">Terms of Service</a>
+    <a href="https://www.adaa.health/privacy" target="_self" data-en="Privacy Policy" data-ar="سياسة الخصوصية">Privacy Policy</a>
+    <a href="https://www.adaa.health/terms" target="_self" data-en="Terms of Service" data-ar="شروط الاستخدام">Terms of Service</a>
   </div>
 </footer>
 
