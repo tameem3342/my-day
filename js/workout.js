@@ -75,6 +75,9 @@ const renderWpGrid = () => {
 };
 
 // ── Exercise Log (today) ──────────────────────────────────────────
+// State: which exercise is currently being tracked set-by-set
+let _activeExId = null; // ID of exercise user is currently logging sets for
+
 const renderWpExList = () => {
   const dk = todayDayKey();
   const day = weekPlan[dk] || {exercises:[]};
@@ -86,127 +89,196 @@ const renderWpExList = () => {
   summary.style.display = exs.length ? 'block' : 'none';
 
   exs.forEach((ex, i) => {
+    // Init setLogs if missing
     if(!ex.setLogs || !ex.setLogs.length) {
-      ex.setLogs = Array.from({length: ex.sets||1}, () => ({reps: ex.reps||10, weight: ex.weight||null}));
+      ex.setLogs = [{reps: ex.reps||'', weight: ex.weight||null}];
     }
-    // Only auto-add trailing empty set when wpAddRow is closed
-    const addRowOpen = $('wpAddRow') && $('wpAddRow').style.display !== 'none';
-    if(!ex.finished && !addRowOpen) {
-      const last = ex.setLogs[ex.setLogs.length-1];
-      const lastFilled = last && (last.reps || last.weight != null);
-      if(lastFilled) ex.setLogs.push({reps:'', weight:null});
-    }
+
+    const isActive = ex.id === _activeExId && !ex.finished;
     const card = document.createElement('div');
-    card.style.cssText = 'background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:.6rem .7rem;margin-bottom:.35rem;';
-    card.innerHTML = `
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.45rem;">
-        <div style="display:flex;align-items:center;gap:.4rem;">
-          <span style="font-size:.85rem;font-weight:700;color:var(--text);">${esc(ex.name)}</span>
-          ${ex.finished ? `<span style="font-size:.68rem;font-weight:700;color:var(--success);background:color-mix(in srgb,var(--success) 15%,transparent);border-radius:4px;padding:.1rem .35rem;">${lang==='ar'?'✓ تم':'✓ done'}</span>` : ''}
-        </div>
-        <div style="display:flex;gap:.25rem;align-items:center;">
-          ${!ex.finished ? `<button class="wp-finish-ex btn btn-ghost" data-idx="${i}" style="font-size:.7rem;padding:.2rem .5rem;color:var(--success);border-color:var(--success);">${lang==='ar'?'تم ✓':'Done ✓'}</button>` : `<button class="wp-undo-ex btn btn-ghost" data-idx="${i}" style="font-size:.7rem;padding:.2rem .5rem;">${lang==='ar'?'تراجع':'Undo'}</button>`}
-          <button class="delbtn wp-del-ex" data-idx="${i}" style="width:24px;height:24px;">
-            <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-          </button>
-        </div>
+    card.style.cssText = `background:var(--surface2);border:1px solid ${isActive?'var(--accent)':'var(--border)'};border-radius:10px;padding:.6rem .7rem;margin-bottom:.5rem;transition:border-color .2s;`;
+
+    // ── Header ──
+    const hdr = document.createElement('div');
+    hdr.style.cssText = 'display:flex;align-items:center;justify-content:space-between;margin-bottom:.5rem;';
+    hdr.innerHTML = `
+      <div style="display:flex;align-items:center;gap:.4rem;">
+        <span style="font-size:.88rem;font-weight:700;color:var(--text);">${esc(ex.name)}</span>
+        ${ex.finished ? `<span style="font-size:.65rem;font-weight:700;color:var(--success);background:color-mix(in srgb,var(--success) 15%,transparent);border-radius:4px;padding:.1rem .35rem;">✓ ${lang==='ar'?'منتهي':'done'}</span>` : ''}
+      </div>
+      <div style="display:flex;gap:.25rem;align-items:center;">
+        ${ex.finished
+          ? `<button class="wp-undo-ex btn btn-ghost" data-idx="${i}" style="font-size:.7rem;padding:.2rem .5rem;">${lang==='ar'?'تراجع':'Undo'}</button>`
+          : ''
+        }
+        <button class="delbtn wp-del-ex" data-idx="${i}" style="width:24px;height:24px;">
+          <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
       </div>`;
+    card.appendChild(hdr);
+
+    // ── Column headers ──
+    const colHdr = document.createElement('div');
+    colHdr.style.cssText = 'display:grid;grid-template-columns:28px 1fr 1fr 80px;gap:.3rem;margin-bottom:.2rem;padding:0 .1rem;';
+    colHdr.innerHTML = `
+      <span style="font-size:.6rem;color:var(--text3);font-weight:700;text-align:center;">#</span>
+      <span style="font-size:.6rem;color:var(--text3);font-weight:700;text-align:center;">${lang==='ar'?'العدات':'REPS'}</span>
+      <span style="font-size:.6rem;color:var(--text3);font-weight:700;text-align:center;">${lang==='ar'?'الوزن':'WEIGHT'}</span>
+      <span></span>`;
+    card.appendChild(colHdr);
+
+    // ── Set rows ──
     ex.setLogs.forEach((sl, si) => {
-      const isLast = si === ex.setLogs.length - 1;
+      const isLastSet = si === ex.setLogs.length - 1;
+      const isInput   = isActive && isLastSet; // only last row of active ex is editable input
       const row = document.createElement('div');
-      row.style.cssText = `display:grid;grid-template-columns:22px 1fr 1fr ${ex.finished?'0px':'26px'};gap:.3rem;align-items:center;margin-bottom:.22rem;opacity:${ex.finished?'.7':'1'};`;
-      row.innerHTML = `
-        <span style="font-size:.7rem;font-weight:700;color:${isLast&&!ex.finished?'var(--accent)':'var(--text3)'};text-align:center;">${si+1}</span>
-        <input type="number" min="1" max="999" value="${sl.reps||''}" placeholder="${lang==='ar'?'تكرار':'Reps'}"
-          class="inp sl-reps" data-ex="${i}" data-si="${si}"
-          ${ex.finished?'readonly':''}
-          style="font-size:.82rem;text-align:center;padding:.38rem .2rem;width:100%;${ex.finished?'opacity:.6;pointer-events:none;':''}"/>
-        <div style="position:relative;">
-          <input type="number" min="0" max="999" step="0.5" value="${sl.weight!=null?sl.weight:''}" placeholder="kg"
-            class="inp sl-kg" data-ex="${i}" data-si="${si}"
-            ${ex.finished?'readonly':''}
-            style="font-size:.82rem;text-align:center;padding:.38rem .2rem;padding-right:1.3rem;width:100%;${ex.finished?'opacity:.6;pointer-events:none;':''}"/>
-          <span style="position:absolute;right:.28rem;top:50%;transform:translateY(-50%);font-size:.58rem;color:var(--text3);pointer-events:none;">kg</span>
-        </div>
-        ${!ex.finished ? `<button class="sl-del-btn delbtn" data-ex="${i}" data-si="${si}" style="width:24px;height:24px;border-radius:5px;">
-          <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-        </button>` : '<span></span>'}`;
+      row.style.cssText = 'display:grid;grid-template-columns:28px 1fr 1fr 80px;gap:.3rem;align-items:center;margin-bottom:.25rem;';
+
+      if(isInput) {
+        // ── Editable input row ──
+        row.innerHTML = `
+          <span style="font-size:.72rem;font-weight:800;color:var(--accent);text-align:center;">${si+1}</span>
+          <input type="number" inputmode="numeric" min="1" max="999" placeholder="${lang==='ar'?'عدات':'Reps'}"
+            class="inp sl-cur-reps" style="font-size:.88rem;text-align:center;padding:.4rem .2rem;font-weight:700;"/>
+          <div style="position:relative;">
+            <input type="number" inputmode="decimal" min="0" max="999" step="0.5" placeholder="kg"
+              class="inp sl-cur-kg" style="font-size:.88rem;text-align:center;padding:.4rem .2rem;padding-right:1.4rem;font-weight:700;width:100%;"/>
+            <span style="position:absolute;right:.3rem;top:50%;transform:translateY(-50%);font-size:.6rem;color:var(--text3);pointer-events:none;">kg</span>
+          </div>
+          <button class="sl-done-btn btn btn-cyan" data-exidx="${i}" data-si="${si}"
+            style="font-size:.78rem;padding:.4rem .3rem;justify-content:center;font-weight:700;width:100%;">
+            ${lang==='ar'?'تم':'Done'}
+          </button>`;
+      } else {
+        // ── Logged (read-only) row ──
+        const repsVal  = sl.reps  || '—';
+        const weightVal = sl.weight != null ? sl.weight+'kg' : '—';
+        row.style.opacity = ex.finished ? '.65' : '1';
+        row.innerHTML = `
+          <span style="font-size:.7rem;font-weight:700;color:var(--text3);text-align:center;">${si+1}</span>
+          <span style="font-size:.82rem;font-weight:600;color:var(--text);text-align:center;background:var(--surface3);border-radius:6px;padding:.32rem .2rem;">${repsVal}</span>
+          <span style="font-size:.82rem;font-weight:600;color:var(--text);text-align:center;background:var(--surface3);border-radius:6px;padding:.32rem .2rem;">${weightVal}</span>
+          ${!ex.finished && !isActive
+            ? `<button class="sl-del-btn delbtn" data-ex="${i}" data-si="${si}" style="width:24px;height:24px;border-radius:5px;margin:auto;">
+                <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+               </button>`
+            : '<span></span>'
+          }`;
+      }
       card.appendChild(row);
     });
+
+    // ── Finish Exercise button (active only) ──
+    if(isActive) {
+      const finBtn = document.createElement('button');
+      finBtn.className = 'btn btn-ghost wp-finish-ex';
+      finBtn.dataset.idx = i;
+      finBtn.style.cssText = 'width:100%;justify-content:center;margin-top:.5rem;font-size:.8rem;color:var(--success);border-color:var(--success);padding:.45rem;';
+      finBtn.textContent = lang==='ar' ? '✓ إنهاء التمرين' : '✓ Finish Exercise';
+      card.appendChild(finBtn);
+    }
+
     list.appendChild(card);
   });
 
-  list.querySelectorAll('.sl-reps').forEach(inp => {
-    inp.addEventListener('input', () => {
-      const ex = weekPlan[todayDayKey()].exercises[+inp.dataset.ex];
-      if(ex?.setLogs?.[+inp.dataset.si] !== undefined) { ex.setLogs[+inp.dataset.si].reps = parseInt(inp.value)||''; saveWeekPlan(); }
-    });
-    inp.addEventListener('keydown', e => {
-      if(e.key === 'Enter') { const kg = list.querySelector(`.sl-kg[data-ex="${inp.dataset.ex}"][data-si="${inp.dataset.si}"]`); if(kg) { kg.focus(); kg.select(); } }
-    });
-  });
+  // ── Event Listeners ──
 
-  list.querySelectorAll('.sl-kg').forEach(inp => {
-    inp.addEventListener('input', () => {
-      const ei = +inp.dataset.ex, si = +inp.dataset.si;
-      const ex = weekPlan[todayDayKey()].exercises[ei];
-      if(!ex?.setLogs?.[si] !== undefined) return;
-      const v = parseFloat(inp.value);
-      ex.setLogs[si].weight = isNaN(v)||v<0 ? null : Math.round(v*10)/10;
-      saveWeekPlan();
-      if(si === ex.setLogs.length-1 && ex.setLogs[si].reps && ex.setLogs[si].weight != null) {
-        ex.setLogs.push({reps:'', weight:null}); ex.sets = ex.setLogs.length;
-        saveWeekPlan(); renderWpExList();
-        setTimeout(() => { const nr = list.querySelector(`.sl-reps[data-ex="${ei}"][data-si="${si+1}"]`); if(nr) nr.focus(); }, 40);
-      }
-    });
-    inp.addEventListener('keydown', e => {
-      if(e.key !== 'Enter') return;
-      const ei = +inp.dataset.ex, si = +inp.dataset.si;
+  // Done per set
+  list.querySelectorAll('.sl-done-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const ei = +btn.dataset.exidx;
       const ex = weekPlan[todayDayKey()].exercises[ei];
       if(!ex) return;
-      const v = parseFloat(inp.value);
-      ex.setLogs[si].weight = isNaN(v)||v<0 ? null : Math.round(v*10)/10;
+      const repsEl = btn.closest('div[style*="grid"]').querySelector('.sl-cur-reps');
+      const kgEl   = btn.closest('div[style*="grid"]').querySelector('.sl-cur-kg');
+      const reps   = parseInt(repsEl?.value) || 0;
+      const wRaw   = parseFloat(kgEl?.value);
+      const weight = !isNaN(wRaw) && wRaw >= 0 ? Math.round(wRaw*10)/10 : null;
+      if(!reps){ showToast(lang==='ar'?'أدخل عدد التكرارات':'Enter reps'); repsEl?.focus(); return; }
+
+      // Save current set
+      const si = ex.setLogs.length - 1;
+      ex.setLogs[si] = {reps, weight};
+
+      // Add new empty set for next input
+      ex.setLogs.push({reps:'', weight:null});
+      ex.sets = ex.setLogs.length;
       saveWeekPlan();
-      const nextReps = list.querySelector(`.sl-reps[data-ex="${ei}"][data-si="${si+1}"]`);
-      if(nextReps) { nextReps.focus(); nextReps.select(); }
+      renderWpExList();
+
+      // Focus new reps input
+      setTimeout(() => {
+        const newReps = list.querySelector('.sl-cur-reps');
+        if(newReps) { newReps.focus(); newReps.select(); }
+      }, 40);
+      showToast(lang==='ar' ? `✅ جلسة ${si+1} محفوظة` : `✅ Set ${si+1} saved`);
     });
   });
 
+  // Enter key: reps → kg → done
+  list.querySelectorAll('.sl-cur-reps').forEach(inp => {
+    inp.addEventListener('keydown', e => {
+      if(e.key === 'Enter') { const kg = inp.closest('div[style*="grid"]').querySelector('.sl-cur-kg'); if(kg){kg.focus();kg.select();} }
+    });
+  });
+  list.querySelectorAll('.sl-cur-kg').forEach(inp => {
+    inp.addEventListener('keydown', e => {
+      if(e.key === 'Enter') { inp.closest('div[style*="grid"]').querySelector('.sl-done-btn')?.click(); }
+    });
+  });
+
+  // Delete logged set
   list.querySelectorAll('.sl-del-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       const ex = weekPlan[todayDayKey()].exercises[+btn.dataset.ex];
-      if(ex?.setLogs?.length > 1) { ex.setLogs.splice(+btn.dataset.si, 1); ex.sets = ex.setLogs.length; saveWeekPlan(); renderWpExList(); }
+      if(ex?.setLogs?.length > 1) {
+        ex.setLogs.splice(+btn.dataset.si, 1);
+        ex.sets = ex.setLogs.length;
+        saveWeekPlan(); renderWpExList();
+      }
     });
   });
 
+  // Finish Exercise
   list.querySelectorAll('.wp-finish-ex').forEach(btn => {
     btn.addEventListener('click', () => {
       const ex = weekPlan[todayDayKey()].exercises[+btn.dataset.idx];
       if(!ex) return;
-      while(ex.setLogs.length > 1) { const last = ex.setLogs[ex.setLogs.length-1]; if(!last.reps && last.weight == null) ex.setLogs.pop(); else break; }
-      ex.sets = ex.setLogs.length; ex.finished = true;
+      // Remove trailing empty set
+      while(ex.setLogs.length > 0) {
+        const last = ex.setLogs[ex.setLogs.length-1];
+        if(!last.reps && last.weight == null) ex.setLogs.pop(); else break;
+      }
+      ex.sets = ex.setLogs.length;
+      ex.finished = true;
+      _activeExId = null;
       saveWeekPlan(); renderWpExList();
+      showToast(lang==='ar' ? `✅ ${esc(ex.name)} منتهي` : `✅ ${esc(ex.name)} finished`);
     });
   });
 
+  // Undo finish
   list.querySelectorAll('.wp-undo-ex').forEach(btn => {
     btn.addEventListener('click', () => {
       const ex = weekPlan[todayDayKey()].exercises[+btn.dataset.idx];
-      if(ex) { ex.finished = false; saveWeekPlan(); renderWpExList(); }
+      if(ex) { ex.finished = false; _activeExId = ex.id; saveWeekPlan(); renderWpExList(); }
     });
   });
 
+  // Delete exercise
   list.querySelectorAll('.wp-del-ex').forEach(btn => {
     btn.addEventListener('click', e => {
       e.stopPropagation();
-      weekPlan[todayDayKey()].exercises.splice(+btn.dataset.idx,1);
+      const exs2 = weekPlan[todayDayKey()].exercises;
+      const deleted = exs2[+btn.dataset.idx];
+      if(_activeExId === deleted?.id) _activeExId = null;
+      exs2.splice(+btn.dataset.idx, 1);
       saveWeekPlan(); renderWpExList(); renderWpGrid();
     });
   });
 
   if(exs.length){
-    const totalSets = exs.reduce((s,e)=>s+(e.setLogs?.filter(sl=>sl.reps||sl.weight!=null).length||0),0);
+    const totalSets = exs.reduce((s,e)=>s+(e.setLogs?.filter(sl=>sl.reps).length||0),0);
     summary.textContent = lang==='ar' ? `${exs.length} تمرين · ${totalSets} جلسة` : `${exs.length} exercise${exs.length!==1?'s':''} · ${totalSets} sets`;
   }
   const titleEl=$('wpLogTitle');
@@ -358,15 +430,15 @@ document.addEventListener('click', e => {
   if(!e.target.closest('#wpQuickFillsWrap')) closeWpLibPicker();
 });
 
-const addExerciseToToday = (name, sets=3, reps=10, muscle='', weight=null) => {
+const addExerciseToToday = (name, sets=1, reps='', muscle='', weight=null) => {
   const dk=todayDayKey();
   if(!weekPlan[dk]) weekPlan[dk]={rest:false,focus:'',notes:'',exercises:[]};
   weekPlan[dk].rest=false;
-  const setLogs = Array.from({length: sets}, () => ({reps, weight, done: false}));
-  weekPlan[dk].exercises.push({id:'ex'+Date.now(),name,sets,reps,muscle,weight,setLogs});
+  const newEx = {id:'ex'+Date.now(), name, sets:1, reps:'', muscle, weight:null, setLogs:[{reps:'', weight:null}]};
+  weekPlan[dk].exercises.push(newEx);
+  _activeExId = newEx.id; // auto-activate for set logging
   saveWeekPlan(); renderWpExList(); renderWpGrid();
-  const wtStr = weight ? ` · ${weight}kg` : '';
-  showToast(`✅ ${name} · ${sets}×${reps}${wtStr}`);
+  showToast(`✅ ${esc(name)} — ${lang==='ar'?'سجّل جلساتك':'log your sets'}`);
 };
 
 // ── Add exercise: Name once, then Reps+kg+Done per set ──────────
@@ -389,58 +461,16 @@ $('wpExSaveBtn').addEventListener('click', () => {
   if(!name){ showToast(lang==='ar'?'أدخل اسم التمرين':'Enter exercise name'); $('wpExName').focus(); return; }
   _wpActiveExName = name;
 
-  const reps = sanitizeInt($('wpExReps').value, 1, 999);
-  if(!reps){ showToast(lang==='ar'?'أدخل عدد التكرارات':'Enter reps'); $('wpExReps').focus(); return; }
-
-  const weightRaw = parseFloat($('wpExWeight').value);
-  const weight = (!isNaN(weightRaw) && weightRaw >= 0) ? Math.round(weightRaw*10)/10 : null;
-
-  const dk = todayDayKey();
-  if(!weekPlan[dk]) weekPlan[dk] = {rest:false, focus:'', notes:'', exercises:[]};
-  weekPlan[dk].rest = false;
-
-  // Find by ID first (most reliable), then by name
-  let existing = _wpActiveExId
-    ? weekPlan[dk].exercises.find(e => e.id === _wpActiveExId)
-    : weekPlan[dk].exercises.find(e => e.name.toLowerCase() === name.toLowerCase());
-
-  if(existing) {
-    // Clean trailing empty sets
-    while(existing.setLogs.length > 0) {
-      const last = existing.setLogs[existing.setLogs.length-1];
-      if(!last.reps && last.weight == null) existing.setLogs.pop(); else break;
-    }
-    existing.setLogs.push({reps, weight});
-    existing.sets = existing.setLogs.length;
-    existing.finished = false;
-    _wpActiveExId = existing.id;
-  } else {
-    const newEx = {id:'ex'+Date.now(), name, sets:1, reps, muscle:'', weight, setLogs:[{reps, weight}]};
-    weekPlan[dk].exercises.push(newEx);
-    _wpActiveExId = newEx.id;
-  }
-
-  const setNum = weekPlan[dk].exercises.find(e=>e.id===_wpActiveExId)?.setLogs?.length || 1;
-
-  saveWeekPlan();
-  renderWpExList();
-  renderWpGrid();
-
-  // Restore name + clear reps/kg + focus reps
-  setTimeout(() => {
-    const nameEl = $('wpExName');
-    const repsEl = $('wpExReps');
-    const kgEl   = $('wpExWeight');
-    if(nameEl) nameEl.value = _wpActiveExName;
-    if(repsEl) { repsEl.value = ''; repsEl.focus(); }
-    if(kgEl)   kgEl.value = '';
-  }, 40);
-
-  showToast(lang==='ar' ? `✅ جلسة ${setNum}` : `✅ Set ${setNum} added`);
+  // Close add panel and add exercise — set logging happens in the card
+  addExerciseToToday(name);
+  $('wpAddRow').style.display = 'none';
+  $('wpExName').value = '';
+  $('wpExReps').value = '';
+  $('wpExWeight').value = '';
 });
 
-['wpExReps','wpExWeight'].forEach(id=>{
-  $(id)&&$(id).addEventListener('keydown',e=>{if(e.key==='Enter')$('wpExSaveBtn').click();});
+$('wpExName').addEventListener('keydown', e => {
+  if(e.key === 'Enter') $('wpExSaveBtn').click();
 });
 
 $('wpClearWeekBtn').addEventListener('click',()=>{
