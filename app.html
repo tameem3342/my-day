@@ -1370,17 +1370,9 @@
 (function() {
   if (new URLSearchParams(window.location.search).get('signin') === 'true') {
     window.addEventListener('load', function() {
-      // Wait for Supabase to check session first
       setTimeout(function() {
-        // Only open modal if user is NOT already signed in
-        if (typeof openAuthModal === 'function' && !window.currentSupaUser) {
-          openAuthModal();
-        }
-        // Clean URL regardless
-        var url = new URL(window.location.href);
-        url.searchParams.delete('signin');
-        window.history.replaceState({}, '', url.toString());
-      }, 1200);
+        if (typeof openAuthModal === 'function') openAuthModal();
+      }, 800);
     });
   }
 })();
