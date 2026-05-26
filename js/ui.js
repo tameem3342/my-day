@@ -244,10 +244,98 @@ const updatePastBanner = () => {
 
 $('jumpTodayBtn').addEventListener('click',()=>{ viewingDate=todayKey(); renderCalBar(); renderAll(); updatePastBanner(); });
 
+// ── Weekly Summary Card (This Week) ─────────────────────────────
+function renderWeeklySummary() {
+  const titleEl = $('weeklySummaryTitle');
+  const rangeEl = $('weeklySummaryRange');
+  const rowsEl  = $('weekDayRows');
+  if(!rowsEl) return;
+
+  // Build 7-day range (Mon–Sun of current week)
+  const today = new Date();
+  const days = [];
+  for(let i = 6; i >= 0; i--) {
+    const d = new Date(); d.setDate(today.getDate() - i);
+    const key = d.toISOString().slice(0,10);
+    const dayShort = d.toLocaleDateString(lang==='ar'?'ar-SA':'en-US', {weekday:'short'});
+    const entry = dayCache[key] || null;
+    days.push({key, dayShort, entry, isToday: key === todayKey()});
+  }
+
+  // Range label
+  if(rangeEl) {
+    const first = new Date(days[0].key+'T12:00:00');
+    const last  = new Date(days[6].key+'T12:00:00');
+    const fmt = d => d.toLocaleDateString(lang==='ar'?'ar-SA':'en-US', {month:'short', day:'numeric'});
+    rangeEl.textContent = `${fmt(first)} – ${fmt(last)}`;
+  }
+  if(titleEl) titleEl.textContent = lang==='ar' ? 'هذا الأسبوع' : 'This Week';
+
+  // Day rows
+  rowsEl.innerHTML = '';
+  days.forEach(({key, dayShort, entry, isToday}) => {
+    const tasks = entry?.tasks || [];
+    const done  = tasks.filter(x=>x.done).length;
+    const total = tasks.length;
+    const pct   = total ? Math.round(done/total*100) : 0;
+    const kcal  = (entry?.meals||[]).reduce((s,m)=>s+(m.kcal||0),0);
+    const steps = entry?.steps || 0;
+    const hasData = !!entry && (done > 0 || kcal > 0 || steps > 0);
+
+    const row = document.createElement('div');
+    row.style.cssText = `display:grid;grid-template-columns:42px 1fr 44px 44px;gap:.4rem;align-items:center;padding:.28rem 0;border-bottom:1px solid var(--border);`;
+    row.innerHTML = `
+      <span style="font-size:.72rem;font-weight:${isToday?'800':'500'};color:${isToday?'var(--text)':'var(--text2)'};">${dayShort}</span>
+      <div style="height:5px;border-radius:99px;background:var(--surface3);overflow:hidden;">
+        <div style="height:100%;width:${pct}%;border-radius:99px;background:${isToday?'var(--accent)':hasData?'var(--text2)':'var(--surface3)'};transition:width .4s;"></div>
+      </div>
+      <span style="font-size:.68rem;text-align:right;color:${kcal?'var(--text2)':'var(--text3)'};">${kcal?kcal.toLocaleString()+'k':' — '}</span>
+      <span style="font-size:.68rem;text-align:right;color:${steps?'var(--text2)':'var(--text3)'};">${steps?steps.toLocaleString():' — '}</span>
+    `;
+    rowsEl.appendChild(row);
+  });
+
+  // Footer stats
+  const withData = days.filter(d=>d.entry);
+  // Streak — consecutive days with at least one task done
+  let streak = 0;
+  for(let i = days.length-1; i >= 0; i--) {
+    const e = days[i].entry;
+    if(e && e.tasks && e.tasks.some(x=>x.done)) streak++;
+    else break;
+  }
+  const avgTasks = withData.length
+    ? Math.round(withData.map(d=>{
+        const tot = d.entry.tasks.length;
+        return tot ? d.entry.tasks.filter(x=>x.done).length/tot*100 : 0;
+      }).reduce((a,b)=>a+b,0) / withData.length)
+    : 0;
+  const avgSteps = withData.length
+    ? Math.round(withData.map(d=>d.entry.steps||0).reduce((a,b)=>a+b,0) / withData.length)
+    : 0;
+  const avgCal = withData.length
+    ? Math.round(withData.map(d=>(d.entry.meals||[]).reduce((s,m)=>s+(m.kcal||0),0)).reduce((a,b)=>a+b,0) / withData.length)
+    : 0;
+
+  const el = id => document.getElementById(id);
+  if(el('wSumStreak')) el('wSumStreak').textContent = streak;
+  if(el('wSumAvg'))    el('wSumAvg').textContent    = withData.length ? avgTasks+'%' : '—';
+  if(el('wSumSteps'))  el('wSumSteps').textContent  = avgSteps ? avgSteps.toLocaleString() : '—';
+  if(el('wSumCal'))    el('wSumCal').textContent    = avgCal   ? avgCal.toLocaleString()   : '—';
+}
+
+// ── Last Week Summary Card ────────────────────────────────────────
+function renderLastWeekCard() {
+  // This renders the mini stat cards + charts (wAvgTasks, wAvgCal, wBestDay)
+  // Already handled by renderWeekStats() in notes_log.js
+  // This function exists for compatibility — renderWeekStats does the work
+  try { if(typeof renderWeekStats === 'function') renderWeekStats(); } catch(e){}
+}
+
 // ── Render All ────────────────────────────────────────────────────
 function renderAll() {
-  renderWeeklySummary();
-  renderLastWeekCard();
+  try { renderWeeklySummary(); } catch(e){ console.warn('renderWeeklySummary:', e); }
+  try { renderLastWeekCard();  } catch(e){ console.warn('renderLastWeekCard:', e); }
   ensureDay(viewingDate);
   renderTasks();
   renderMeals();
