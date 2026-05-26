@@ -457,21 +457,34 @@ $('wpExName').addEventListener('change', () => {
 });
 
 $('wpExSaveBtn').addEventListener('click', () => {
-  const name = sanitizeText($('wpExName').value, 50) || _wpActiveExName;
+  const name = sanitizeText($('wpExName').value, 50);
   if(!name){ showToast(lang==='ar'?'أدخل اسم التمرين':'Enter exercise name'); $('wpExName').focus(); return; }
   _wpActiveExName = name;
-
-  // Close add panel and add exercise — set logging happens in the card
   addExerciseToToday(name);
   $('wpAddRow').style.display = 'none';
   $('wpExName').value = '';
-  $('wpExReps').value = '';
-  $('wpExWeight').value = '';
+  // Scroll to the new exercise card
+  setTimeout(() => {
+    const list = $('wpExList');
+    if(list) list.lastElementChild?.scrollIntoView({behavior:'smooth', block:'center'});
+  }, 80);
 });
 
 $('wpExName').addEventListener('keydown', e => {
   if(e.key === 'Enter') $('wpExSaveBtn').click();
 });
+
+// Also update Save button label based on language
+const _wpUpdateSaveBtnLbl = () => {
+  const btn = $('wpExSaveBtn');
+  if(btn) btn.textContent = lang==='ar' ? '+ إضافة تمرين' : '+ Add Exercise';
+};
+// Call once on load and on lang change (applyLang calls renderAll which triggers this)
+setTimeout(() => {
+  _wpUpdateSaveBtnLbl();
+  const lbl = document.getElementById('wpLibPickerLbl');
+  if(lbl) lbl.textContent = lang==='ar' ? 'تمارين محفوظة' : 'My Saved Exercises';
+}, 200);
 
 $('wpClearWeekBtn').addEventListener('click',()=>{
   showConfirm('Clear entire week plan?','All exercises will be removed.','Clear','Cancel',()=>{
