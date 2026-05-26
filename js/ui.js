@@ -9,11 +9,23 @@ const applyLang = () => {
   saveCfg('lang',lang);
   // Language buttons now live inside settings modal — updated via applySettingsLang()
   const h=new Date().getHours(), gKey=h<12?'greetMorn':h<17?'greetAfter':'greetEve';
-  // Add username from logged-in user or saved name
-  const _uname = (typeof currentSupaUser !== 'undefined' && currentSupaUser)
+  $('greeting').textContent = t(gKey);
+  // Username: custom saved name takes priority, then Supabase name
+  const _savedName = typeof loadCfg === 'function' ? loadCfg('displayName','') : '';
+  const _supaName  = (typeof currentSupaUser !== 'undefined' && currentSupaUser)
     ? (currentSupaUser.user_metadata?.full_name?.split(' ')[0] || currentSupaUser.email?.split('@')[0] || '')
-    : (typeof loadCfg === 'function' ? loadCfg('username','') : '');
-  $('greeting').textContent = _uname ? `${t(gKey)} ${_uname}.` : t(gKey);
+    : '';
+  const _uname = _savedName || _supaName;
+  const nameEl = document.getElementById('greetingName');
+  if(nameEl) nameEl.textContent = _uname ? `, ${_uname}` : '';
+  // Ask new users for their display name (once)
+  if(!_savedName && typeof currentSupaUser !== 'undefined' && currentSupaUser) {
+    const _asked = sessionStorage.getItem('_nameAsked');
+    if(!_asked) {
+      sessionStorage.setItem('_nameAsked','1');
+      setTimeout(() => _promptUsername(), 1200);
+    }
+  }
   $('subGreeting').textContent  = t('sub');
   $('headerDate').textContent   = new Date().toLocaleDateString(lang==='ar'?'ar-SA':'en-US',{weekday:'short',month:'long',day:'numeric'});
   $('logoText').textContent     = t('logo');
@@ -161,6 +173,46 @@ const applyLang = () => {
   renderAll();
 };
 window.setLang = nl => { lang=nl; applyLang(); };
+
+// ── Username Prompt ──────────────────────────────────────────────
+function _promptUsername() {
+  // Don't show if already set
+  if(loadCfg('displayName','')) return;
+  const overlay = document.createElement('div');
+  overlay.id = 'usernamePrompt';
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(6px);z-index:9999;display:flex;align-items:center;justify-content:center;padding:1rem;';
+  overlay.innerHTML = `
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:1.5rem;width:100%;max-width:340px;text-align:center;">
+      <div style="font-size:1.6rem;margin-bottom:.5rem;">👋</div>
+      <div style="font-size:1.1rem;font-weight:800;margin-bottom:.3rem;color:var(--text);">${lang==='ar'?'ما اسمك؟':'What's your name?'}</div>
+      <div style="font-size:.82rem;color:var(--text2);margin-bottom:1rem;">${lang==='ar'?'سيظهر في التحية':'It will appear in your greeting'}</div>
+      <input id="usernameInput" class="inp" type="text" maxlength="20"
+        placeholder="${lang==='ar'?'اسمك…':'Your name…'}"
+        style="width:100%;font-size:1rem;text-align:center;margin-bottom:.75rem;font-weight:600;"/>
+      <div style="display:flex;gap:.5rem;">
+        <button id="usernameSkip" class="btn btn-ghost" style="flex:1;justify-content:center;">${lang==='ar'?'تخطي':'Skip'}</button>
+        <button id="usernameSave" class="btn btn-cyan" style="flex:1;justify-content:center;font-weight:700;">${lang==='ar'?'حفظ':'Save'}</button>
+      </div>
+    </div>`;
+  document.body.appendChild(overlay);
+  setTimeout(() => document.getElementById('usernameInput')?.focus(), 100);
+
+  const close = () => overlay.remove();
+  document.getElementById('usernameSkip').addEventListener('click', close);
+  document.getElementById('usernameSave').addEventListener('click', () => {
+    const val = document.getElementById('usernameInput').value.trim();
+    if(val) {
+      saveCfg('displayName', val);
+      const nameEl = document.getElementById('greetingName');
+      if(nameEl) nameEl.textContent = `, ${val}`;
+    }
+    close();
+  });
+  document.getElementById('usernameInput').addEventListener('keydown', e => {
+    if(e.key === 'Enter') document.getElementById('usernameSave').click();
+  });
+  overlay.addEventListener('click', e => { if(e.target === overlay) close(); });
+}
 
 // ── Theme ─────────────────────────────────────────────────────────
 const applyTheme = () => {
