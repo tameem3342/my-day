@@ -319,6 +319,14 @@ function applySettingsLang() {
   _s('settingsGoogleAvatarLbl', 'استخدام صورة Google',               'Use Google photo');
   _s('settingsUploadAvatarLbl', 'رفع صورة من الجهاز',                'Upload from device');
   _s('settingsRemoveAvatarLbl', 'حذف الصورة الشخصية',                'Remove photo');
+  _s('settingsUsernameLabel',   'الاسم في التحية',                   'Display Name');
+  _s('settingsUsernameSub',     'يظهر بجانب تحية الصباح',            'Shown next to your greeting');
+  _s('settingsUsernameSave',    'حفظ',                               'Save');
+  const unameInp = document.getElementById('settingsUsernameInput');
+  if(unameInp) {
+    unameInp.placeholder = lang==='ar' ? 'اسمك…' : 'Your name…';
+    unameInp.value = loadCfg('displayName', '');
+  }
   _s('settingsLangLabel',       'اللغة',                             'Language');
   _s('settingsSignOutLbl',      currentSupaUser?'تسجيل الخروج':'تسجيل الدخول', currentSupaUser?'Sign out':'Sign in');
   const arBtn = document.getElementById('settingsLangAR');
@@ -326,6 +334,19 @@ function applySettingsLang() {
   if(arBtn) { arBtn.style.background=lang==='ar'?'var(--accent)':'var(--surface2)'; arBtn.style.color=lang==='ar'?'var(--accent-fg)':'var(--text)'; arBtn.style.borderColor=lang==='ar'?'var(--accent)':'var(--border)'; }
   if(enBtn) { enBtn.style.background=lang==='en'?'var(--accent)':'var(--surface2)'; enBtn.style.color=lang==='en'?'var(--accent-fg)':'var(--text)'; enBtn.style.borderColor=lang==='en'?'var(--accent)':'var(--border)'; }
 }
+
+// ── Username save ────────────────────────────────────────────────
+function saveDisplayName() {
+  const inp = document.getElementById('settingsUsernameInput');
+  if(!inp) return;
+  const val = sanitizeText(inp.value.trim(), 30);
+  saveCfg('displayName', val);
+  // Update greeting immediately
+  const nameEl = document.getElementById('greetingName');
+  if(nameEl) nameEl.textContent = val ? ` ${val}` : '';
+  showToast(val ? (lang==='ar' ? `✅ تم حفظ الاسم: ${val}` : `✅ Name saved: ${val}`) : (lang==='ar'?'تم حذف الاسم':'Name cleared'));
+}
+window.saveDisplayName = saveDisplayName;
 
 window.openSettingsModal  = openSettingsModal;
 window.closeSettingsModal = closeSettingsModal;

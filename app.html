@@ -398,6 +398,21 @@
 
     <div style="height:1px;background:var(--border);margin-bottom:1.25rem;"></div>
 
+    <!-- Display Name Section -->
+    <div style="margin-bottom:1.25rem;">
+      <p style="font-size:.72rem;font-weight:700;color:var(--text3);letter-spacing:.08em;text-transform:uppercase;margin-bottom:.4rem;" id="settingsUsernameLabel">Display Name</p>
+      <p style="font-size:.72rem;color:var(--text3);margin-bottom:.6rem;" id="settingsUsernameSub">Shown next to your greeting</p>
+      <div style="display:flex;gap:.5rem;">
+        <input id="settingsUsernameInput" class="inp" type="text" maxlength="30"
+          placeholder="Your name…"
+          style="flex:1;font-size:.88rem;font-weight:600;"/>
+        <button onclick="saveDisplayName()" id="settingsUsernameSave"
+          style="padding:.5rem .9rem;border-radius:9px;border:1px solid var(--accent);background:var(--accent);color:var(--accent-fg);font-family:inherit;font-size:.84rem;font-weight:700;cursor:pointer;white-space:nowrap;">
+          Save
+        </button>
+      </div>
+    </div>
+
     <!-- Language Section -->
     <div style="margin-bottom:1.25rem;">
       <p style="font-size:.72rem;font-weight:700;color:var(--text3);letter-spacing:.08em;text-transform:uppercase;margin-bottom:.75rem;" id="settingsLangLabel">اللغة</p>
