@@ -1,0 +1,118 @@
+# Adaa — Daily Performance Tracker
+> A personal productivity and fitness web app that helps users track habits, calories, workouts, steps, and daily notes. Built for people who take their daily performance seriously.
+
+## App URL
+https://adaa.health
+
+## App Description
+Adaa (أداء) is a Progressive Web App (PWA) that runs entirely in the browser with optional cloud sync via Supabase. It supports Arabic and English, dark and light modes, and works offline.
+
+## Core Features
+
+### Daily Habits (العادات اليومية)
+- Add custom habits with categories: Work, Sport, Personal, Health, Prayer
+- Track completion with progress bar
+- Filter by category
+- Reset day
+
+### Calorie Tracker (تتبع السعرات)
+- Log meals with calorie counts
+- Set daily calorie target
+- View consumed vs target
+- Meal photo support
+- Save meals to library
+
+### Daily Steps (الخطوات اليومية)
+- Log step count
+- Set step goal
+- Visual ring progress indicator
+
+### Day Notes (ملاحظات اليوم)
+- Three note categories: Workout, General, Nutrition
+- Rich text with color support
+
+### Workout Tracker (تمرين)
+- Weekly workout schedule planner
+- Set-by-set exercise logging (Exercise name → Reps + kg → Done per set → Finish Exercise)
+- Exercise library with presets (45+ exercises across muscle groups)
+- Body weight log with SVG line chart
+- Calorie calculator (TDEE)
+- Water intake tracker
+
+### Weekly Stats (هذا الأسبوع)
+- 7-day overview with per-day progress bars
+- Streak counter
+- Avg task completion %, avg steps, avg kcal
+- Task and calorie charts
+- Category breakdown
+
+### Past Days Log (سجل الأيام)
+- Full history of all logged days
+- Grouped by month
+- Expandable cards with meals, tasks, and notes
+
+## Authentication
+- Google OAuth via Supabase
+- Magic link (email OTP)
+- Data syncs across devices for signed-in users
+- Guest mode with local storage
+
+## Tech Stack
+- Vanilla JS (no framework)
+- Supabase (auth + cloud sync)
+- PWA (installable, offline support)
+- CSS variables for theming (dark/light)
+- No build step — pure HTML/CSS/JS
+
+## Key Pages
+- `/` — Landing page (index.html)
+- `/app.html` — Main application
+- `/privacy.html` — Privacy policy
+- `/terms.html` — Terms of service
+
+## Language Support
+- Arabic (ar) — RTL
+- English (en) — LTR
+
+## Target Users
+People who want a simple, fast, beautiful daily tracker for habits, fitness, and nutrition — especially Arabic-speaking users.
+
+## Calorie Calculator (حاسبة السعرات)
+Full TDEE (Total Daily Energy Expenditure) calculator:
+- Inputs: weight (kg), height (cm), age, gender (male/female), activity level
+- Activity levels: Sedentary, Light (1-3x/week), Moderate (3-5x/week), Active (6-7x/week), Very Active (physical job + training)
+- Formula: Mifflin-St Jeor BMR × activity multiplier
+- Goals: Lose weight (−500 kcal), Maintain, Gain muscle (+300 kcal)
+- One-tap to apply result as daily calorie target
+
+## Gym Exercise Library (مكتبة التمارين)
+45+ preset exercises organized by muscle group:
+
+### Legs (أرجل)
+Squat, Leg Press, Leg Extension, Leg Curl, Romanian Deadlift, Hack Squat, Walking Lunges, Calf Raise
+
+### Chest (صدر)
+Bench Press, Incline Bench Press, Decline Bench Press, Dumbbell Fly, Cable Fly, Push Up, Chest Dip, Pec Deck
+
+### Back (ظهر)
+Deadlift, Pull Up, Lat Pulldown, Seated Cable Row, Barbell Row, Dumbbell Row, Face Pull
+
+### Shoulders (كتف)
+Overhead Press, Dumbbell Lateral Raise, Cable Lateral Raise, Front Raise, Rear Delt Fly, Arnold Press, Upright Row
+
+### Biceps (بايسبس)
+Barbell Curl, Dumbbell Curl, Hammer Curl, Cable Curl, Preacher Curl, Incline Dumbbell Curl
+
+### Triceps (ترايسبس)
+Tricep Pushdown, Skull Crusher, Overhead Tricep Extension, Tricep Dip
+
+### Core (بطن)
+Cable Crunch, Leg Raise, Hanging Knee Raise
+
+### Forearms (سواعد)
+Wrist Curl, Reverse Curl
+
+Users can add custom exercises with muscle group, default sets, and default reps.
+
+## Contact / Creator
+Built by Tameem. Hosted on Vercel at adaa.health.
