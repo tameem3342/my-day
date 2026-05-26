@@ -693,8 +693,8 @@ textarea.inp{resize:vertical;min-height:95px;line-height:1.75;}
 
 /* ── Greeting Name ── */
 #greetingName {
-  color: #A78BFA;
-  -webkit-text-fill-color: #A78BFA;
+  color: #B8A4E8;
+  -webkit-text-fill-color: #B8A4E8;
 }
 [data-theme="light"] #greetingName {
   color: #7C3AED;

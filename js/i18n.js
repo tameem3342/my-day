@@ -2,7 +2,7 @@
 // ── i18n ─────────────────────────────────────────────────────────
 const T = {
   en:{
-    logo:'Adaa', greetMorn:'Good morning', greetAfter:'Good afternoon', greetEve:'Good evening',
+    logo:'Adaa', greetMorn:'Good morning,', greetAfter:'Good afternoon,', greetEve:'Good evening,',
     sub:'Track your performance. Every day.',
     tabToday:'Today', tabNotes:'Notes', tabWeek:'This Week', tabWorkout:'Workout', tabLog:'Past Days',
     titleHabits:'Daily Habits', titleCalories:'Calorie Tracker', titleNotes:'Day Notes',
@@ -41,7 +41,7 @@ const T = {
     stepsUnit:'steps',
   },
   ar:{
-    logo:'Adaa', greetMorn:'صباح الخير', greetAfter:'مساء النور', greetEve:'مساء الخير',
+    logo:'Adaa', greetMorn:'صباح الخير،', greetAfter:'مساء النور،', greetEve:'مساء الخير،',
     sub:'تتبّع أداءك. كل يوم.',
     tabToday:'اليوم', tabNotes:'الملاحظات', tabWeek:'هذا الأسبوع', tabWorkout:'تمرين', tabLog:'سجل الأيام',
     titleHabits:'العادات اليومية', titleCalories:'تتبع السعرات', titleNotes:'ملاحظات اليوم',
