@@ -17,7 +17,7 @@ const applyLang = () => {
     : '';
   const _uname = _savedName || _supaName;
   const nameEl = document.getElementById('greetingName');
-  if(nameEl) nameEl.textContent = _uname ? `, ${_uname}` : '';
+  if(nameEl) nameEl.textContent = _uname ? ` ${_uname}` : '';
   // Ask new users for their display name (once)
   if(!_savedName && typeof currentSupaUser !== 'undefined' && currentSupaUser) {
     const _asked = sessionStorage.getItem('_nameAsked');
