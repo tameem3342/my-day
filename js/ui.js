@@ -9,7 +9,11 @@ const applyLang = () => {
   saveCfg('lang',lang);
   // Language buttons now live inside settings modal — updated via applySettingsLang()
   const h=new Date().getHours(), gKey=h<12?'greetMorn':h<17?'greetAfter':'greetEve';
-  $('greeting').textContent     = t(gKey);
+  // Add username from logged-in user or saved name
+  const _uname = (typeof currentSupaUser !== 'undefined' && currentSupaUser)
+    ? (currentSupaUser.user_metadata?.full_name?.split(' ')[0] || currentSupaUser.email?.split('@')[0] || '')
+    : (typeof loadCfg === 'function' ? loadCfg('username','') : '');
+  $('greeting').textContent = _uname ? `${t(gKey)} ${_uname}.` : t(gKey);
   $('subGreeting').textContent  = t('sub');
   $('headerDate').textContent   = new Date().toLocaleDateString(lang==='ar'?'ar-SA':'en-US',{weekday:'short',month:'long',day:'numeric'});
   $('logoText').textContent     = t('logo');
@@ -286,7 +290,7 @@ function renderWeeklySummary() {
     row.style.cssText = `display:grid;grid-template-columns:42px 1fr 44px 44px;gap:.4rem;align-items:center;padding:.28rem 0;border-bottom:1px solid var(--border);`;
     row.innerHTML = `
       <span style="font-size:.72rem;font-weight:${isToday?'800':'500'};color:${isToday?'var(--text)':'var(--text2)'};">${dayShort}</span>
-      <div style="height:5px;border-radius:99px;background:var(--surface3);overflow:hidden;">
+      <div data-prog="1" style="height:5px;border-radius:99px;background:var(--surface3);overflow:hidden;${hidden('habits')?'opacity:0;':''}" >
         <div style="height:100%;width:${pct}%;border-radius:99px;background:${isToday?'var(--accent)':hasData?'var(--text2)':'var(--surface3)'};transition:width .4s;"></div>
       </div>
       <span style="font-size:.68rem;text-align:right;color:${kcal?'var(--text2)':'var(--text3)'};">${kcal?kcal.toLocaleString()+'k':' — '}</span>
@@ -318,10 +322,47 @@ function renderWeeklySummary() {
     : 0;
 
   const el = id => document.getElementById(id);
+  const hidden = key => (typeof hiddenSections !== 'undefined') && hiddenSections.includes(key);
+
   if(el('wSumStreak')) el('wSumStreak').textContent = streak;
-  if(el('wSumAvg'))    el('wSumAvg').textContent    = withData.length ? avgTasks+'%' : '—';
-  if(el('wSumSteps'))  el('wSumSteps').textContent  = avgSteps ? avgSteps.toLocaleString() : '—';
-  if(el('wSumCal'))    el('wSumCal').textContent    = avgCal   ? avgCal.toLocaleString()   : '—';
+
+  // Avg tasks — only if habits section is visible
+  if(el('wSumAvg')) {
+    if(hidden('habits')) {
+      el('wSumAvg').textContent = '—';
+      el('wSumAvg').title = lang==='ar'?'القسم مخفي':'Section hidden';
+    } else {
+      el('wSumAvg').textContent = withData.length ? avgTasks+'%' : '—';
+      el('wSumAvg').title = '';
+    }
+  }
+
+  // Avg steps — only if steps section is visible
+  if(el('wSumSteps')) {
+    if(hidden('steps')) {
+      el('wSumSteps').textContent = '—';
+      el('wSumSteps').title = lang==='ar'?'القسم مخفي':'Section hidden';
+    } else {
+      el('wSumSteps').textContent = avgSteps ? avgSteps.toLocaleString() : '—';
+      el('wSumSteps').title = '';
+    }
+  }
+
+  // Avg kcal — only if calories section is visible
+  if(el('wSumCal')) {
+    if(hidden('calories')) {
+      el('wSumCal').textContent = '—';
+      el('wSumCal').title = lang==='ar'?'القسم مخفي':'Section hidden';
+    } else {
+      el('wSumCal').textContent = avgCal ? avgCal.toLocaleString() : '—';
+      el('wSumCal').title = '';
+    }
+  }
+
+  // Also hide the progress bar in day rows if habits hidden
+  if(hidden('habits')) {
+    rowsEl.querySelectorAll('[data-prog]').forEach(b => b.style.display='none');
+  }
 }
 
 // ── Last Week Summary Card ────────────────────────────────────────
