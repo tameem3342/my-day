@@ -279,9 +279,8 @@ if(_supa) {
         if(_skelMsg) _skelMsg.textContent = lang==='ar' ? 'جاري تسجيل دخولك…' : 'Signing you in…';
         setTimeout(hideSkeleton, 5000); // fallback in case exchange fails
       } else {
-        // Guest — render local data immediately
-        renderAll(); renderCalBar(); renderWeightLog();
-        hideSkeleton();
+        // No session and no magic link → redirect to landing page
+        window.location.replace('/');
       }
     }
   }).catch(() => {
@@ -306,15 +305,12 @@ if(_supa) {
       }
     }
     if(!user && event === 'SIGNED_OUT') {
-      // Clear all in-memory data so next user sees clean state
+      // Clear all in-memory data and redirect to landing page
       dayCache = {}; weightLog = []; savedMeals = []; weekPlan = {};
       waterLog = { cups:0, unit:'cup', goal:8, date:todayKey() };
       exLibrary = []; customTasks = []; customNotifs = [];
-      injectPresets();
-      hiddenSections = ['water']; sectionsOrder = [...DEFAULT_SECTIONS_ORDER];
-      calTarget = 2500; stepsTarget = 10000;
-      DAY_KEYS.forEach(d=>{ weekPlan[d]={rest:false,focus:'',notes:'',exercises:[]}; });
-      renderAll(); renderCalBar(); renderWeightLog(); applyHiddenSections();
+      localStorage.removeItem('zn_active_user');
+      window.location.replace('/');
     }
   });
 }
