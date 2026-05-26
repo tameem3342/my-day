@@ -151,7 +151,7 @@ $('wtLogBtn').addEventListener('click',()=>{
   const unit=$('wtUnitSel').value;
   const now=new Date();
   const dateKey=now.toISOString().slice(0,10);
-  const dateLabel=now.toLocaleDateString(lang==='ar'?'ar-SA':'en-US',{month:'short',day:'numeric'});
+  const dateLabel=now.toLocaleDateString('en-US',{month:'short',day:'numeric'});
   weightLog.push({id:'w'+Date.now(),val:Math.round(val*10)/10,unit,dateKey,dateLabel});
   saveWeightLog(); $('wtInput').value=''; renderWeightLog();
   showToast(`✅ ${val} ${unit} logged`);
