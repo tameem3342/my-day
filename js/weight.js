@@ -33,7 +33,7 @@ const renderWeightLog = () => {
       <div class="weight-dot"></div>
       <span style="font-size:.84rem;font-weight:600;flex:1;">${w.val} <span style="font-weight:400;color:var(--text3);font-size:.78rem;">${w.unit||'kg'}</span></span>
       ${diffHtml}
-      <span style="font-size:.7rem;color:var(--text3);">${w.dateLabel||w.dateKey||''}</span>
+      <span style="font-size:.7rem;color:var(--text3);">${w.dateKey ? new Date(w.dateKey+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'}) : (w.dateLabel||'')}</span>
       <button class="delbtn wt-del" data-wid="${w.id}" style="opacity:0;">
         <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
       </button>`;
@@ -139,7 +139,7 @@ function drawWeightLineChart(data) {
       lbl.setAttribute('text-anchor','middle'); lbl.setAttribute('font-size','9');
       lbl.setAttribute('fill', isLast ? 'var(--text)' : 'var(--text3)');
       lbl.setAttribute('font-family','inherit');
-      lbl.textContent = p.dateLabel || p.dateKey?.slice(5) || '';
+      lbl.textContent = p.dateKey ? new Date(p.dateKey+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'}) : (p.dateLabel||p.dateKey?.slice(5)||'');
       svg.appendChild(lbl);
     }
   });
