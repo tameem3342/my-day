@@ -184,7 +184,7 @@ function _promptUsername() {
   overlay.innerHTML = `
     <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:1.5rem;width:100%;max-width:340px;text-align:center;">
       <div style="font-size:1.6rem;margin-bottom:.5rem;">👋</div>
-      <div style="font-size:1.1rem;font-weight:800;margin-bottom:.3rem;color:var(--text);">${lang==='ar'?'ما اسمك؟':'What's your name?'}</div>
+      <div style="font-size:1.1rem;font-weight:800;margin-bottom:.3rem;color:var(--text);">${lang==='ar'?'ما اسمك؟':'What\u2019s your name?'}</div>
       <div style="font-size:.82rem;color:var(--text2);margin-bottom:1rem;">${lang==='ar'?'سيظهر في التحية':'It will appear in your greeting'}</div>
       <input id="usernameInput" class="inp" type="text" maxlength="20"
         placeholder="${lang==='ar'?'اسمك…':'Your name…'}"
