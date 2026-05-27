@@ -401,7 +401,8 @@ const openFoodModal = (preTab='meal') => {
     if(prev) prev.innerHTML = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text3)" stroke-width="1.5" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>`;
     const hint = $('fmImgHint'); if(hint) hint.textContent = 'Click or drag an image';
     const calc = $('fmCalcPreview'); if(calc) calc.style.display = 'none';
-    const saveRow = $('fmSaveRow'); if(saveRow) saveRow.style.display = preTab==='saved' ? 'none' : 'flex';
+    const saveRow = $('fmSaveRow'); if(saveRow) saveRow.style.display = (preTab==='saved'||preTab==='restaurants') ? 'none' : 'flex';
+    const submitBtn = $('fmSubmitBtn'); if(submitBtn) submitBtn.style.display = preTab==='restaurants' ? 'none' : '';
     setFmType(preTab);
     if(preTab === 'saved') renderSavedList();
     if(preTab === 'meal')  renderPresetChips();
@@ -427,14 +428,15 @@ const closeFoodModal = () => {
 
 const setFmType = type => {
   fmType = type;
-  $('fmPanelMeal').style.display    = type==='meal'    ? 'block' : 'none';
-  $('fmPanelProduct').style.display = type==='product' ? 'block' : 'none';
-  $('fmPanelSaved').style.display   = type==='saved'   ? 'block' : 'none';
+  $('fmPanelMeal').style.display        = type==='meal'        ? 'block' : 'none';
+  $('fmPanelProduct').style.display     = type==='product'     ? 'block' : 'none';
+  $('fmPanelSaved').style.display       = type==='saved'       ? 'block' : 'none';
+  const rp = $('fmPanelRestaurants'); if(rp) rp.style.display = type==='restaurants' ? 'block' : 'none';
   const noForm = type==='saved';
   const imgSec = $('fmImgSection'); if(imgSec) imgSec.style.display = noForm ? 'none' : '';
   $('fmSaveRow').style.display      = noForm ? 'none' : 'flex';
   $('fmSubmitBtn').style.display    = noForm ? 'none' : '';
-  qsa('.fm-3tab').forEach(btn => btn.classList.toggle('active', btn.id === `fmTab${type.charAt(0).toUpperCase()+type.slice(1)}`));
+  qsa('.fm-3tab').forEach(btn => btn.classList.toggle('active', btn.id === `fmTab${type.charAt(0).toUpperCase()+type.slice(1)}` || (type==='restaurants' && btn.id==='fmTabRestaurants')));
 };
 
 // Use capture phase so this fires BEFORE any other listener
