@@ -278,16 +278,7 @@ const showAmountPrompt = (sm) => {
   inp.addEventListener('keydown', e => { if(e.key==='Enter') $('fmApConfirm').click(); });
 };
 
-// ── Restaurant & Preset Quick-Add ────────────────────────────────
-const RESTAURANT_BRANDS = [
-  { key:'baik',         nameAr:'البيك',         sidPrefix:'preset_baik_'   },
-  { key:'mcdonalds',    nameAr:'ماكدونالدز',    sidPrefix:'preset_mc_'     },
-  { key:'shawarmahouse',nameAr:'بيت الشاورما',  sidPrefix:'preset_bsh_'    },
-  { key:'rayeq',        nameAr:'شاورما رايق',   sidPrefix:'preset_rayeq_'  },
-  { key:'dunkin',       nameAr:'دانكن',          sidPrefix:'preset_dunkin_' },
-  { key:'pizzahut',     nameAr:'بيتزا هت',      sidPrefix:'preset_ph_'     },
-  { key:'krispykreme',  nameAr:'كريسبي كريم',   sidPrefix:'preset_kk_'     },
-];
+// ── Preset Quick-Add ─────────────────────────────────────────────
 const READY_MEAL_SIDS = [
   'preset_rice','preset_egg','preset_toast','preset_milk','preset_laban',
   'preset_kiri','preset_almarai','preset_nadec','preset_chickenbreast',
@@ -399,71 +390,6 @@ const renderPresetChips = () => {
   });
 };
 
-// Render restaurant brand grid (step 1)
-const renderRestaurantBrands = () => {
-  const brandsDiv = $('fmRestBrands');
-  const mealsDiv  = $('fmRestMeals');
-  if(!brandsDiv) return;
-  mealsDiv.style.display  = 'none';
-  brandsDiv.style.display = '';
-  if(brandsDiv.childElementCount > 0) return;
-  const grid = document.createElement('div');
-  grid.style.cssText = 'display:grid;grid-template-columns:repeat(3,1fr);gap:.45rem;';
-  RESTAURANT_BRANDS.forEach(brand => {
-    const meals = (typeof PRESET_MEALS !== 'undefined' ? PRESET_MEALS : []).filter(m => m.sid.startsWith(brand.sidPrefix));
-    if(!meals.length) return;
-    const card = document.createElement('button');
-    card.className = 'rest-brand-card';
-    card.innerHTML = `<img src="${safeImgSrc(meals[0].img)}" style="width:46px;height:46px;border-radius:9px;object-fit:cover;" alt=""/>
-      <span style="font-size:.72rem;font-weight:700;color:var(--text);text-align:center;line-height:1.2;">${esc(brand.nameAr)}</span>
-      <span style="font-size:.6rem;color:var(--text3);">${meals.length} وجبة</span>`;
-    card.addEventListener('click', () => renderRestaurantMeals(brand));
-    grid.appendChild(card);
-  });
-  brandsDiv.appendChild(grid);
-};
-
-// Render meals list for a selected restaurant (step 2)
-const renderRestaurantMeals = (brand) => {
-  const brandsDiv = $('fmRestBrands');
-  const mealsDiv  = $('fmRestMeals');
-  brandsDiv.style.display = 'none';
-  mealsDiv.style.display  = '';
-  mealsDiv.innerHTML = '';
-  const back = document.createElement('button');
-  back.style.cssText = 'display:flex;align-items:center;gap:.3rem;background:none;border:none;color:var(--accent);font-size:.82rem;font-weight:700;cursor:pointer;margin-bottom:.7rem;padding:0;font-family:inherit;';
-  back.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg> ${esc(brand.nameAr)}`;
-  back.addEventListener('click', () => { mealsDiv.style.display='none'; $('fmRestBrands').style.display=''; });
-  mealsDiv.appendChild(back);
-  const list = document.createElement('div');
-  list.style.cssText = 'display:flex;flex-direction:column;gap:.4rem;max-height:340px;overflow-y:auto;';
-  (typeof PRESET_MEALS !== 'undefined' ? PRESET_MEALS : [])
-    .filter(m => m.sid.startsWith(brand.sidPrefix))
-    .forEach(meal => {
-      const card = document.createElement('div');
-      card.className = 'rest-meal-card';
-      const displayName = meal.name.replace(/^[^—–]+[—–]\s*/u, '');
-      const kcalStr = meal.type==='product' ? `${meal.baseKcal} kcal/${meal.baseG}g` : `${meal.kcal} kcal`;
-      const macros = [meal.protein?`P${meal.protein}g`:'', meal.carbs?`C${meal.carbs}g`:'', meal.fat?`F${meal.fat}g`:''].filter(Boolean).join(' · ');
-      card.innerHTML = `
-        <img src="${safeImgSrc(meal.img)}" style="width:40px;height:40px;border-radius:8px;object-fit:cover;flex-shrink:0;" alt=""/>
-        <div style="flex:1;min-width:0;">
-          <div style="font-size:.84rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(displayName)}</div>
-          <div style="font-size:.67rem;color:var(--text3);margin-top:.08rem;">${esc(macros)}</div>
-        </div>
-        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:.18rem;flex-shrink:0;">
-          <span style="font-size:.88rem;font-weight:800;color:var(--amber);">${esc(kcalStr)}</span>
-          <button class="sm-add-btn" title="إضافة مباشرة">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          </button>
-        </div>`;
-      card.querySelector('.sm-add-btn').addEventListener('click', e => { e.stopPropagation(); quickAddPreset(meal); });
-      card.addEventListener('click', () => fillFormFromPreset(meal));
-      list.appendChild(card);
-    });
-  mealsDiv.appendChild(list);
-};
-
 // ── Modal open / close ────────────────────────────────────────────
 const openFoodModal = (preTab='meal') => {
   try {
@@ -475,11 +401,10 @@ const openFoodModal = (preTab='meal') => {
     if(prev) prev.innerHTML = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text3)" stroke-width="1.5" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>`;
     const hint = $('fmImgHint'); if(hint) hint.textContent = 'Click or drag an image';
     const calc = $('fmCalcPreview'); if(calc) calc.style.display = 'none';
-    const saveRow = $('fmSaveRow'); if(saveRow) saveRow.style.display = (preTab==='saved'||preTab==='restaurant') ? 'none' : 'flex';
+    const saveRow = $('fmSaveRow'); if(saveRow) saveRow.style.display = preTab==='saved' ? 'none' : 'flex';
     setFmType(preTab);
-    if(preTab === 'saved')      renderSavedList();
-    if(preTab === 'restaurant') renderRestaurantBrands();
-    if(preTab === 'meal')       renderPresetChips();
+    if(preTab === 'saved') renderSavedList();
+    if(preTab === 'meal')  renderPresetChips();
     $('foodModal').style.display = 'flex';
     _showPastDayBanner();
     setTimeout(() => {
@@ -502,11 +427,10 @@ const closeFoodModal = () => {
 
 const setFmType = type => {
   fmType = type;
-  $('fmPanelMeal').style.display       = type==='meal'       ? 'block' : 'none';
-  $('fmPanelProduct').style.display    = type==='product'    ? 'block' : 'none';
-  $('fmPanelSaved').style.display      = type==='saved'      ? 'block' : 'none';
-  $('fmPanelRestaurant').style.display = type==='restaurant' ? 'block' : 'none';
-  const noForm = type==='saved' || type==='restaurant';
+  $('fmPanelMeal').style.display    = type==='meal'    ? 'block' : 'none';
+  $('fmPanelProduct').style.display = type==='product' ? 'block' : 'none';
+  $('fmPanelSaved').style.display   = type==='saved'   ? 'block' : 'none';
+  const noForm = type==='saved';
   const imgSec = $('fmImgSection'); if(imgSec) imgSec.style.display = noForm ? 'none' : '';
   $('fmSaveRow').style.display      = noForm ? 'none' : 'flex';
   $('fmSubmitBtn').style.display    = noForm ? 'none' : '';
@@ -524,7 +448,6 @@ $('foodModal').addEventListener('click', e => { if(e.target === $('foodModal')) 
 $('fmTabMeal').addEventListener('click',       () => { setFmType('meal'); renderPresetChips(); });
 $('fmTabProduct').addEventListener('click',    () => setFmType('product'));
 $('fmTabSaved').addEventListener('click',      () => { setFmType('saved'); renderSavedList(); });
-$('fmTabRestaurant').addEventListener('click', () => { setFmType('restaurant'); renderRestaurantBrands(); });
 $('smSearch').addEventListener('input', () => renderSavedList($('smSearch').value));
 
 // Image upload / preview
