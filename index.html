@@ -673,6 +673,24 @@ footer {
 // ── Language Toggle ──
 let currentLang = 'en';
 
+function safeLangHtml(html) {
+  const ALLOWED = new Set(['br','em','b','strong','span']);
+  const tpl = document.createElement('template');
+  tpl.innerHTML = html;
+  function walk(src, dest) {
+    src.childNodes.forEach(node => {
+      if(node.nodeType === 3) { dest.appendChild(document.createTextNode(node.textContent)); }
+      else if(node.nodeType === 1) {
+        const tag = node.tagName.toLowerCase();
+        if(ALLOWED.has(tag)) { const el = document.createElement(tag); walk(node, el); dest.appendChild(el); }
+        else { walk(node, dest); }
+      }
+    });
+  }
+  const out = document.createElement('div'); walk(tpl.content, out);
+  return out.innerHTML;
+}
+
 function applyLang(lang) {
   currentLang = lang;
   const html = document.documentElement;
@@ -681,7 +699,7 @@ function applyLang(lang) {
 
   document.querySelectorAll('[data-en]').forEach(el => {
     const val = el.getAttribute('data-' + currentLang);
-    if(val) el.innerHTML = val;
+    if(val) el.innerHTML = safeLangHtml(val);
   });
 
   document.querySelector('.lang-toggle').textContent = currentLang === 'en' ? 'العربية' : 'English';

@@ -1,4 +1,4 @@
-const CACHE = 'yawmi-v1';
+const CACHE = 'adaa-v2';
 const ASSETS = [
   '/',
   '/index.html'
