@@ -432,6 +432,7 @@ const setFmType = type => {
   $('fmPanelProduct').style.display     = type==='product'     ? 'block' : 'none';
   $('fmPanelSaved').style.display       = type==='saved'       ? 'block' : 'none';
   const rp = $('fmPanelRestaurants'); if(rp) rp.style.display = type==='restaurants' ? 'block' : 'none';
+  if(type==='restaurants' && typeof renderRestaurantGrid==='function') renderRestaurantGrid();
   const noForm = type==='saved' || type==='restaurants';
   const imgSec = $('fmImgSection'); if(imgSec) imgSec.style.display = noForm ? 'none' : '';
   $('fmSaveRow').style.display      = noForm ? 'none' : 'flex';
