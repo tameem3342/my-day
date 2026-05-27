@@ -202,7 +202,7 @@ async function loadSupabaseData(user) {
             if(k==='exLibrary')     { exLibrary=parsed; injectPresets(); }
             if(k==='sectionsOrder') { const saved=parsed; if(Array.isArray(saved)) sectionsOrder=[...saved.filter(k=>SECTIONS[k]),...DEFAULT_SECTIONS_ORDER.filter(k=>!saved.includes(k))]; }
           }
-        } catch(e){ console.warn('Failed to parse row', k, e); }
+        } catch(e){ console.warn('Failed to parse row', row.key, e); }
       });
     }
   } catch(e) {

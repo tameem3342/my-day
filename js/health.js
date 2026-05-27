@@ -212,11 +212,11 @@ function obNext(step) {
           }
         } else {
           etaEl.textContent = '—';
-          etaUnit.textContent = 'الوزن ثابت';
+          if(etaUnit) etaUnit.textContent = 'الوزن ثابت';
         }
       } else {
         etaEl.textContent = '—';
-        etaUnit.textContent = 'لم يُحدد';
+        if(etaUnit) etaUnit.textContent = 'لم يُحدد';
       }
     }
     // Fill results
@@ -417,7 +417,7 @@ function renderWeeklySummary() {
     const total = tasks.length;
     const pct = total>0 ? Math.round((done/total)*100) : 0;
     const steps = day?.steps || 0;
-    const cal = (day?.meals||[]).reduce((s,m)=>s+(m.cal||0),0);
+    const cal = (day?.meals||[]).reduce((s,m)=>s+(m.kcal||0),0);
     totalTaskPct += pct; totalSteps += steps; totalCal += cal;
     if(pct===100 && total>0) tempStreak++; else { streak=Math.max(streak,tempStreak); tempStreak=0; }
     const d = new Date(dk+'T12:00:00');

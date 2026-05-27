@@ -102,7 +102,20 @@ const nudgeSignIn = () => {
   if(_nudgedSignIn || currentSupaUser) return;
   _nudgedSignIn = true;
   setTimeout(()=>{
-    showToast(`<span>${lang==='ar'?'سجّل دخولك لحفظ بياناتك ☁️':'Sign in to save your data ☁️'}</span> <button onclick="openAuthModal()" style="margin-left:.6rem;background:rgba(255,255,255,.2);border:none;border-radius:5px;padding:.15rem .5rem;cursor:pointer;font-family:inherit;font-size:.78rem;font-weight:700;color:inherit;">${lang==='ar'?'سجّل':'Sign In'}</button>`, true);
+    const toast = document.getElementById('toast');
+    if(!toast) return;
+    toast.textContent = '';
+    const span = document.createElement('span');
+    span.textContent = lang==='ar' ? 'سجّل دخولك لحفظ بياناتك ☁️' : 'Sign in to save your data ☁️';
+    const btn = document.createElement('button');
+    btn.textContent = lang==='ar' ? 'سجّل' : 'Sign In';
+    btn.style.cssText = 'margin-left:.6rem;background:rgba(255,255,255,.2);border:none;border-radius:5px;padding:.15rem .5rem;cursor:pointer;font-family:inherit;font-size:.78rem;font-weight:700;color:inherit;';
+    btn.onclick = () => openAuthModal();
+    toast.appendChild(span);
+    toast.appendChild(btn);
+    toast.style.opacity = '1';
+    toast.style.transform = 'translateX(-50%) translateY(0)';
+    setTimeout(()=>{ toast.style.opacity='0'; toast.style.transform='translateX(-50%) translateY(80px)'; toast.textContent=''; }, 4000);
   }, 800);
 };
 
