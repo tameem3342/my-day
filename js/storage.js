@@ -26,7 +26,15 @@ const SUPA_URL = atob('aHR0cHM6Ly94cXhjZWN1aG90dXdtcHp4YmZ4cS5zdXBhYmFzZS5jbw=='
 // publishable anon key — obfuscated (client-side, same level as URL)
 const SUPA_KEY = atob('c2JfcHVibGlzaGFibGVfSzRBVFBnaG1SZWRVRDNKeGo1b1hkQV9tenotN0JlNA==');
 let _supa = null;
-try { _supa = window.supabase.createClient(SUPA_URL, SUPA_KEY); } catch(e) {}
+try {
+  _supa = window.supabase.createClient(SUPA_URL, SUPA_KEY, {
+    auth: {
+      persistSession: true,      // يحفظ الجلسة في localStorage
+      autoRefreshToken: true,    // يجدد التوكن تلقائياً قبل انتهاؤه
+      detectSessionInUrl: true   // يكتشف الجلسة من رابط magic link
+    }
+  });
+} catch(e) {}
 
 const USER_KEY = (()=>{
   const K='zn_uid_v3'; let uid=localStorage.getItem(K);
