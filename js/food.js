@@ -404,8 +404,9 @@ const openFoodModal = (preTab='meal') => {
     const saveRow = $('fmSaveRow'); if(saveRow) saveRow.style.display = (preTab==='saved'||preTab==='restaurants') ? 'none' : 'flex';
     const submitBtn = $('fmSubmitBtn'); if(submitBtn) submitBtn.style.display = preTab==='restaurants' ? 'none' : '';
     setFmType(preTab);
-    if(preTab === 'saved') renderSavedList();
-    if(preTab === 'meal')  renderPresetChips();
+    if(preTab === 'saved')       renderSavedList();
+    if(preTab === 'meal')        renderPresetChips();
+    // setFmType يتولى استدعاء openRestaurantsTab للـ restaurants
     $('foodModal').style.display = 'flex';
     _showPastDayBanner();
     setTimeout(() => {
@@ -432,13 +433,16 @@ const setFmType = type => {
   $('fmPanelProduct').style.display     = type==='product'     ? 'block' : 'none';
   $('fmPanelSaved').style.display       = type==='saved'       ? 'block' : 'none';
   const rp = $('fmPanelRestaurants'); if(rp) rp.style.display = type==='restaurants' ? 'block' : 'none';
-  if(type==='restaurants' && typeof renderRestaurantGrid==='function') renderRestaurantGrid();
   const noForm = type==='saved' || type==='restaurants';
   const imgSec = $('fmImgSection'); if(imgSec) imgSec.style.display = noForm ? 'none' : '';
   $('fmSaveRow').style.display      = noForm ? 'none' : 'flex';
   $('fmSubmitBtn').style.display    = noForm ? 'none' : '';
   qsa('.fm-3tab').forEach(btn => btn.classList.toggle('active', btn.id === `fmTab${type.charAt(0).toUpperCase()+type.slice(1)}` || (type==='restaurants' && btn.id==='fmTabRestaurants')));
-  if(type==='restaurants') { setTimeout(() => { if(typeof openRestaurantsTab==='function') openRestaurantsTab(); }, 0); }
+  if(type==='restaurants') {
+    // استدعاء واحد فقط بعد إظهار الـ panel لضمان وجود restContent في DOM
+    if(typeof openRestaurantsTab==='function') openRestaurantsTab();
+    else if(typeof renderRestaurantGrid==='function') renderRestaurantGrid();
+  }
 };
 
 // Use capture phase so this fires BEFORE any other listener
