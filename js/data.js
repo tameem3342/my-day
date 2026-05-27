@@ -86,6 +86,40 @@ const injectPresets = () => {
   if(changed) saveExLib();
 };
 
+// ── Preset Meals ─────────────────────────────────────────────────
+const _IMG = {
+  rice:    'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA4MCA4MCI+PHJlY3Qgd2lkdGg9IjgwIiBoZWlnaHQ9IjgwIiByeD0iMTQiIGZpbGw9IiNCODg2MEIiLz48ZWxsaXBzZSBjeD0iNDAiIGN5PSI1NCIgcng9IjI4IiByeT0iMTYiIGZpbGw9IiNENEEwMTciLz48ZWxsaXBzZSBjeD0iNDAiIGN5PSI1MCIgcng9IjI4IiByeT0iMTYiIGZpbGw9IiNGNUYwREMiLz48ZWxsaXBzZSBjeD0iMzAiIGN5PSI0NCIgcng9IjQiIHJ5PSIyIiBmaWxsPSJ3aGl0ZSIgdHJhbnNmb3JtPSJyb3RhdGUoLTIwIDMwIDQ0KSIvPjxlbGxpcHNlIGN4PSI0MiIgY3k9IjQwIiByeD0iNCIgcnk9IjIiIGZpbGw9IndoaXRlIiB0cmFuc2Zvcm09InJvdGF0ZSgxMCA0MiA0MCkiLz48ZWxsaXBzZSBjeD0iNTIiIGN5PSI0NiIgcng9IjQiIHJ5PSIyIiBmaWxsPSJ3aGl0ZSIgdHJhbnNmb3JtPSJyb3RhdGUoLTE1IDUyIDQ2KSIvPjxlbGxpcHNlIGN4PSIzNSIgY3k9IjUyIiByeD0iNCIgcnk9IjIiIGZpbGw9IndoaXRlIiB0cmFuc2Zvcm09InJvdGF0ZSg1IDM1IDUyKSIvPjxlbGxpcHNlIGN4PSI0OSIgY3k9IjU0IiByeD0iNCIgcnk9IjIiIGZpbGw9IndoaXRlIiB0cmFuc2Zvcm09InJvdGF0ZSgtMjUgNDkgNTQpIi8+PC9zdmc+',
+  egg:     'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA4MCA4MCI+PHJlY3Qgd2lkdGg9IjgwIiBoZWlnaHQ9IjgwIiByeD0iMTQiIGZpbGw9IiNFODkwMEEiLz48ZWxsaXBzZSBjeD0iNDAiIGN5PSI0NSIgcng9IjIyIiByeT0iMjYiIGZpbGw9IiNGRkZERTciLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjQ4IiByPSIxMyIgZmlsbD0iI0ZGQzEwNyIvPjxjaXJjbGUgY3g9IjM1IiBjeT0iNDMiIHI9IjQiIGZpbGw9IiNGRkU1N0YiIG9wYWNpdHk9IjAuNyIvPjwvc3ZnPg==',
+  toast:   'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA4MCA4MCI+PHJlY3Qgd2lkdGg9IjgwIiBoZWlnaHQ9IjgwIiByeD0iMTQiIGZpbGw9IiNBMDUyMkQiLz48cmVjdCB4PSIxNiIgeT0iMTgiIHdpZHRoPSI0OCIgaGVpZ2h0PSI1MCIgcng9IjgiIGZpbGw9IiNDRDg1M0YiLz48ZWxsaXBzZSBjeD0iNDAiIGN5PSIyNCIgcng9IjI0IiByeT0iMTEiIGZpbGw9IiM4QjQ1MTMiLz48cmVjdCB4PSIxOSIgeT0iMzAiIHdpZHRoPSI0MiIgaGVpZ2h0PSIzNSIgcng9IjUiIGZpbGw9IiNGNUM4NDIiLz48Y2lyY2xlIGN4PSIzMSIgY3k9IjQyIiByPSIyLjUiIGZpbGw9IiNDOEEwMjAiIG9wYWNpdHk9IjAuOCIvPjxjaXJjbGUgY3g9IjQzIiBjeT0iMzciIHI9IjIiIGZpbGw9IiNDOEEwMjAiIG9wYWNpdHk9IjAuOCIvPjxjaXJjbGUgY3g9IjUxIiBjeT0iNDciIHI9IjIuNSIgZmlsbD0iI0M4QTAyMCIgb3BhY2l0eT0iMC44Ii8+PGNpcmNsZSBjeD0iMzciIGN5PSI1MyIgcj0iMiIgZmlsbD0iI0M4QTAyMCIgb3BhY2l0eT0iMC44Ii8+PC9zdmc+',
+  almarai: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA4MCA4MCI+PHJlY3Qgd2lkdGg9IjgwIiBoZWlnaHQ9IjgwIiByeD0iMTQiIGZpbGw9IiMxQjVFMjAiLz48cmVjdCB4PSIyMiIgeT0iMjIiIHdpZHRoPSIzNiIgaGVpZ2h0PSI0OCIgcng9IjUiIGZpbGw9IndoaXRlIi8+PHBvbHlnb24gcG9pbnRzPSIyMiwyNCA0MCwxMyA1OCwyNCIgZmlsbD0iI0M4RTZDOSIvPjxyZWN0IHg9IjIyIiB5PSI0NCIgd2lkdGg9IjM2IiBoZWlnaHQ9IjEwIiBmaWxsPSIjMkU3RDMyIi8+PHRleHQgeD0iNDAiIHk9IjM5IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LWZhbWlseT0iQXJpYWwsc2Fucy1zZXJpZiIgZm9udC13ZWlnaHQ9ImJvbGQiIGZvbnQtc2l6ZT0iNyIgZmlsbD0iIzFCNUUyMCI+YWxtYXJhaTwvdGV4dD48dGV4dCB4PSI0MCIgeT0iNTEiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZvbnQtZmFtaWx5PSJBcmlhbCxzYW5zLXNlcmlmIiBmb250LXdlaWdodD0iYm9sZCIgZm9udC1zaXplPSI1LjUiIGZpbGw9IndoaXRlIj5QUk9URUlOPC90ZXh0Pjx0ZXh0IHg9IjQwIiB5PSI2MiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1mYW1pbHk9IkFyaWFsLHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iNSIgZmlsbD0iIzY2NiI+MjUwbWw8L3RleHQ+PC9zdmc+',
+  nadec:   'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA4MCA4MCI+PHJlY3Qgd2lkdGg9IjgwIiBoZWlnaHQ9IjgwIiByeD0iMTQiIGZpbGw9IiMwRDQ3QTEiLz48cmVjdCB4PSIyMiIgeT0iMjIiIHdpZHRoPSIzNiIgaGVpZ2h0PSI0OCIgcng9IjUiIGZpbGw9IndoaXRlIi8+PHBvbHlnb24gcG9pbnRzPSIyMiwyNCA0MCwxMyA1OCwyNCIgZmlsbD0iI0JCREVGQSI+PC9wb2x5Z29uPjxyZWN0IHg9IjIyIiB5PSI0NCIgd2lkdGg9IjM2IiBoZWlnaHQ9IjEwIiBmaWxsPSIjMTU2NUMwIi8+PHRleHQgeD0iNDAiIHk9IjM5IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LWZhbWlseT0iQXJpYWwsc2Fucy1zZXJpZiIgZm9udC13ZWlnaHQ9ImJvbGQiIGZvbnQtc2l6ZT0iOCIgZmlsbD0iIzBENDdBMSI+bmFkZWM8L3RleHQ+PHRleHQgeD0iNDAiIHk9IjUxIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LWZhbWlseT0iQXJpYWwsc2Fucy1zZXJpZiIgZm9udC13ZWlnaHQ9ImJvbGQiIGZvbnQtc2l6ZT0iNS41IiBmaWxsPSJ3aGl0ZSI+UFJPVEVJTjwvdGV4dD48dGV4dCB4PSI0MCIgeT0iNjIiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZvbnQtZmFtaWx5PSJBcmlhbCxzYW5zLXNlcmlmIiBmb250LXNpemU9IjUiIGZpbGw9IiM2NjYiPjI1MG1sPC90ZXh0Pjwvc3ZnPg==',
+};
+
+const PRESET_MEALS = [
+  // أرز مطبوخ — product (per 100g)
+  { sid:'preset_rice',    name:'أرز مطبوخ',              type:'product', baseKcal:130, baseG:100, protein:2.7, carbs:28,  fat:0.3, img:_IMG.rice    },
+  // بيضة مسلوقة — meal (per egg)
+  { sid:'preset_egg',     name:'بيضة مسلوقة',            type:'meal',    kcal:77,                protein:6,   carbs:0.6, fat:5,   img:_IMG.egg     },
+  // خبز توست — meal (per slice ~30g)
+  { sid:'preset_toast',   name:'خبز توست (شريحة)',        type:'meal',    kcal:80,                protein:2.7, carbs:15,  fat:1,   img:_IMG.toast   },
+  // المراعي حليب بروتين — meal (250ml)
+  { sid:'preset_almarai', name:'حليب بروتين المراعي',    type:'meal',    kcal:200,               protein:20,  carbs:12,  fat:6,   img:_IMG.almarai },
+  // نادك حليب بروتين — meal (250ml)
+  { sid:'preset_nadec',   name:'حليب بروتين نادك',       type:'meal',    kcal:180,               protein:18,  carbs:10,  fat:6,   img:_IMG.nadec   },
+];
+
+const injectPresetMeals = () => {
+  if(!Array.isArray(savedMeals)) savedMeals = [];
+  let changed = false;
+  PRESET_MEALS.forEach(p => {
+    if(!savedMeals.some(m => m.sid === p.sid)) {
+      savedMeals.unshift({...p});
+      changed = true;
+    }
+  });
+  if(changed) saveCfg('savedMeals', savedMeals);
+};
+
 // ── Load all data from localStorage ──────────────────────────────
 const loadLocalData = () => {
   lang  = loadCfg('lang','en');
@@ -115,6 +149,7 @@ const loadLocalData = () => {
   weightLog = loadCfg('weightLog', []);
   savedMeals = loadCfg('savedMeals', []);
   injectPresets();
+  injectPresetMeals();
 };
 
 // ── System theme auto-follow (only if user hasn't manually set it) ──

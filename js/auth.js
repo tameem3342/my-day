@@ -163,7 +163,7 @@ async function loadSupabaseData(user) {
       dayCache = {}; weightLog = []; savedMeals = []; weekPlan = {};
       waterLog = { cups:0, unit:'cup', goal:8, date:todayKey() };
       exLibrary = []; customTasks = []; customNotifs = [];
-      injectPresets();
+      injectPresets(); injectPresetMeals();
       calTarget = 2500; stepsTarget = 10000;
     }
     localStorage.setItem('zn_active_user', user.id);
@@ -195,7 +195,7 @@ async function loadSupabaseData(user) {
             if(k==='customNotifs')  customNotifs=parsed;
             if(k==='customTasks')   customTasks=Array.isArray(parsed)?parsed:[];
             if(k==='weightLog')     weightLog=parsed;
-            if(k==='savedMeals')    savedMeals=parsed;
+            if(k==='savedMeals')    { savedMeals=parsed; injectPresetMeals(); }
             if(k==='weekPlan')      { weekPlan=parsed; DAY_KEYS.forEach(d=>{ if(!weekPlan[d]) weekPlan[d]={rest:false,focus:'',notes:'',exercises:[]}; }); }
             if(k==='waterLog')      waterLog=parsed;
             if(k==='hiddenSections'){ hiddenSections=parsed; }
@@ -310,7 +310,7 @@ if(_supa) {
       dayCache = {}; weightLog = []; savedMeals = []; weekPlan = {};
       waterLog = { cups:0, unit:'cup', goal:8, date:todayKey() };
       exLibrary = []; customTasks = []; customNotifs = [];
-      injectPresets();
+      injectPresets(); injectPresetMeals();
       hiddenSections = ['water']; sectionsOrder = [...DEFAULT_SECTIONS_ORDER];
       calTarget = 2500; stepsTarget = 10000;
       DAY_KEYS.forEach(d=>{ weekPlan[d]={rest:false,focus:'',notes:'',exercises:[]}; });
