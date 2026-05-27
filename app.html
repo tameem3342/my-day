@@ -1208,12 +1208,13 @@
       </button>
     </div>
     <div style="padding:1.1rem 1.3rem;">
-      <div style="display:flex;gap:.3rem;background:var(--surface2);border-radius:10px;padding:.25rem;margin-bottom:1.1rem;">
-        <button class="fm-3tab active" id="fmTabMeal">🍽️ <span id="lblFmTabMeal">Ready Meal</span></button>
-        <button class="fm-3tab" id="fmTabProduct">⚖️ <span id="lblFmTabProduct">By Weight</span></button>
-        <button class="fm-3tab" id="fmTabSaved">⭐ <span id="lblFmTabSaved">Saved</span></button>
+      <div style="display:flex;gap:.2rem;background:var(--surface2);border-radius:10px;padding:.2rem;margin-bottom:1rem;">
+        <button class="fm-3tab active" id="fmTabMeal">🍽️ <span id="lblFmTabMeal">وجبة</span></button>
+        <button class="fm-3tab" id="fmTabProduct">⚖️ <span id="lblFmTabProduct">بالوزن</span></button>
+        <button class="fm-3tab" id="fmTabSaved">⭐ <span id="lblFmTabSaved">محفوظة</span></button>
+        <button class="fm-3tab" id="fmTabRestaurant">🏪 <span id="lblFmTabRestaurant">مطاعم</span></button>
       </div>
-      <div style="margin-bottom:.85rem;">
+      <div id="fmImgSection" style="margin-bottom:.85rem;">
         <label id="fmImgLabel" style="font-size:.7rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);display:block;margin-bottom:.4rem;">Photo (optional)</label>
         <div id="fmImgDrop" style="border:2px dashed var(--border2);border-radius:12px;padding:.75rem;display:flex;align-items:center;gap:.75rem;cursor:pointer;transition:border-color .2s;position:relative;overflow:hidden;">
           <div id="fmImgPreviewWrap" style="width:52px;height:52px;border-radius:9px;background:var(--surface2);flex-shrink:0;overflow:hidden;display:flex;align-items:center;justify-content:center;">
@@ -1227,6 +1228,7 @@
         </div>
       </div>
       <div id="fmPanelMeal">
+        <div id="fmPresetChips" style="display:flex;gap:.38rem;overflow-x:auto;padding-bottom:.4rem;margin-bottom:.7rem;"></div>
         <div style="margin-bottom:.65rem;">
           <label class="fm-lbl" id="fmLblName1">Meal Name</label>
           <input class="inp" id="fmMealName" type="text" maxlength="60" placeholder="e.g. Grilled Chicken…"/>
@@ -1298,6 +1300,10 @@
         <div id="smList" style="display:flex;flex-direction:column;gap:.4rem;max-height:280px;overflow-y:auto;">
           <p id="smEmpty" style="font-size:.82rem;color:var(--text3);text-align:center;padding:1.5rem 0;">No saved meals yet.<br><span style="font-size:.75rem;">Log a meal to save it here.</span></p>
         </div>
+      </div>
+      <div id="fmPanelRestaurant" style="display:none;">
+        <div id="fmRestBrands"></div>
+        <div id="fmRestMeals" style="display:none;"></div>
       </div>
       <div id="fmSaveRow" style="display:flex;align-items:center;gap:.55rem;margin-bottom:.7rem;padding:.55rem .7rem;background:rgba(251,191,36,.06);border:1px solid rgba(251,191,36,.15);border-radius:10px;">
         <label class="cb-wrap" style="flex-shrink:0;">

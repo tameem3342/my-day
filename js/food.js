@@ -278,6 +278,192 @@ const showAmountPrompt = (sm) => {
   inp.addEventListener('keydown', e => { if(e.key==='Enter') $('fmApConfirm').click(); });
 };
 
+// ── Restaurant & Preset Quick-Add ────────────────────────────────
+const RESTAURANT_BRANDS = [
+  { key:'baik',         nameAr:'البيك',         sidPrefix:'preset_baik_'   },
+  { key:'mcdonalds',    nameAr:'ماكدونالدز',    sidPrefix:'preset_mc_'     },
+  { key:'shawarmahouse',nameAr:'بيت الشاورما',  sidPrefix:'preset_bsh_'    },
+  { key:'rayeq',        nameAr:'شاورما رايق',   sidPrefix:'preset_rayeq_'  },
+  { key:'dunkin',       nameAr:'دانكن',          sidPrefix:'preset_dunkin_' },
+  { key:'pizzahut',     nameAr:'بيتزا هت',      sidPrefix:'preset_ph_'     },
+  { key:'krispykreme',  nameAr:'كريسبي كريم',   sidPrefix:'preset_kk_'     },
+];
+const READY_MEAL_SIDS = [
+  'preset_rice','preset_egg','preset_toast','preset_milk','preset_laban',
+  'preset_kiri','preset_almarai','preset_nadec','preset_chickenbreast',
+  'preset_grillchicken','preset_tuna','preset_foul','preset_banana',
+  'preset_apple','preset_dates','preset_oats',
+];
+
+// Image fetch: Open Food Facts → Unsplash fallback → null
+const UNSPLASH_KEY = ''; // add Unsplash access_key here for photo fallback
+const _imgFetchCache = {};
+const fetchFoodImg = async (query) => {
+  if(_imgFetchCache.hasOwnProperty(query)) return _imgFetchCache[query];
+  _imgFetchCache[query] = null;
+  try {
+    const r = await fetch(
+      `https://world.openfoodfacts.org/api/v2/search?search_terms=${encodeURIComponent(query)}&fields=image_front_small_url&page_size=1`,
+      { signal: AbortSignal.timeout(5000) }
+    );
+    if(r.ok) {
+      const d = await r.json();
+      const url = d?.products?.[0]?.image_front_small_url;
+      if(url && url.startsWith('https://')) { _imgFetchCache[query] = url; return url; }
+    }
+  } catch(e) {}
+  if(UNSPLASH_KEY) {
+    try {
+      const r2 = await fetch(
+        `https://api.unsplash.com/search/photos?query=${encodeURIComponent(query)}&per_page=1&client_id=${UNSPLASH_KEY}`,
+        { signal: AbortSignal.timeout(5000) }
+      );
+      if(r2.ok) {
+        const d2 = await r2.json();
+        const url2 = d2?.results?.[0]?.urls?.small;
+        if(url2 && url2.startsWith('https://')) { _imgFetchCache[query] = url2; return url2; }
+      }
+    } catch(e) {}
+  }
+  return null;
+};
+
+// Pre-fill the meal form from a preset object
+const fillFormFromPreset = (preset) => {
+  fmImgData = null;
+  const prev = $('fmImgPreviewWrap');
+  if(prev) prev.innerHTML = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text3)" stroke-width="1.5" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>`;
+  if(preset.type === 'product') {
+    setFmType('product');
+    if($('fmProdName'))    $('fmProdName').value    = preset.name;
+    if($('fmProdBaseKcal'))$('fmProdBaseKcal').value= preset.baseKcal;
+    if($('fmProdBaseG'))   $('fmProdBaseG').value   = preset.baseG;
+    if($('fmProdProtein')) $('fmProdProtein').value = preset.protein || '';
+    if($('fmProdCarbs'))   $('fmProdCarbs').value   = preset.carbs   || '';
+    if($('fmProdFat'))     $('fmProdFat').value      = preset.fat     || '';
+    calcProduct();
+    setTimeout(() => { const a=$('fmProdAmount'); if(a) a.focus(); }, 80);
+  } else {
+    setFmType('meal');
+    if($('fmMealName'))    $('fmMealName').value    = preset.name;
+    if($('fmMealKcal'))    $('fmMealKcal').value    = preset.kcal    || '';
+    if($('fmMealProtein')) $('fmMealProtein').value = preset.protein || '';
+    if($('fmMealCarbs'))   $('fmMealCarbs').value   = preset.carbs   || '';
+    if($('fmMealFat'))     $('fmMealFat').value      = preset.fat     || '';
+  }
+  if(preset.img) {
+    fmImgData = preset.img;
+    if(prev) prev.innerHTML = `<img src="${safeImgSrc(preset.img)}" style="width:52px;height:52px;object-fit:cover;border-radius:9px;"/>`;
+    const hint = $('fmImgHint'); if(hint) hint.textContent = preset.name.slice(0,28);
+  }
+};
+
+// Quick-add preset directly (reuses showAmountPrompt for product type)
+const quickAddPreset = (preset) => {
+  if(preset.type === 'product') { showAmountPrompt(preset); return; }
+  const now = new Date();
+  const timeStr = now.toLocaleTimeString(lang==='ar'?'ar-SA':'en-US', {hour:'2-digit', minute:'2-digit'});
+  const entry = { ...preset, id:'m'+Date.now(), time:timeStr };
+  delete entry.sid;
+  confirmMealOnPastDay(() => {
+    ensureDay(viewingDate);
+    if((dayCache[viewingDate].meals||[]).length >= 100){ showToast(lang==='ar'?'وصلت الحد الأقصى':'Max 100 meals'); return; }
+    dayCache[viewingDate].meals.push(entry);
+    saveDay(viewingDate);
+    renderMeals();
+    closeFoodModal();
+    showToast(`✅ ${entry.name} · ${entry.kcal} kcal`);
+  });
+};
+
+// Render preset chips row inside Ready Meal tab
+const renderPresetChips = () => {
+  const container = $('fmPresetChips');
+  if(!container || container.childElementCount > 0) return;
+  READY_MEAL_SIDS.forEach(sid => {
+    const preset = (typeof PRESET_MEALS !== 'undefined' ? PRESET_MEALS : []).find(m => m.sid === sid);
+    if(!preset) return;
+    const chip = document.createElement('button');
+    chip.className = 'preset-chip';
+    const shortName = preset.name.replace(/\s*\([^)]*\)/,'').slice(0,14);
+    const kcalStr = preset.type === 'product' ? `${preset.baseKcal}↗` : `${preset.kcal}`;
+    chip.innerHTML = `<img src="${safeImgSrc(preset.img)}" style="width:38px;height:38px;border-radius:7px;object-fit:cover;" alt=""/>
+      <span class="preset-chip-name">${esc(shortName)}</span>
+      <span style="font-size:.56rem;color:var(--text3);">${esc(kcalStr)} kcal</span>`;
+    chip.addEventListener('click', () => fillFormFromPreset(preset));
+    container.appendChild(chip);
+    // Progressive: replace SVG icon with real food photo if found
+    fetchFoodImg(preset.name).then(url => {
+      if(url) { const img = chip.querySelector('img'); if(img) img.src = url; }
+    });
+  });
+};
+
+// Render restaurant brand grid (step 1)
+const renderRestaurantBrands = () => {
+  const brandsDiv = $('fmRestBrands');
+  const mealsDiv  = $('fmRestMeals');
+  if(!brandsDiv) return;
+  mealsDiv.style.display  = 'none';
+  brandsDiv.style.display = '';
+  if(brandsDiv.childElementCount > 0) return;
+  const grid = document.createElement('div');
+  grid.style.cssText = 'display:grid;grid-template-columns:repeat(3,1fr);gap:.45rem;';
+  RESTAURANT_BRANDS.forEach(brand => {
+    const meals = (typeof PRESET_MEALS !== 'undefined' ? PRESET_MEALS : []).filter(m => m.sid.startsWith(brand.sidPrefix));
+    if(!meals.length) return;
+    const card = document.createElement('button');
+    card.className = 'rest-brand-card';
+    card.innerHTML = `<img src="${safeImgSrc(meals[0].img)}" style="width:46px;height:46px;border-radius:9px;object-fit:cover;" alt=""/>
+      <span style="font-size:.72rem;font-weight:700;color:var(--text);text-align:center;line-height:1.2;">${esc(brand.nameAr)}</span>
+      <span style="font-size:.6rem;color:var(--text3);">${meals.length} وجبة</span>`;
+    card.addEventListener('click', () => renderRestaurantMeals(brand));
+    grid.appendChild(card);
+  });
+  brandsDiv.appendChild(grid);
+};
+
+// Render meals list for a selected restaurant (step 2)
+const renderRestaurantMeals = (brand) => {
+  const brandsDiv = $('fmRestBrands');
+  const mealsDiv  = $('fmRestMeals');
+  brandsDiv.style.display = 'none';
+  mealsDiv.style.display  = '';
+  mealsDiv.innerHTML = '';
+  const back = document.createElement('button');
+  back.style.cssText = 'display:flex;align-items:center;gap:.3rem;background:none;border:none;color:var(--accent);font-size:.82rem;font-weight:700;cursor:pointer;margin-bottom:.7rem;padding:0;font-family:inherit;';
+  back.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg> ${esc(brand.nameAr)}`;
+  back.addEventListener('click', () => { mealsDiv.style.display='none'; $('fmRestBrands').style.display=''; });
+  mealsDiv.appendChild(back);
+  const list = document.createElement('div');
+  list.style.cssText = 'display:flex;flex-direction:column;gap:.4rem;max-height:340px;overflow-y:auto;';
+  (typeof PRESET_MEALS !== 'undefined' ? PRESET_MEALS : [])
+    .filter(m => m.sid.startsWith(brand.sidPrefix))
+    .forEach(meal => {
+      const card = document.createElement('div');
+      card.className = 'rest-meal-card';
+      const displayName = meal.name.replace(/^[^—–]+[—–]\s*/u, '');
+      const kcalStr = meal.type==='product' ? `${meal.baseKcal} kcal/${meal.baseG}g` : `${meal.kcal} kcal`;
+      const macros = [meal.protein?`P${meal.protein}g`:'', meal.carbs?`C${meal.carbs}g`:'', meal.fat?`F${meal.fat}g`:''].filter(Boolean).join(' · ');
+      card.innerHTML = `
+        <img src="${safeImgSrc(meal.img)}" style="width:40px;height:40px;border-radius:8px;object-fit:cover;flex-shrink:0;" alt=""/>
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:.84rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(displayName)}</div>
+          <div style="font-size:.67rem;color:var(--text3);margin-top:.08rem;">${esc(macros)}</div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:.18rem;flex-shrink:0;">
+          <span style="font-size:.88rem;font-weight:800;color:var(--amber);">${esc(kcalStr)}</span>
+          <button class="sm-add-btn" title="إضافة مباشرة">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          </button>
+        </div>`;
+      card.querySelector('.sm-add-btn').addEventListener('click', e => { e.stopPropagation(); quickAddPreset(meal); });
+      card.addEventListener('click', () => fillFormFromPreset(meal));
+      list.appendChild(card);
+    });
+  mealsDiv.appendChild(list);
+};
+
 // ── Modal open / close ────────────────────────────────────────────
 const openFoodModal = (preTab='meal') => {
   try {
@@ -289,9 +475,11 @@ const openFoodModal = (preTab='meal') => {
     if(prev) prev.innerHTML = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text3)" stroke-width="1.5" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>`;
     const hint = $('fmImgHint'); if(hint) hint.textContent = 'Click or drag an image';
     const calc = $('fmCalcPreview'); if(calc) calc.style.display = 'none';
-    const saveRow = $('fmSaveRow'); if(saveRow) saveRow.style.display = preTab === 'saved' ? 'none' : 'flex';
+    const saveRow = $('fmSaveRow'); if(saveRow) saveRow.style.display = (preTab==='saved'||preTab==='restaurant') ? 'none' : 'flex';
     setFmType(preTab);
-    if(preTab === 'saved') renderSavedList();
+    if(preTab === 'saved')      renderSavedList();
+    if(preTab === 'restaurant') renderRestaurantBrands();
+    if(preTab === 'meal')       renderPresetChips();
     $('foodModal').style.display = 'flex';
     _showPastDayBanner();
     setTimeout(() => {
@@ -314,11 +502,14 @@ const closeFoodModal = () => {
 
 const setFmType = type => {
   fmType = type;
-  $('fmPanelMeal').style.display    = type==='meal'    ? 'block' : 'none';
-  $('fmPanelProduct').style.display = type==='product' ? 'block' : 'none';
-  $('fmPanelSaved').style.display   = type==='saved'   ? 'block' : 'none';
-  $('fmSaveRow').style.display      = type==='saved'   ? 'none'  : 'flex';
-  $('fmSubmitBtn').style.display    = type==='saved'   ? 'none'  : '';
+  $('fmPanelMeal').style.display       = type==='meal'       ? 'block' : 'none';
+  $('fmPanelProduct').style.display    = type==='product'    ? 'block' : 'none';
+  $('fmPanelSaved').style.display      = type==='saved'      ? 'block' : 'none';
+  $('fmPanelRestaurant').style.display = type==='restaurant' ? 'block' : 'none';
+  const noForm = type==='saved' || type==='restaurant';
+  const imgSec = $('fmImgSection'); if(imgSec) imgSec.style.display = noForm ? 'none' : '';
+  $('fmSaveRow').style.display      = noForm ? 'none' : 'flex';
+  $('fmSubmitBtn').style.display    = noForm ? 'none' : '';
   qsa('.fm-3tab').forEach(btn => btn.classList.toggle('active', btn.id === `fmTab${type.charAt(0).toUpperCase()+type.slice(1)}`));
 };
 
@@ -330,9 +521,10 @@ document.getElementById('openFoodModalBtn').addEventListener('click', e => {
 }, true); // true = capture phase
 $('closeFoodModal').addEventListener('click', closeFoodModal);
 $('foodModal').addEventListener('click', e => { if(e.target === $('foodModal')) closeFoodModal(); });
-$('fmTabMeal').addEventListener('click',    () => setFmType('meal'));
-$('fmTabProduct').addEventListener('click', () => setFmType('product'));
-$('fmTabSaved').addEventListener('click',   () => { setFmType('saved'); renderSavedList(); });
+$('fmTabMeal').addEventListener('click',       () => { setFmType('meal'); renderPresetChips(); });
+$('fmTabProduct').addEventListener('click',    () => setFmType('product'));
+$('fmTabSaved').addEventListener('click',      () => { setFmType('saved'); renderSavedList(); });
+$('fmTabRestaurant').addEventListener('click', () => { setFmType('restaurant'); renderRestaurantBrands(); });
 $('smSearch').addEventListener('input', () => renderSavedList($('smSearch').value));
 
 // Image upload / preview
