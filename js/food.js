@@ -452,6 +452,7 @@ $('foodModal').addEventListener('click', e => { if(e.target === $('foodModal')) 
 $('fmTabMeal').addEventListener('click',       () => { setFmType('meal'); renderPresetChips(); });
 $('fmTabProduct').addEventListener('click',    () => setFmType('product'));
 $('fmTabSaved').addEventListener('click',      () => { setFmType('saved'); renderSavedList(); });
+$('fmTabRestaurants').addEventListener('click', () => setFmType('restaurants'));
 $('smSearch').addEventListener('input', () => renderSavedList($('smSearch').value));
 
 // Image upload / preview
