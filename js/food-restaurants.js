@@ -9,9 +9,9 @@ let _restViewId = null; // null = grid view, string = restaurant items view
 // ── Open restaurants tab ─────────────────────────────────────────
 const openRestaurantsTab = () => {
   _restViewId = null;
+  const wrap = $('restContent');
+  if (!wrap) return;
   renderRestaurantGrid();
-  const search = $('restSearch');
-  if (search) { search.value = ''; search.focus(); }
 };
 
 // ── Render restaurant grid (home screen) ────────────────────────

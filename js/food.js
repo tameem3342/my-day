@@ -432,11 +432,12 @@ const setFmType = type => {
   $('fmPanelProduct').style.display     = type==='product'     ? 'block' : 'none';
   $('fmPanelSaved').style.display       = type==='saved'       ? 'block' : 'none';
   const rp = $('fmPanelRestaurants'); if(rp) rp.style.display = type==='restaurants' ? 'block' : 'none';
-  const noForm = type==='saved';
+  const noForm = type==='saved' || type==='restaurants';
   const imgSec = $('fmImgSection'); if(imgSec) imgSec.style.display = noForm ? 'none' : '';
   $('fmSaveRow').style.display      = noForm ? 'none' : 'flex';
   $('fmSubmitBtn').style.display    = noForm ? 'none' : '';
   qsa('.fm-3tab').forEach(btn => btn.classList.toggle('active', btn.id === `fmTab${type.charAt(0).toUpperCase()+type.slice(1)}` || (type==='restaurants' && btn.id==='fmTabRestaurants')));
+  if(type==='restaurants') { setTimeout(() => { if(typeof openRestaurantsTab==='function') openRestaurantsTab(); }, 0); }
 };
 
 // Use capture phase so this fires BEFORE any other listener
