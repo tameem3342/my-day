@@ -205,10 +205,10 @@ function obNext(step) {
           const weeks = Math.round(diff / weeklyRate);
           if(weeks >= 4) {
             etaEl.textContent = Math.round(weeks / 4.33);
-            etaUnit.textContent = 'شهر تقريباً';
+            if(etaUnit) etaUnit.textContent = 'شهر تقريباً';
           } else {
             etaEl.textContent = weeks;
-            etaUnit.textContent = 'أسبوع تقريباً';
+            if(etaUnit) etaUnit.textContent = 'أسبوع تقريباً';
           }
         } else {
           etaEl.textContent = '—';
@@ -353,7 +353,7 @@ function renderLastWeekCard() {
     if(total>0) { totalTaskPct+=pct; daysWithTasks++; }
     if(pct>bestPct) { bestPct=pct; bestDay=dk; }
     totalSteps += (day?.steps||0);
-    totalCal += (day?.meals||[]).reduce((s,m)=>s+(m.cal||0),0);
+    totalCal += (day?.meals||[]).reduce((s,m)=>s+(m.kcal||0),0);
     if(pct===100&&total>0) tempStreak++; else { streak=Math.max(streak,tempStreak); tempStreak=0; }
   });
   streak = Math.max(streak, tempStreak);

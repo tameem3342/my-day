@@ -196,6 +196,7 @@ function openSettingsModal() {
   }
   const removeBtn = document.getElementById('settingsRemoveAvatarBtn');
   if(removeBtn) removeBtn.style.display = _customAvatarUrl ? 'block' : 'none';
+  document.removeEventListener('click', _settingsOutsideClick);
   setTimeout(() => document.addEventListener('click', _settingsOutsideClick), 50);
 }
 

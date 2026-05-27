@@ -51,6 +51,7 @@ const renderMeals = () => {
 
   list.querySelectorAll('.meal-del').forEach(btn => {
     btn.addEventListener('click', () => {
+      if(!dayCache[viewingDate]?.meals) return;
       dayCache[viewingDate].meals.splice(+btn.dataset.i, 1);
       saveDay(viewingDate); renderMeals();
     });
@@ -475,16 +476,33 @@ const NOTE_IDS = {
   food:   {d:'note-preview-df',m:'note-preview-mf'}
 };
 
-const sanitizeNoteHtml = (html) => {
-  if(typeof html !== 'string') return '';
-  // Strip script tags and event handlers, allow only safe formatting
-  return html
-    .replace(/<script[\s\S]*?<\/script>/gi, '')
-    .replace(/\son\w+\s*=\s*["'][^"']*["']/gi, '')
-    .replace(/\son\w+\s*=\s*[^\s>]*/gi, '')
-    .replace(/javascript\s*:/gi, '')
-    .replace(/data\s*:\s*text\/html/gi, '');
-};
+const sanitizeNoteHtml = (() => {
+  const ALLOWED_TAGS = new Set(['b','strong','em','i','br','ul','ol','li','div','span']);
+  function walk(src, dest) {
+    src.childNodes.forEach(node => {
+      if(node.nodeType === Node.TEXT_NODE) {
+        dest.appendChild(document.createTextNode(node.textContent));
+      } else if(node.nodeType === Node.ELEMENT_NODE) {
+        const tag = node.tagName.toLowerCase();
+        if(ALLOWED_TAGS.has(tag)) {
+          const el = document.createElement(tag);
+          walk(node, el);
+          dest.appendChild(el);
+        } else {
+          walk(node, dest);
+        }
+      }
+    });
+  }
+  return (html) => {
+    if(typeof html !== 'string') return '';
+    const tpl = document.createElement('template');
+    tpl.innerHTML = html;
+    const out = document.createElement('div');
+    walk(tpl.content, out);
+    return out.innerHTML;
+  };
+})();
 
 const loadNotes = () => {
   const day=getDay(viewingDate);

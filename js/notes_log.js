@@ -47,7 +47,7 @@ const renderLog = () => {
 
       const done  = d.tasks.filter(x=>x.done).length;
       const total = d.tasks.length;
-      const kcal  = (d.meals||[]).reduce((s,m)=>s+m.kcal, 0);
+      const kcal  = (d.meals||[]).reduce((s,m)=>s+(m.kcal||0), 0);
       const steps = d.steps || 0;
       const pct   = total ? Math.round(done/total*100) : 0;
 
@@ -234,10 +234,10 @@ $('confirmDialog').addEventListener('click',e=>{ if(e.target===$('confirmDialog'
 
 // ── Toast ─────────────────────────────────────────────────────────
 let _tt=null;
-const showToast = (msg, html=false) => {
+const showToast = (msg) => {
   const el=$('toast');
-  if(html) el.innerHTML=msg; else el.textContent=msg;
+  el.textContent=msg;
   el.style.opacity='1'; el.style.transform='translateX(-50%) translateY(0)';
   clearTimeout(_tt);
-  _tt=setTimeout(()=>{ el.style.opacity='0'; el.style.transform='translateX(-50%) translateY(80px)'; if(html) el.textContent=''; },2800);
+  _tt=setTimeout(()=>{ el.style.opacity='0'; el.style.transform='translateX(-50%) translateY(80px)'; },2800);
 };

@@ -327,6 +327,9 @@ function renderWeeklySummary() {
   }
   if(titleEl) titleEl.textContent = lang==='ar' ? 'هذا الأسبوع' : 'This Week';
 
+  const el = id => document.getElementById(id);
+  const hidden = key => (typeof hiddenSections !== 'undefined') && hiddenSections.includes(key);
+
   // Day rows
   rowsEl.innerHTML = '';
   days.forEach(({key, dayShort, entry, isToday}) => {
@@ -372,9 +375,6 @@ function renderWeeklySummary() {
   const avgCal = withData.length
     ? Math.round(withData.map(d=>(d.entry.meals||[]).reduce((s,m)=>s+(m.kcal||0),0)).reduce((a,b)=>a+b,0) / withData.length)
     : 0;
-
-  const el = id => document.getElementById(id);
-  const hidden = key => (typeof hiddenSections !== 'undefined') && hiddenSections.includes(key);
 
   if(el('wSumStreak')) el('wSumStreak').textContent = streak;
 
@@ -592,7 +592,7 @@ const renderSteps = () => {
   const steps=day.steps||0;
   $('stepsCount').textContent=steps.toLocaleString();
   $('stepsTargetInput').value=stepsTarget;
-  const circ=2*Math.PI*36, pct=Math.min(steps/stepsTarget,1);
+  const circ=2*Math.PI*36, pct=stepsTarget>0?Math.min(steps/stepsTarget,1):0;
   $('stepsRing').style.strokeDashoffset=circ-circ*pct;
   $('stepsRing').style.stroke='var(--text)';
   const rem=stepsTarget-steps;

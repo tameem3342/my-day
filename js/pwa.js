@@ -1,7 +1,8 @@
 // ── يومي — PWA: Install banner, Service Worker, background sync
 // ── PWA Install Banner ────────────────────────────────────────────
 function dismissPWABanner(permanent) {
-  document.getElementById('pwaBanner').style.display = 'none';
+  const banner = document.getElementById('pwaBanner');
+  if(banner) banner.style.display = 'none';
   if(permanent) localStorage.setItem('pwa_banner_dismissed','1');
 }
 
@@ -14,7 +15,8 @@ function initPWABanner() {
 
   if(!isStandalone && !isDismissed && isIOS && isSafari) {
     setTimeout(() => {
-      document.getElementById('pwaBanner').style.display = 'block';
+      const b = document.getElementById('pwaBanner');
+      if(b) b.style.display = 'block';
     }, 8000); // show after 8s so page loads first
   }
 }

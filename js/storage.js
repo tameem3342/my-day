@@ -79,6 +79,7 @@ const fbSync = (lsKey, value) => {
   if(!_supa || !currentSupaUser) return;
   clearTimeout(_fbTimers[lsKey]);
   _fbTimers[lsKey] = setTimeout(async ()=>{
+    if(!currentSupaUser) return;
     const s = JSON.stringify(value);
     if(s.length > MAX_PAYLOAD) return;
     await _supa.from('user_data').upsert(
