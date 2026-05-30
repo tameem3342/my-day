@@ -4,196 +4,447 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
 <title>Terms of Service — Adaa</title>
+<meta name="description" content="Adaa Terms of Service — your rights and responsibilities when using the app."/>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet"/>
 <style>
 :root {
-  --bg: #080808; --surface: #111111; --surface2: #181818;
-  --border: rgba(255,255,255,.07); --text: #f0f0f0; --text2: #888; --text3: #444;
-  --accent: #00FF87; --accent2: #00cc6a;
+  --bg: #080808;
+  --surface: #111111;
+  --surface2: #181818;
+  --border: rgba(255,255,255,.07);
+  --border2: rgba(255,255,255,.13);
+  --text: #f0f0f0;
+  --text2: #888;
+  --text3: #444;
+  --accent: #00FF87;
+  --accent2: #00cc6a;
+  --accent-dim: rgba(0,255,135,.08);
+  --accent-dim2: rgba(0,255,135,.15);
 }
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html { scroll-behavior: smooth; }
-body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); overflow-x: hidden; -webkit-font-smoothing: antialiased; line-height: 1.8; }
-nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; padding: 1.1rem 2rem; display: flex; align-items: center; justify-content: space-between; background: rgba(8,8,8,.9); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border); }
-.nav-logo { display: flex; align-items: center; gap: .6rem; font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.2rem; color: var(--text); text-decoration: none; }
-.nav-back { font-size: .85rem; color: var(--text2); text-decoration: none; font-weight: 500; transition: color .2s; }
-.nav-back:hover { color: var(--text); }
-.lang-toggle { font-size: .78rem; background: none; border: 1px solid var(--border); border-radius: 6px; padding: .3rem .65rem; cursor: pointer; color: var(--text2); font-family: inherit; transition: all .2s; }
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  line-height: 1.7;
+}
+[lang="ar"] body, [lang="ar"] * { font-family: 'Cairo', 'DM Sans', sans-serif; }
+
+/* NAV */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  padding: 1.1rem 2rem;
+  display: flex; align-items: center; justify-content: space-between;
+  background: rgba(8,8,8,.85);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+}
+.nav-logo {
+  display: flex; align-items: center; gap: .6rem;
+  font-family: 'Syne', sans-serif;
+  font-weight: 800; font-size: 1.2rem;
+  color: var(--text); text-decoration: none;
+}
+.nav-links { display: flex; align-items: center; gap: 1.5rem; }
+.nav-links a {
+  font-size: .85rem; color: var(--text2); text-decoration: none;
+  font-weight: 500; transition: color .2s;
+}
+.nav-links a:hover { color: var(--text); }
+.lang-toggle {
+  font-size: .78rem;
+  background: none; border: 1px solid var(--border);
+  border-radius: 6px; padding: .3rem .65rem;
+  cursor: pointer; color: var(--text2); font-family: inherit;
+  transition: all .2s;
+}
 .lang-toggle:hover { border-color: rgba(255,255,255,.2); color: var(--text); }
-.page-wrap { max-width: 720px; margin: 0 auto; padding: 8rem 2rem 5rem; }
-.page-label { font-size: .72rem; font-weight: 700; color: var(--accent); letter-spacing: .12em; text-transform: uppercase; margin-bottom: .75rem; }
-.page-title { font-family: 'Syne', sans-serif; font-size: clamp(2rem, 5vw, 3rem); font-weight: 800; letter-spacing: -.03em; margin-bottom: .5rem; line-height: 1.1; }
-.page-date { font-size: .82rem; color: var(--text3); margin-bottom: 3rem; }
-.section { margin-bottom: 2.5rem; }
-.section h2 { font-family: 'Syne', sans-serif; font-size: 1.15rem; font-weight: 700; margin-bottom: .75rem; color: var(--text); }
-.section p { color: var(--text2); font-size: .95rem; margin-bottom: .75rem; }
-.section ul { list-style: none; padding: 0; }
-.section ul li { color: var(--text2); font-size: .95rem; padding: .3rem 0 .3rem 1.4rem; position: relative; }
-.section ul li::before { content: ''; position: absolute; left: 0; top: .7rem; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
-html[dir="rtl"] .section ul li { padding: .3rem 1.4rem .3rem 0; }
-html[dir="rtl"] .section ul li::before { left: auto; right: 0; }
-.divider { border: none; border-top: 1px solid var(--border); margin: 2rem 0; }
-.contact-box { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 1.5rem; margin-top: 2.5rem; }
-.contact-box p { color: var(--text2); font-size: .9rem; }
-.contact-box a { color: var(--accent); text-decoration: none; }
-.contact-box a:hover { text-decoration: underline; }
-footer { text-align: center; padding: 3rem 2rem; border-top: 1px solid var(--border); color: var(--text3); font-size: .8rem; }
+.nav-cta {
+  background: var(--accent); color: #000;
+  font-family: 'Syne', sans-serif;
+  font-weight: 700; font-size: .82rem;
+  border: none; border-radius: 8px;
+  padding: .5rem 1.1rem; cursor: pointer;
+  text-decoration: none;
+  transition: all .2s;
+}
+.nav-cta:hover { background: var(--accent2); transform: translateY(-1px); }
+
+/* PAGE */
+.page-wrap {
+  max-width: 740px;
+  margin: 0 auto;
+  padding: 8rem 1.5rem 6rem;
+}
+.page-badge {
+  display: inline-flex; align-items: center; gap: .45rem;
+  background: var(--accent-dim); border: 1px solid var(--accent-dim2);
+  border-radius: 99px; padding: .28rem .85rem;
+  font-size: .72rem; font-weight: 600; color: var(--accent);
+  margin-bottom: 1.5rem;
+  text-transform: uppercase; letter-spacing: .06em;
+}
+.page-title {
+  font-family: 'Syne', sans-serif;
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  font-weight: 800;
+  letter-spacing: -.03em;
+  line-height: 1.05;
+  margin-bottom: .75rem;
+}
+.page-meta {
+  font-size: .85rem;
+  color: var(--text3);
+  margin-bottom: 3rem;
+  padding-bottom: 2rem;
+  border-bottom: 1px solid var(--border);
+}
+
+/* CONTENT */
+.section {
+  margin-bottom: 2.5rem;
+  padding-bottom: 2.5rem;
+  border-bottom: 1px solid var(--border);
+}
+.section:last-child { border-bottom: none; margin-bottom: 0; }
+.section-heading {
+  font-family: 'Syne', sans-serif;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: .9rem;
+  display: flex; align-items: center; gap: .55rem;
+}
+.section-heading .num {
+  width: 26px; height: 26px; border-radius: 6px;
+  background: var(--accent-dim); border: 1px solid var(--accent-dim2);
+  color: var(--accent); font-size: .7rem; font-weight: 800;
+  display: inline-flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+p {
+  color: var(--text2);
+  font-size: .95rem;
+  margin-bottom: .85rem;
+  font-weight: 300;
+}
+p:last-child { margin-bottom: 0; }
+ul {
+  list-style: none;
+  padding: 0; margin: 0 0 .85rem;
+}
+ul li {
+  color: var(--text2);
+  font-size: .95rem;
+  font-weight: 300;
+  padding: .3rem 0 .3rem 1.2rem;
+  position: relative;
+}
+ul li::before {
+  content: '';
+  position: absolute; left: 0; top: .65em;
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+[dir="rtl"] ul li { padding: .3rem 1.2rem .3rem 0; }
+[dir="rtl"] ul li::before { left: auto; right: 0; }
+
+strong { color: var(--text); font-weight: 600; }
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+/* HIGHLIGHT BOX */
+.highlight {
+  background: var(--accent-dim);
+  border: 1px solid var(--accent-dim2);
+  border-radius: 12px;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1rem;
+}
+.highlight p { color: var(--text); font-weight: 400; margin: 0; }
+
+/* FOOTER */
+footer {
+  border-top: 1px solid var(--border);
+  padding: 2.5rem 2rem;
+  display: flex; flex-wrap: wrap;
+  align-items: center; justify-content: space-between;
+  gap: 1rem;
+  font-size: .82rem;
+  color: var(--text3);
+}
+.footer-logo {
+  display: flex; align-items: center; gap: .5rem;
+  font-family: 'Syne', sans-serif; font-weight: 800;
+  font-size: 1rem; color: var(--text); text-decoration: none;
+}
+.footer-links { display: flex; gap: 1.5rem; flex-wrap: wrap; }
+.footer-links a { color: var(--text3); text-decoration: none; transition: color .2s; }
+.footer-links a:hover { color: var(--text); }
+
+@media(max-width: 600px) {
+  nav { padding: 1rem; }
+  .nav-cta { display: none; }
+  .page-wrap { padding: 7rem 1.25rem 4rem; }
+  footer { flex-direction: column; align-items: flex-start; gap: .75rem; }
+}
 </style>
 </head>
 <body>
 
+<!-- NAV -->
 <nav>
   <a class="nav-logo" href="index.html">
-    <img src="data:image/png;base64,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" alt="Adaa" width="28" height="28" style="border-radius:7px;flex-shrink:0;"/>
+    <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="22" height="22" rx="6" fill="#00FF87"/>
+      <circle cx="11" cy="11" r="4" fill="#000"/>
+    </svg>
     Adaa
   </a>
-  <a class="nav-back" href="index.html" id="back-link">← Back</a>
-  <button class="lang-toggle" onclick="toggleLang()">العربية</button>
+  <div class="nav-links">
+    <a href="index.html" data-en="Home" data-ar="الرئيسية">Home</a>
+    <a href="privacy.html" data-en="Privacy" data-ar="الخصوصية">Privacy</a>
+    <button class="lang-toggle" onclick="toggleLang()">العربية</button>
+  </div>
+  <a href="app.html?signin=true" target="_blank" rel="noopener noreferrer" class="nav-cta" data-en="Open App →" data-ar="افتح التطبيق ←">Open App →</a>
 </nav>
 
+<!-- PAGE -->
 <div class="page-wrap">
 
-  <!-- EN CONTENT -->
-  <div id="content-en">
-    <div class="page-label">Legal</div>
-    <h1 class="page-title">Terms of Service</h1>
-    <div class="page-date">Last updated: May 25, 2026</div>
+  <div class="page-badge" data-en="Legal" data-ar="قانوني">Legal</div>
 
-    <div class="section">
-      <h2>1. Acceptance of Terms</h2>
-      <p>By accessing or using Adaa, you agree to be bound by these Terms of Service. If you disagree with any part of these terms, you may not use the app.</p>
-    </div>
-    <hr class="divider"/>
-    <div class="section">
-      <h2>2. Use of the App</h2>
-      <p>Adaa is a personal performance tracking tool. You agree to use it only for lawful purposes and in a way that does not infringe the rights of others.</p>
-      <ul>
-        <li>You must be at least 13 years old to use Adaa</li>
-        <li>You are responsible for maintaining the security of your account</li>
-        <li>You agree not to reverse-engineer or tamper with the app</li>
-      </ul>
-    </div>
-    <hr class="divider"/>
-    <div class="section">
-      <h2>3. Your Content</h2>
-      <p>All data you enter into Adaa (habits, calories, workouts, notes) belongs to you. We do not claim ownership of your personal data. You grant us a limited license to store and sync it for the purpose of providing the service.</p>
-    </div>
-    <hr class="divider"/>
-    <div class="section">
-      <h2>4. Health Disclaimer</h2>
-      <p>Adaa is a personal tracking tool and is not a medical device. It is not intended to diagnose, treat, cure, or prevent any disease or health condition. Always consult a qualified healthcare professional before making significant changes to your diet or exercise routine.</p>
-    </div>
-    <hr class="divider"/>
-    <div class="section">
-      <h2>5. Service Availability</h2>
-      <p>We strive to keep Adaa available at all times, but we do not guarantee uninterrupted access. We may update, modify, or discontinue features with reasonable notice.</p>
-    </div>
-    <hr class="divider"/>
-    <div class="section">
-      <h2>6. Limitation of Liability</h2>
-      <p>Adaa is provided "as is" without warranties of any kind. We are not liable for any indirect, incidental, or consequential damages arising from your use of the app.</p>
-    </div>
-    <hr class="divider"/>
-    <div class="section">
-      <h2>7. Changes to Terms</h2>
-      <p>We may update these terms at any time. Continued use of Adaa after changes constitutes acceptance of the new terms. We will notify you of major changes through the app.</p>
-    </div>
-    <div class="contact-box">
-      <h2 style="margin-bottom:.5rem;">Questions?</h2>
-      <p>For any questions about these Terms, contact us at <a href="mailto:legal@adaa.health">legal@adaa.health</a></p>
-    </div>
+  <h1 class="page-title" data-en="Terms of Service" data-ar="شروط الاستخدام">Terms of Service</h1>
+
+  <div class="page-meta">
+    <span data-en="Last updated: May 2026" data-ar="آخر تحديث: مايو 2026">Last updated: May 2026</span>
   </div>
 
-  <!-- AR CONTENT -->
-  <div id="content-ar" style="display:none;">
-    <div class="page-label">قانوني</div>
-    <h1 class="page-title">شروط الاستخدام</h1>
-    <div class="page-date">آخر تحديث: ٢٥ مايو ٢٠٢٦</div>
+  <div class="highlight">
+    <p data-en="By using Adaa, you agree to these terms. They're written to be clear and fair. If you disagree with any part, please stop using the app." data-ar="باستخدامك Adaa، فأنت توافق على هذه الشروط. كتبناها لتكون واضحة وعادلة. إذا كنت لا توافق على أي جزء، يُرجى التوقف عن استخدام التطبيق.">
+      By using Adaa, you agree to these terms. They're written to be clear and fair. If you disagree with any part, please stop using the app.
+    </p>
+  </div>
 
-    <div class="section">
-      <h2>١. قبول الشروط</h2>
-      <p>باستخدامك لـ Adaa أو الوصول إليه، فإنك توافق على الالتزام بشروط الاستخدام هذه. إذا كنت لا توافق على أي جزء من هذه الشروط، فلا يجوز لك استخدام التطبيق.</p>
+  <div class="section">
+    <div class="section-heading">
+      <span class="num">1</span>
+      <span data-en="Acceptance of Terms" data-ar="قبول الشروط">Acceptance of Terms</span>
     </div>
-    <hr class="divider"/>
-    <div class="section">
-      <h2>٢. استخدام التطبيق</h2>
-      <p>Adaa أداة لتتبع الأداء الشخصي. توافق على استخدامه فقط لأغراض مشروعة وبطريقة لا تنتهك حقوق الآخرين.</p>
-      <ul>
-        <li>يجب أن يكون عمرك ١٣ سنة على الأقل لاستخدام Adaa</li>
-        <li>أنت مسؤول عن الحفاظ على أمان حسابك</li>
-        <li>توافق على عدم العبث بالتطبيق أو محاولة هندسته عكسياً</li>
-      </ul>
+    <p data-en="By accessing or using Adaa (the &quot;Service&quot;), you agree to be bound by these Terms of Service. If you are using the Service on behalf of an organization, you agree on behalf of that organization." data-ar='باستخدامك Adaa ("الخدمة")، فأنت توافق على الالتزام بشروط الاستخدام هذه. إذا كنت تستخدم الخدمة نيابةً عن منظمة، فأنت توافق بالنيابة عنها.'>
+      By accessing or using Adaa (the "Service"), you agree to be bound by these Terms of Service. If you are using the Service on behalf of an organization, you agree on behalf of that organization.
+    </p>
+    <p data-en="These terms apply to all users of Adaa, including visitors, registered users, and others who access the Service." data-ar="تنطبق هذه الشروط على جميع مستخدمي Adaa، بما فيهم الزوار والمستخدمون المسجلون وكل من يصل إلى الخدمة.">
+      These terms apply to all users of Adaa, including visitors, registered users, and others who access the Service.
+    </p>
+  </div>
+
+  <div class="section">
+    <div class="section-heading">
+      <span class="num">2</span>
+      <span data-en="The Service" data-ar="الخدمة">The Service</span>
     </div>
-    <hr class="divider"/>
-    <div class="section">
-      <h2>٣. محتواك</h2>
-      <p>جميع البيانات التي تدخلها في Adaa (العادات، السعرات، التمارين، الملاحظات) تعود لك. نحن لا ندّعي ملكية بياناتك الشخصية. تمنحنا ترخيصاً محدوداً لتخزينها ومزامنتها بغرض تقديم الخدمة.</p>
+    <p data-en="Adaa is a personal health and performance tracking web application. It allows you to log habits, calories, workouts, weight, steps, water intake, and notes for your own personal use." data-ar="Adaa هو تطبيق ويب لتتبع الصحة والأداء الشخصي. يتيح لك تسجيل العادات والسعرات والتمارين والوزن والخطوات وكمية الماء والملاحظات للاستخدام الشخصي.">
+      Adaa is a personal health and performance tracking web application. It allows you to log habits, calories, workouts, weight, steps, water intake, and notes for your own personal use.
+    </p>
+    <p data-en="Adaa is not a medical service. Nothing in the app constitutes medical advice, diagnosis, or treatment. Always consult a qualified healthcare professional for health decisions." data-ar="Adaa ليس خدمة طبية. لا شيء في التطبيق يُعدّ نصيحة طبية أو تشخيصاً أو علاجاً. استشر دائماً متخصصاً صحياً مؤهلاً لاتخاذ القرارات الصحية.">
+      <strong data-en="Adaa is not a medical service." data-ar="Adaa ليس خدمة طبية.">Adaa is not a medical service.</strong> Nothing in the app constitutes medical advice, diagnosis, or treatment. Always consult a qualified healthcare professional for health decisions.
+    </p>
+  </div>
+
+  <div class="section">
+    <div class="section-heading">
+      <span class="num">3</span>
+      <span data-en="Your Account" data-ar="حسابك">Your Account</span>
     </div>
-    <hr class="divider"/>
-    <div class="section">
-      <h2>٤. إخلاء مسؤولية صحية</h2>
-      <p>Adaa أداة تتبع شخصية وليس جهازاً طبياً. لا يُقصد به تشخيص أو علاج أو علاج أي مرض أو حالة صحية. استشر دائماً متخصصاً في الرعاية الصحية قبل إجراء تغييرات جوهرية على نظامك الغذائي أو روتين التمارين.</p>
+    <p data-en="You may use Adaa without creating an account. If you sign in, you are responsible for:" data-ar="يمكنك استخدام Adaa دون إنشاء حساب. إذا سجّلت الدخول، فأنت مسؤول عن:">You may use Adaa without creating an account. If you sign in, you are responsible for:</p>
+    <ul>
+      <li data-en="Providing accurate information during sign-up" data-ar="تقديم معلومات دقيقة عند التسجيل">Providing accurate information during sign-up</li>
+      <li data-en="Keeping your authentication credentials secure" data-ar="الحفاظ على أمان بيانات المصادقة الخاصة بك">Keeping your authentication credentials secure</li>
+      <li data-en="All activity that occurs under your account" data-ar="جميع الأنشطة التي تحدث تحت حسابك">All activity that occurs under your account</li>
+      <li data-en="Notifying us immediately of any unauthorized account use" data-ar="إخطارنا فوراً بأي استخدام غير مصرح به لحسابك">Notifying us immediately of any unauthorized account use</li>
+    </ul>
+    <p data-en="We reserve the right to suspend or terminate accounts that violate these terms." data-ar="نحتفظ بالحق في تعليق أو إنهاء الحسابات التي تنتهك هذه الشروط.">
+      We reserve the right to suspend or terminate accounts that violate these terms.
+    </p>
+  </div>
+
+  <div class="section">
+    <div class="section-heading">
+      <span class="num">4</span>
+      <span data-en="Acceptable Use" data-ar="الاستخدام المقبول">Acceptable Use</span>
     </div>
-    <hr class="divider"/>
-    <div class="section">
-      <h2>٥. توافر الخدمة</h2>
-      <p>نسعى للحفاظ على توافر Adaa في جميع الأوقات، لكننا لا نضمن وصولاً متواصلاً. قد نحدّث أو نعدّل أو نوقف الميزات مع إشعار معقول.</p>
+    <p data-en="You agree to use Adaa only for lawful purposes and in a way that does not infringe on the rights of others. You must not:" data-ar="توافق على استخدام Adaa لأغراض مشروعة فقط وبطريقة لا تنتهك حقوق الآخرين. يجب ألا:">You agree to use Adaa only for lawful purposes and in a way that does not infringe on the rights of others. You must not:</p>
+    <ul>
+      <li data-en="Attempt to gain unauthorized access to any part of the Service" data-ar="تحاول الوصول غير المصرح به إلى أي جزء من الخدمة">Attempt to gain unauthorized access to any part of the Service</li>
+      <li data-en="Use the Service to transmit harmful, offensive, or illegal content" data-ar="تستخدم الخدمة لنقل محتوى ضار أو مسيء أو غير قانوني">Use the Service to transmit harmful, offensive, or illegal content</li>
+      <li data-en="Interfere with or disrupt the integrity or performance of the Service" data-ar="تتدخل أو تعطّل سلامة أو أداء الخدمة">Interfere with or disrupt the integrity or performance of the Service</li>
+      <li data-en="Reverse engineer, decompile, or attempt to extract the source code" data-ar="تعكس هندسة أو تفكّك أو تحاول استخراج الكود المصدري">Reverse engineer, decompile, or attempt to extract the source code</li>
+      <li data-en="Use automated tools to scrape or collect data from the Service" data-ar="تستخدم أدوات آلية لاستخراج أو جمع البيانات من الخدمة">Use automated tools to scrape or collect data from the Service</li>
+    </ul>
+  </div>
+
+  <div class="section">
+    <div class="section-heading">
+      <span class="num">5</span>
+      <span data-en="Your Content" data-ar="محتواك">Your Content</span>
     </div>
-    <hr class="divider"/>
-    <div class="section">
-      <h2>٦. حدود المسؤولية</h2>
-      <p>يُقدَّم Adaa "كما هو" دون أي ضمانات. نحن لسنا مسؤولين عن أي أضرار غير مباشرة أو عرضية أو تبعية ناشئة عن استخدامك للتطبيق.</p>
+    <p data-en="All data you enter into Adaa (habits, food logs, workout records, notes, etc.) belongs to you. You grant us a limited license to store and process that data solely to provide the Service to you." data-ar="جميع البيانات التي تدخلها في Adaa (العادات وسجلات الطعام وسجلات التمارين والملاحظات وما إلى ذلك) تعود إليك. تمنحنا ترخيصاً محدوداً لتخزين هذه البيانات ومعالجتها فقط لتقديم الخدمة لك.">
+      All data you enter into Adaa (habits, food logs, workout records, notes, etc.) belongs to you. You grant us a limited license to store and process that data solely to provide the Service to you.
+    </p>
+    <p data-en="We do not claim ownership of your content. We do not use your health data for research, marketing, or any purpose beyond operating the app for you." data-ar="لا ندّعي ملكية محتواك. لا نستخدم بياناتك الصحية للبحث أو التسويق أو أي غرض خارج تشغيل التطبيق لصالحك.">
+      We do not claim ownership of your content. We do not use your health data for research, marketing, or any purpose beyond operating the app for you.
+    </p>
+  </div>
+
+  <div class="section">
+    <div class="section-heading">
+      <span class="num">6</span>
+      <span data-en="Intellectual Property" data-ar="الملكية الفكرية">Intellectual Property</span>
     </div>
-    <hr class="divider"/>
-    <div class="section">
-      <h2>٧. التغييرات على الشروط</h2>
-      <p>قد نحدّث هذه الشروط في أي وقت. الاستمرار في استخدام Adaa بعد التغييرات يُعدّ قبولاً للشروط الجديدة. سنخطرك بالتغييرات الكبيرة من خلال التطبيق.</p>
+    <p data-en="The Adaa name, logo, design, and all app code are owned by Adaa and protected by applicable intellectual property laws. You may not copy, reproduce, or distribute any part of the Service without our written permission." data-ar="اسم Adaa والشعار والتصميم وكل كود التطبيق مملوك لـ Adaa ومحمي بموجب قوانين الملكية الفكرية المعمول بها. لا يجوز نسخ أو إعادة إنتاج أو توزيع أي جزء من الخدمة دون إذن كتابي منا.">
+      The Adaa name, logo, design, and all app code are owned by Adaa and protected by applicable intellectual property laws. You may not copy, reproduce, or distribute any part of the Service without our written permission.
+    </p>
+  </div>
+
+  <div class="section">
+    <div class="section-heading">
+      <span class="num">7</span>
+      <span data-en="Disclaimer of Warranties" data-ar="إخلاء المسؤولية عن الضمانات">Disclaimer of Warranties</span>
     </div>
-    <div class="contact-box">
-      <h2 style="margin-bottom:.5rem;">أسئلة؟</h2>
-      <p>لأي أسئلة حول هذه الشروط، تواصل معنا على <a href="mailto:legal@adaa.health">legal@adaa.health</a></p>
+    <p data-en="Adaa is provided &quot;as is&quot; and &quot;as available&quot; without warranties of any kind, express or implied. We do not warrant that the Service will be error-free, uninterrupted, or meet your specific requirements." data-ar='يُقدَّم Adaa "كما هو" و"كما هو متاح" دون أي ضمانات صريحة أو ضمنية. لا نضمن أن الخدمة ستكون خالية من الأخطاء أو منقطعة أو تلبّي متطلباتك المحددة.'>
+      Adaa is provided "as is" and "as available" without warranties of any kind, express or implied. We do not warrant that the Service will be error-free, uninterrupted, or meet your specific requirements.
+    </p>
+    <p data-en="The calorie and TDEE calculations provided are estimates based on standard formulas (Harris-Benedict). They are not medical advice. Individual results may vary." data-ar="حسابات السعرات وTDEE المقدمة هي تقديرات بناءً على معادلات قياسية (هاريس-بينيديكت). ليست نصيحة طبية. قد تختلف النتائج من شخص لآخر.">
+      The calorie and TDEE calculations provided are estimates based on standard formulas (Harris-Benedict). They are not medical advice. Individual results may vary.
+    </p>
+  </div>
+
+  <div class="section">
+    <div class="section-heading">
+      <span class="num">8</span>
+      <span data-en="Limitation of Liability" data-ar="حدود المسؤولية">Limitation of Liability</span>
     </div>
+    <p data-en="To the maximum extent permitted by law, Adaa shall not be liable for any indirect, incidental, special, consequential, or punitive damages arising from your use of — or inability to use — the Service." data-ar="إلى أقصى حد يسمح به القانون، لن يكون Adaa مسؤولاً عن أي أضرار غير مباشرة أو عرضية أو خاصة أو تبعية أو عقابية ناجمة عن استخدامك أو عدم قدرتك على استخدام الخدمة.">
+      To the maximum extent permitted by law, Adaa shall not be liable for any indirect, incidental, special, consequential, or punitive damages arising from your use of — or inability to use — the Service.
+    </p>
+    <p data-en="This includes but is not limited to: data loss, health decisions made based on app data, service interruptions, or third-party actions." data-ar="يشمل ذلك على سبيل المثال لا الحصر: فقدان البيانات، والقرارات الصحية المتخذة بناءً على بيانات التطبيق، وانقطاع الخدمة، وأفعال الأطراف الثالثة.">
+      This includes but is not limited to: data loss, health decisions made based on app data, service interruptions, or third-party actions.
+    </p>
+  </div>
+
+  <div class="section">
+    <div class="section-heading">
+      <span class="num">9</span>
+      <span data-en="Termination" data-ar="الإنهاء">Termination</span>
+    </div>
+    <p data-en="You may stop using Adaa at any time. You can request deletion of your account and data by contacting privacy@adaa.health" data-ar="يمكنك التوقف عن استخدام Adaa في أي وقت. يمكنك طلب حذف حسابك وبياناتك عبر التواصل مع privacy@adaa.health">
+      You may stop using Adaa at any time. You can request deletion of your account and data by contacting <a href="mailto:privacy@adaa.health">privacy@adaa.health</a>
+    </p>
+    <p data-en="We reserve the right to terminate or suspend your access to the Service at any time, without notice, for conduct that we believe violates these Terms or is harmful to other users, us, or third parties." data-ar="نحتفظ بالحق في إنهاء أو تعليق وصولك إلى الخدمة في أي وقت، دون إشعار، لسلوك نعتقد أنه ينتهك هذه الشروط أو يضر بالمستخدمين الآخرين أو بنا أو بأطراف ثالثة.">
+      We reserve the right to terminate or suspend your access to the Service at any time, without notice, for conduct that we believe violates these Terms or is harmful to other users, us, or third parties.
+    </p>
+  </div>
+
+  <div class="section">
+    <div class="section-heading">
+      <span class="num">10</span>
+      <span data-en="Changes to These Terms" data-ar="التغييرات على هذه الشروط">Changes to These Terms</span>
+    </div>
+    <p data-en="We may revise these Terms from time to time. We'll update the &quot;Last updated&quot; date when we do. For significant changes, we'll notify you within the app. Continued use of the Service after changes constitutes acceptance of the new Terms." data-ar='قد نراجع هذه الشروط من حين لآخر. سنحدّث تاريخ "آخر تحديث" عند ذلك. للتغييرات المهمة، سنخطرك داخل التطبيق. الاستمرار في استخدام الخدمة بعد التغييرات يُعدّ قبولاً للشروط الجديدة.'>
+      We may revise these Terms from time to time. We'll update the "Last updated" date when we do. For significant changes, we'll notify you within the app. Continued use of the Service after changes constitutes acceptance of the new Terms.
+    </p>
+  </div>
+
+  <div class="section">
+    <div class="section-heading">
+      <span class="num">11</span>
+      <span data-en="Governing Law" data-ar="القانون المعمول به">Governing Law</span>
+    </div>
+    <p data-en="These Terms shall be governed by and construed in accordance with applicable laws. Any disputes arising from these Terms or your use of the Service will be resolved through good-faith negotiation." data-ar="تُفسَّر هذه الشروط وتُطبَّق وفقاً للقوانين السارية. يتم حل أي نزاعات تنشأ عن هذه الشروط أو استخدامك للخدمة من خلال التفاوض بحسن نية.">
+      These Terms shall be governed by and construed in accordance with applicable laws. Any disputes arising from these Terms or your use of the Service will be resolved through good-faith negotiation.
+    </p>
+  </div>
+
+  <div class="section">
+    <div class="section-heading">
+      <span class="num">12</span>
+      <span data-en="Contact" data-ar="التواصل">Contact</span>
+    </div>
+    <p data-en="Questions about these Terms? Reach out anytime." data-ar="أسئلة حول هذه الشروط؟ تواصل معنا في أي وقت.">
+      Questions about these Terms? Reach out anytime.
+    </p>
+    <p><a href="mailto:privacy@adaa.health">privacy@adaa.health</a></p>
   </div>
 
 </div>
 
+<!-- FOOTER -->
 <footer>
-  <span id="footer-copy">© 2026 Adaa. Built for performance.</span>
+  <a class="footer-logo" href="index.html">
+    <svg width="20" height="20" viewBox="0 0 22 22" fill="none">
+      <rect width="22" height="22" rx="6" fill="#00FF87"/>
+      <circle cx="11" cy="11" r="4" fill="#000"/>
+    </svg>
+    Adaa
+  </a>
+  <div class="footer-copy" data-en="© 2026 Adaa. Built for performance." data-ar="© 2026 Adaa. مبني للأداء.">© 2026 Adaa. Built for performance.</div>
+  <div class="footer-links">
+    <a href="app.html?signin=true" target="_blank" rel="noopener noreferrer" data-en="Open App" data-ar="افتح التطبيق">Open App</a>
+    <a href="privacy.html" data-en="Privacy Policy" data-ar="سياسة الخصوصية">Privacy Policy</a>
+    <a href="terms.html" data-en="Terms of Service" data-ar="شروط الاستخدام">Terms of Service</a>
+  </div>
 </footer>
 
 <script>
 let currentLang = 'en';
 
+function safeLangHtml(html) {
+  const ALLOWED = new Set(['br','em','b','strong','span','a']);
+  const tpl = document.createElement('template');
+  tpl.innerHTML = html;
+  function walk(src, dest) {
+    src.childNodes.forEach(node => {
+      if(node.nodeType === 3) { dest.appendChild(document.createTextNode(node.textContent)); }
+      else if(node.nodeType === 1) {
+        const tag = node.tagName.toLowerCase();
+        if(ALLOWED.has(tag)) {
+          const el = document.createElement(tag);
+          if(tag === 'a') { el.href = node.getAttribute('href') || '#'; el.style.color = 'var(--accent)'; }
+          walk(node, el); dest.appendChild(el);
+        } else { walk(node, dest); }
+      }
+    });
+  }
+  const out = document.createElement('div'); walk(tpl.content, out);
+  return out.innerHTML;
+}
+
 function applyLang(lang) {
   currentLang = lang;
   const html = document.documentElement;
-  html.lang = lang;
-  html.dir = lang === 'ar' ? 'rtl' : 'ltr';
-  document.getElementById('content-en').style.display = lang === 'en' ? '' : 'none';
-  document.getElementById('content-ar').style.display = lang === 'ar' ? '' : 'none';
-  document.querySelector('.lang-toggle').textContent = lang === 'en' ? 'العربية' : 'English';
-  document.getElementById('back-link').textContent = lang === 'ar' ? '→ رجوع' : '← Back';
-  document.getElementById('footer-copy').textContent = lang === 'ar'
-    ? '© 2026 Adaa. مبني للأداء.'
-    : '© 2026 Adaa. Built for performance.';
-  document.title = lang === 'ar' ? 'شروط الاستخدام — Adaa' : 'Terms of Service — Adaa';
-  localStorage.setItem('adaa-lang', lang);
+  html.lang = currentLang;
+  html.dir = currentLang === 'ar' ? 'rtl' : 'ltr';
+  document.querySelectorAll('[data-en]').forEach(el => {
+    const val = el.getAttribute('data-' + currentLang);
+    if(val) el.innerHTML = safeLangHtml(val);
+  });
+  document.querySelector('.lang-toggle').textContent = currentLang === 'en' ? 'العربية' : 'English';
 }
 
-function toggleLang() {
-  applyLang(currentLang === 'en' ? 'ar' : 'en');
-}
+function toggleLang() { applyLang(currentLang === 'en' ? 'ar' : 'en'); }
 
 (function() {
   const saved = localStorage.getItem('adaa-lang');
-  if (saved) {
-    applyLang(saved);
-  } else {
-    const browserLang = (navigator.language || 'en').toLowerCase();
-    if (browserLang.startsWith('ar')) applyLang('ar');
-  }
+  const browserLang = (navigator.language || 'en').toLowerCase();
+  const lang = saved || (browserLang.startsWith('ar') ? 'ar' : 'en');
+  if(lang !== 'en') applyLang(lang);
 })();
 </script>
 </body>
