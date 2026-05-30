@@ -1725,18 +1725,19 @@ const renderRestaurantGrid = () => {
   const grid = SAUDI_RESTAURANTS.map(r => {
     const logo = getRestaurantLogo(r.id);
     const logoHtml = logo
-      ? `<img src="${logo}" style="width:56px;height:56px;object-fit:contain;border-radius:10px;" alt="${r.name}"/>`
-      : `<div style="width:56px;height:56px;border-radius:10px;background:${r.color};display:flex;align-items:center;justify-content:center;font-size:1.4rem;">🍽️</div>`;
+      ? `<img src="${logo}" style="width:100%;height:100%;object-fit:cover;border-radius:12px;display:block;" alt="${r.name}"/>`
+      : `<div style="width:100%;height:100%;border-radius:12px;background:${r.color};display:flex;align-items:center;justify-content:center;font-size:2rem;">🍽️</div>`;
     return `
       <div onclick="openRestaurant('${r.id}')"
-        style="display:flex;flex-direction:column;align-items:center;gap:6px;padding:12px 8px;
+        style="display:flex;flex-direction:column;align-items:center;gap:0;padding:0;
                border-radius:14px;border:1px solid var(--border);background:var(--surface);
-               cursor:pointer;transition:background .15s;text-align:center;"
-        onmouseover="this.style.background='var(--surface2)'"
-        onmouseout="this.style.background='var(--surface)'">
-        ${logoHtml}
-        <span style="font-size:.75rem;font-weight:600;color:var(--text);line-height:1.3;">${r.name}</span>
-        <span style="font-size:.65rem;color:var(--text3);">${r.items.length} وجبة</span>
+               cursor:pointer;transition:transform .15s,box-shadow .15s;text-align:center;
+               overflow:hidden;"
+        onmouseover="this.style.transform='scale(1.03)';this.style.boxShadow='0 4px 16px rgba(0,0,0,.18)'"
+        onmouseout="this.style.transform='scale(1)';this.style.boxShadow='none'">
+        <div style="width:100%;aspect-ratio:1/1;overflow:hidden;border-radius:12px;">
+          ${logoHtml}
+        </div>
       </div>`;
   }).join('');
 
@@ -1769,8 +1770,8 @@ const openRestaurant = (id) => {
   const items = r.items.map(item => {
     const img = getFoodImage(id, item.name);
     const imgHtml = img
-      ? `<img src="${img}" style="width:58px;height:58px;object-fit:cover;border-radius:10px;flex-shrink:0;" alt="${item.name}"/>`
-      : `<div style="width:58px;height:58px;border-radius:10px;background:${r.color}22;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:1.4rem;">🍽️</div>`;
+      ? `<img src="${img}" style="width:72px;height:72px;object-fit:cover;border-radius:12px;flex-shrink:0;box-shadow:0 2px 8px rgba(0,0,0,.15);" alt="${item.name}"/>`
+      : `<div style="width:72px;height:72px;border-radius:12px;background:${r.color}22;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:1.6rem;">🍽️</div>`;
 
     return `
       <div onclick="addRestaurantItem(${JSON.stringify(JSON.stringify({name:item.name,kcal:item.kcal,protein:item.protein,carbs:item.carbs,fat:item.fat,restaurantName:r.name,restaurantId:id}))})"
@@ -1827,8 +1828,8 @@ const onRestSearch = (query) => {
   const items = results.map(item => {
     const img = getFoodImage(item.restaurantId, item.name);
     const imgHtml = img
-      ? `<img src="${img}" style="width:50px;height:50px;object-fit:cover;border-radius:9px;flex-shrink:0;" alt="${item.name}"/>`
-      : `<div style="width:50px;height:50px;border-radius:9px;background:${item.color}22;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:1.2rem;">🍽️</div>`;
+      ? `<img src="${img}" style="width:62px;height:62px;object-fit:cover;border-radius:11px;flex-shrink:0;box-shadow:0 2px 8px rgba(0,0,0,.15);" alt="${item.name}"/>`
+      : `<div style="width:62px;height:62px;border-radius:11px;background:${item.color}22;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:1.2rem;">🍽️</div>`;
 
     return `
       <div onclick="addRestaurantItem(${JSON.stringify(JSON.stringify({name:item.name,kcal:item.kcal,protein:item.protein,carbs:item.carbs,fat:item.fat,restaurantName:item.restaurant,restaurantId:item.restaurantId}))})"
