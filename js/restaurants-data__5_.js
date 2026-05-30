@@ -329,3 +329,4 @@ function searchRestaurantItems(query) {
   }
   return results;
 }
+// updated
